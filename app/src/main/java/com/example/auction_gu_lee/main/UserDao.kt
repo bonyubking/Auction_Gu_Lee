@@ -9,6 +9,6 @@ interface UserDao {
     @Insert
     fun insertUser(user: User)
 
-    @Query("SELECT * FROM user_table WHERE email = :email AND password = :password")
-    fun getUser(email: String, password: String): User?  // 반환 타입 명확히 지정
+    @Query("SELECT * FROM user_table WHERE username = :username AND password = :password")
+    fun getUser(username: String, password: String): User?  // 반환 타입 명확히 지정
 }

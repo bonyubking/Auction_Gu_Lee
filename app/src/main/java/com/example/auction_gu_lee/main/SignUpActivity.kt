@@ -14,6 +14,7 @@ class SignUpActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
 
+        val usernameEditText = findViewById<EditText>(R.id.et_username)
         val nameEditText = findViewById<EditText>(R.id.et_name)
         val emailEditText = findViewById<EditText>(R.id.et_email)
         val passwordEditText = findViewById<EditText>(R.id.et_password)
@@ -21,6 +22,7 @@ class SignUpActivity : AppCompatActivity() {
         val signUpButton = findViewById<Button>(R.id.btn_signup)
 
         signUpButton.setOnClickListener {
+            val username = usernameEditText.text.toString().trim()
             val name = nameEditText.text.toString().trim()
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
@@ -38,6 +40,7 @@ class SignUpActivity : AppCompatActivity() {
             // 비동기 작업 시작 (코루틴 사용)
             lifecycleScope.launch {
                 val newUser = User(
+                    username = username,
                     name = name,
                     email = email,
                     password = password,
@@ -47,7 +50,7 @@ class SignUpActivity : AppCompatActivity() {
                 Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
 
                 // 로그인 화면으로 이동 또는 다른 처리
-                finish()  // 현재 화면 종료
+                  finish()// 현재 화면 종료
             }
         }
     }
