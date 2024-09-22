@@ -21,6 +21,8 @@ class SignupActivity : AppCompatActivity() {
         val emailEditText: EditText = findViewById(R.id.et_email)
         val signupButton: Button = findViewById(R.id.btn_signup)
 
+        val dbHelper = DBHelper(this)
+
         // 회원가입 버튼 클릭 이벤트
         signupButton.setOnClickListener {
             val username = usernameEditText.text.toString()
@@ -36,11 +38,19 @@ class SignupActivity : AppCompatActivity() {
                 // 비밀번호와 비밀번호 확인이 다르면 메시지 출력
                 Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
             } else {
-                // 입력된 데이터로 처리
-                Toast.makeText(this, "회원가입 완료! $username", Toast.LENGTH_SHORT).show()
+                val isUserAdded = dbHelper.addUser(username, password)
+                if (isUserAdded) {
+                    Toast.makeText(this, "회원가입 완료!", Toast.LENGTH_SHORT).show()
+                    // 이후 처리: 로그인 화면으로 돌아가거나 다른 액티비티로 이동
+                    finish() // 회원가입 완료 후 현재 액티비티 종료
+                } else {
+
+                    // 입력된 데이터로 처리
+                    Toast.makeText(this, "회원가입 완료! $username", Toast.LENGTH_SHORT).show()
 
 
-            }        // 이후 처리 (예: 데이터베이스에 저장, 로그인 화면으로 이동 등)
+                }        // 이후 처리 (예: 데이터베이스에 저장, 로그인 화면으로 이동 등)
+            }
         }
     }
 }
