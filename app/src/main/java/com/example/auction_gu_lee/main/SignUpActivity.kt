@@ -15,6 +15,7 @@ class SignupActivity : AppCompatActivity() {
         // EditText 및 버튼 연결
         val usernameEditText: EditText = findViewById(R.id.et_username)
         val passwordEditText: EditText = findViewById(R.id.et_password)
+        val passwordConfirmEditText: EditText = findViewById(R.id.et_password_confirm) // 비밀번호 확인
         val nameEditText: EditText = findViewById(R.id.et_name)
         val phoneEditText: EditText = findViewById(R.id.et_phone)
         val emailEditText: EditText = findViewById(R.id.et_email)
@@ -24,18 +25,22 @@ class SignupActivity : AppCompatActivity() {
         signupButton.setOnClickListener {
             val username = usernameEditText.text.toString()
             val password = passwordEditText.text.toString()
+            val passwordConfirm = passwordConfirmEditText.text.toString()
             val name = nameEditText.text.toString()
             val phone = phoneEditText.text.toString()
             val email = emailEditText.text.toString()
 
             if (username.isEmpty() || password.isEmpty() || name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
                 Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            } else if (password != passwordConfirm) {
+                // 비밀번호와 비밀번호 확인이 다르면 메시지 출력
+                Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 // 입력된 데이터로 처리
                 Toast.makeText(this, "회원가입 완료! $username", Toast.LENGTH_SHORT).show()
 
-                // 이후 처리 (예: 데이터베이스에 저장, 로그인 화면으로 이동 등)
-            }
+
+            }        // 이후 처리 (예: 데이터베이스에 저장, 로그인 화면으로 이동 등)
         }
     }
 }
