@@ -14,7 +14,7 @@
 
     <!-- 로그인 버튼 -->
 
-    <!-- 회원가입 버튼 -->
+    <!-- 회원가입 버튼입니다 -->
 
     <EditText
         android:id="@+id/et_username"
