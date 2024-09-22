@@ -124,54 +124,43 @@
     <ImageButton
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:layout_marginStart="96.5dp"
-        android:layout_marginTop="480dp"
-        android:layout_marginEnd="96.5dp"
-        android:layout_marginBottom="255dp"
+        android:layout_marginStart="102dp"
+        android:layout_marginTop="624dp"
+        android:layout_marginEnd="109dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
         android:src="@drawable/android_xx"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:layout_marginStart="96.5dp"
-        android:layout_marginTop="537dp"
-        android:layout_marginEnd="96.5dp"
-        android:layout_marginBottom="198dp"
+        android:layout_marginStart="102dp"
+        android:layout_marginTop="549dp"
+        android:layout_marginEnd="109dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
         android:src="@drawable/bntg_complete"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/imageButton"
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:layout_marginStart="96.5dp"
-        android:layout_marginTop="594dp"
-        android:layout_marginEnd="96.5dp"
-        android:layout_marginBottom="141dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="472dp"
+        android:layout_marginEnd="111dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
         android:src="@drawable/kakao_login_medium_narrow"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
+<!-- 아 섹스하고싶노이기 -->
