@@ -5,41 +5,51 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
-class SignupActivity : AppCompatActivity() {
+class SignUpActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
 
-        // EditText 및 버튼 연결
-        val usernameEditText: EditText = findViewById(R.id.et_username)
-        val passwordEditText: EditText = findViewById(R.id.et_password)
-        val passwordConfirmEditText: EditText = findViewById(R.id.et_password_confirm) // 비밀번호 확인
-        val nameEditText: EditText = findViewById(R.id.et_name)
-        val phoneEditText: EditText = findViewById(R.id.et_phone)
-        val emailEditText: EditText = findViewById(R.id.et_email)
-        val signupButton: Button = findViewById(R.id.btn_signup)
+        val nameEditText = findViewById<EditText>(R.id.et_name)
+        val emailEditText = findViewById<EditText>(R.id.et_email)
+        val passwordEditText = findViewById<EditText>(R.id.et_password)
+        val phoneEditText = findViewById<EditText>(R.id.et_phone)
+        val signUpButton = findViewById<Button>(R.id.btn_signup)
 
-        // 회원가입 버튼 클릭 이벤트
-        signupButton.setOnClickListener {
-            val username = usernameEditText.text.toString()
-            val password = passwordEditText.text.toString()
-            val passwordConfirm = passwordConfirmEditText.text.toString()
-            val name = nameEditText.text.toString()
-            val phone = phoneEditText.text.toString()
-            val email = emailEditText.text.toString()
+        signUpButton.setOnClickListener {
+            val name = nameEditText.text.toString().trim()
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+            val phoneNumber = phoneEditText.text.toString().trim()
 
-            if (username.isEmpty() || password.isEmpty() || name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty() || phoneNumber.isEmpty()) {
                 Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
-            } else if (password != passwordConfirm) {
-                // 비밀번호와 비밀번호 확인이 다르면 메시지 출력
-                Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
-            } else {
-                // 회원가입 성공 후 처리 (DBHelper가 없으므로 단순히 메시지 처리)
-                Toast.makeText(this, "회원가입 완료! $username", Toast.LENGTH_SHORT).show()
-                finish() // 회원가입 완료 후 현재 액티비티 종료
+                return@setOnClickListener
+            }
+
+            // Room 데이터베이스 객체 가져오기
+            val db = AppDatabase.getDatabase(this)
+            val userDao = db.userDao()
+
+            // 비동기 작업 시작 (코루틴 사용)
+            lifecycleScope.launch {
+                val newUser = User(
+                    name = name,
+                    email = email,
+                    password = password,
+                    phoneNumber = phoneNumber
+                )
+                userDao.insertUser(newUser)
+                Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
+
+                // 로그인 화면으로 이동 또는 다른 처리
+                finish()  // 현재 화면 종료
             }
         }
     }
 }
+
