@@ -7,9 +7,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/oldwomenoctopus1"
     android:gravity="center">
-
-
-    <!-- 깃허브 테스트 용-->
     <!-- 아이디 입력 -->
 
     <!-- 비밀번호 입력 -->
