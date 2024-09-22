@@ -28,7 +28,7 @@ class SignUpActivity : AppCompatActivity() {
             val password = passwordEditText.text.toString().trim()
             val phoneNumber = phoneEditText.text.toString().trim()
 
-            if (name.isEmpty() || email.isEmpty() || password.isEmpty() || phoneNumber.isEmpty()) {
+            if (username.isEmpty() || name.isEmpty() || email.isEmpty() || password.isEmpty() || phoneNumber.isEmpty()) {
                 Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
