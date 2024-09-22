@@ -1,5 +1,6 @@
 package com.example.auction_gu_lee
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
         btnSignup.setOnClickListener {
             // 회원가입 화면으로 이동하는 로직 추가
             Toast.makeText(this, "회원가입 화면으로 이동합니다.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this@MainActivity, SignupActivity::class.java)
+            startActivity(intent)
         }
     }
 }

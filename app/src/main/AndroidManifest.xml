@@ -21,6 +21,8 @@
 
         <!-- MainActivity 설정 -->
         <activity android:name=".MainActivity" />
+        <!-- 회원가입 화면 설정 -->
+        <activity android:name=".SignupActivity" />
 
 
     </application>
