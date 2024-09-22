@@ -9,6 +9,11 @@ interface UserDao {
     @Insert
     suspend fun insertUser(user: User)
 
+
+
     @Query("SELECT * FROM user_table WHERE username = :username AND password = :password")
     suspend fun getUser(username: String, password: String): User?  // 반환 타입 명확히 지정
+
+    @Query("SELECT * FROM user_table WHERE username = :username")
+    suspend fun getUserByUsername(username: String): User?  // 아이디 중복 확인용
 }

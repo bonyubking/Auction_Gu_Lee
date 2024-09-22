@@ -1,5 +1,6 @@
 package com.example.auction_gu_lee
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -39,20 +40,31 @@ class SignUpActivity : AppCompatActivity() {
 
             // 비동기 작업 시작 (코루틴 사용)
             lifecycleScope.launch {
-                val newUser = User(
-                    username = username,
-                    name = name,
-                    email = email,
-                    password = password,
-                    phoneNumber = phoneNumber
-                )
-                userDao.insertUser(newUser)
-                Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
+                val existingUser = userDao.getUserByUsername(username)
+                if (existingUser != null) {
+                    // 아이디가 이미 존재할 경우
+                    Toast.makeText(this@SignUpActivity, "이미 존재하는 아이디입니다.", Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    // 아이디가 존재하지 않으면 회원가입 진행
 
-                // 로그인 화면으로 이동 또는 다른 처리
-                  finish()// 현재 화면 종료
+                    val newUser = User(
+                        username = username,
+                        name = name,
+                        email = email,
+                        password = password,
+                        phoneNumber = phoneNumber
+                    )
+                    userDao.insertUser(newUser)
+                    Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    finish()
+
+                }
             }
         }
     }
 }
-

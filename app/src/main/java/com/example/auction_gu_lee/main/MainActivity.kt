@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
                 val user = userDao.getUser(username, password)
                 if (user != null) {
                     Toast.makeText(this@MainActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
+
                     // TODO: 메인 화면으로 이동
                 } else {
                     Toast.makeText(this@MainActivity, "이메일 또는 비밀번호가 잘못되었습니다.", Toast.LENGTH_SHORT).show()
