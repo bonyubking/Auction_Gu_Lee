@@ -23,6 +23,8 @@
         <activity android:name=".MainActivity" />
         <!-- 회원가입 화면 설정 -->
         <activity android:name=".SignUpActivity" />
+        <!-- 로그인 화면 -->
+        <activity android:name=".WelcomeActivity" />
 
 
     </application>

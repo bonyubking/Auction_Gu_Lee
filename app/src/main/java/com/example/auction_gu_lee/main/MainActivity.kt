@@ -43,6 +43,11 @@ class MainActivity : AppCompatActivity() {
                 if (user != null) {
                     Toast.makeText(this@MainActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
 
+                    val intent = Intent(this@MainActivity, WelcomeActivity::class.java)
+                    intent.putExtra("username", username)  // username 전달
+                    startActivity(intent)
+
+
                     // TODO: 메인 화면으로 이동
                 } else {
                     Toast.makeText(this@MainActivity, "이메일 또는 비밀번호가 잘못되었습니다.", Toast.LENGTH_SHORT).show()
