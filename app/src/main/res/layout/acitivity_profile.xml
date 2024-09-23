@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 나의 거래 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="나의 거래"
+            android:textSize="18sp"
+            android:padding="8dp" />
+
+        <!-- 관심 목록 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="관심 목록"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+        <!-- 최근 본 내역 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="최근 본 내역"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+        <!-- 판매 내역 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="판매 내역"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+        <!-- 판매 중 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="판매 중"
+            android:textSize="14sp"
+            android:paddingStart="16dp"
+            android:padding="8dp" />
+
+        <!-- 판매 완료 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="판매 완료"
+            android:textSize="14sp"
+            android:paddingStart="16dp"
+            android:padding="8dp" />
+
+        <!-- 입찰 내역 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="입찰 내역"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+        <!-- 공지 사항 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="공지 사항"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+        <!-- 고객 센터 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="고객 센터"
+            android:textSize="16sp"
+            android:padding="8dp" />
+
+    </LinearLayout>
+</ScrollView>
