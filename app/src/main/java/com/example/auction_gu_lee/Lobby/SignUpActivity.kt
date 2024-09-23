@@ -1,5 +1,7 @@
 package com.example.auction_gu_lee
 
+import com.example.auction_gu_lee.Database.AppDatabase
+import com.example.auction_gu_lee.Database.User
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button

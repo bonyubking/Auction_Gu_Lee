@@ -5,7 +5,7 @@
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/auctionwallpaperblackversion"
+    android:background="@drawable/loginwallpaperblackversion"
     tools:context=".SignUpActivity">
 
     <TextView
@@ -153,7 +153,7 @@
         android:scaleType="centerInside"
         app:layout_constraintEnd_toStartOf="@+id/et_username"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/iconusernamewhite" />
+        app:srcCompat="@drawable/icon_username" />
 
     <ImageView
         android:id="@+id/imageView3"
@@ -164,7 +164,7 @@
         android:scaleType="centerInside"
         app:layout_constraintEnd_toStartOf="@+id/et_password"
         app:layout_constraintTop_toBottomOf="@+id/imageView2"
-        app:srcCompat="@drawable/iconpassword" />
+        app:srcCompat="@drawable/icon_password" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -174,7 +174,7 @@
         android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toStartOf="@+id/et_password_confirm"
         app:layout_constraintTop_toBottomOf="@+id/imageView3"
-        app:srcCompat="@drawable/iconpasswordconfirm" />
+        app:srcCompat="@drawable/icon_passwordconfirm" />
 
     <ImageView
         android:id="@+id/imageView6"
@@ -184,7 +184,7 @@
         android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toStartOf="@+id/et_phone"
         app:layout_constraintTop_toBottomOf="@+id/imageView8"
-        app:srcCompat="@drawable/iconphone" />
+        app:srcCompat="@drawable/icon_phone" />
 
     <ImageView
         android:id="@+id/imageView7"
@@ -194,7 +194,7 @@
         android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toStartOf="@+id/et_email"
         app:layout_constraintTop_toBottomOf="@+id/imageView6"
-        app:srcCompat="@drawable/iconemail" />
+        app:srcCompat="@drawable/icon_email" />
 
     <ImageView
         android:id="@+id/imageView8"
@@ -204,6 +204,6 @@
         android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toStartOf="@+id/et_name"
         app:layout_constraintTop_toBottomOf="@+id/imageView4"
-        app:srcCompat="@drawable/iconname" />
+        app:srcCompat="@drawable/icon_name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Database
 
 import android.content.Context
 import androidx.room.Database

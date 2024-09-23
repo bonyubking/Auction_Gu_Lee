@@ -1,10 +1,11 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Tapbar
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.auction_gu_lee.R
 
 class HomeFragment : Fragment() {
     override fun onCreateView(

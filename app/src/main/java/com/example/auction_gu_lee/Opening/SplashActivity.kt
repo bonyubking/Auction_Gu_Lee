@@ -15,7 +15,7 @@ class SplashActivity : AppCompatActivity() {
 
         // 오프닝 이미지 설정
         val splashImage: ImageView = findViewById(R.id.splash_image)
-        splashImage.setImageResource(R.drawable.auction_image) // 이미지 파일 이름을 바꿔주세요
+        splashImage.setImageResource(R.drawable.opening_imang) // 이미지 파일 이름을 바꿔주세요
 
         // 3초 후 페이드 아웃 후 메인 화면으로 전환
         Handler(Looper.getMainLooper()).postDelayed({

@@ -1,9 +1,12 @@
 package com.example.auction_gu_lee
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.auction_gu_lee.Tapbar.ChatFragment
+import com.example.auction_gu_lee.Tapbar.HomeFragment
+import com.example.auction_gu_lee.Tapbar.PastFragment
+import com.example.auction_gu_lee.Tapbar.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {

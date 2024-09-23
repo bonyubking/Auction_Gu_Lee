@@ -1,16 +1,17 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Tapbar
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.auction_gu_lee.R
 
-class PastFragment : Fragment() {
+class ProfileFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_past, container, false)
+        return inflater.inflate(R.layout.fragment_profile, container, false)
     }
 }
