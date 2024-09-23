@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/iconemail"
+        android:title="홈" />
+
+    <item
+        android:id="@+id/nav_auction"
+        android:icon="@drawable/iconname"
+        android:title="지난 경매" />
+
+    <item
+        android:id="@+id/nav_chat"
+        android:icon="@drawable/iconphone"
+        android:title="채팅" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/iconusernamewhite"
+        android:title="내 정보" />
+
+
+</menu>
