@@ -4,8 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -22,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
         // 3초 후 페이드 아웃 후 메인 화면으로 전환
         Handler(Looper.getMainLooper()).postDelayed({
 
-            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+            val intent = Intent(this@SplashActivity, LobbyActivty::class.java)
             startActivity(intent)
             overridePendingTransition(0,0)
             finish()

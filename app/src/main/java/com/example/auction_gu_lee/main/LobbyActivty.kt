@@ -9,11 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class LobbyActivty : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_lobby)
 
         val signUpButton = findViewById<Button>(R.id.btn_signup)
 
@@ -41,16 +41,16 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val user = userDao.getUser(username, password)
                 if (user != null) {
-                    Toast.makeText(this@MainActivity, "로그인 성공", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LobbyActivty, "로그인 성공", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@MainActivity, WelcomeActivity::class.java)
+                    val intent = Intent(this@LobbyActivty, MainActivity::class.java)
                     intent.putExtra("username", username)  // username 전달
                     startActivity(intent)
 
 
                     // TODO: 메인 화면으로 이동
                 } else {
-                    Toast.makeText(this@MainActivity, "이메일 또는 비밀번호가 잘못되었습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LobbyActivty, "이메일 또는 비밀번호가 잘못되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }

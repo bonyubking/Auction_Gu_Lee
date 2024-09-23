@@ -58,7 +58,7 @@ class SignUpActivity : AppCompatActivity() {
                     userDao.insertUser(newUser)
                     Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                    val intent = Intent(this@SignUpActivity, LobbyActivty::class.java)
                     startActivity(intent)
                     overridePendingTransition(0, 0)
                     finish()
