@@ -1,6 +1,7 @@
 package com.example.auction_gu_lee.Tapbar
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.auction_gu_lee.R
 import android.widget.TextView
+import com.example.auction_gu_lee.Profile.DeleteDataActivity
 
 class ProfileFragment : Fragment() {
     override fun onCreateView(
@@ -106,9 +108,10 @@ class ProfileFragment : Fragment() {
         // 캐시 데이터 삭제하기 버튼 클릭 리스너 설정
         val deleteDataButton = view.findViewById<TextView>(R.id.btn_delete_data)
         deleteDataButton.setOnClickListener {
-            Toast.makeText(requireContext(), "캐시 데이터 삭제하기 버튼 클릭됨", Toast.LENGTH_SHORT).show()
+            // DeleteDataActivity 호출
+            val intent = Intent(requireContext(), DeleteDataActivity::class.java)
+            startActivity(intent)  // DeleteDataActivity로 이동
         }
-
         // 최신 버전 업데이트 버튼 클릭 리스너 설정
         val updateButton = view.findViewById<TextView>(R.id.btn_update)
         updateButton.setOnClickListener {

@@ -28,6 +28,7 @@
         <!-- 방 만들기 화면 -->
         <activity android:name=".home.CreateRoomActivity" />
 
+        <activity android:name=".Profile.DeleteDataActivity"></activity>
 
     </application>
 </manifest>
