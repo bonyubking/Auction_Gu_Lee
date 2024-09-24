@@ -54,7 +54,7 @@
 
             <!-- 최근 본 내역 -->
 
-            <!-- 판매 내역 -->
+            <!-- 판매 내역  -->
 
             <TextView
                 android:id="@+id/btn_recent_view"
