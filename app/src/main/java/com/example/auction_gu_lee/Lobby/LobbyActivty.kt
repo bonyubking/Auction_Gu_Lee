@@ -44,6 +44,12 @@ class LobbyActivty : AppCompatActivity() {
                 if (user != null) {
                     Toast.makeText(this@LobbyActivty, "로그인 성공", Toast.LENGTH_SHORT).show()
 
+                    // SharedPreferences에 사용자 아이디 저장
+                    val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("user_id", username)  // 로그인 성공 시 username을 저장
+                    editor.apply()  // 저장 완료
+
                     val intent = Intent(this@LobbyActivty, MainActivity::class.java)
                     intent.putExtra("username", username)  // username 전달
                     startActivity(intent)

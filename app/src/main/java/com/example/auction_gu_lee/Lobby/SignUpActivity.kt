@@ -3,6 +3,7 @@ package com.example.auction_gu_lee
 import com.example.auction_gu_lee.Database.AppDatabase
 import com.example.auction_gu_lee.Database.User
 import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -59,6 +60,12 @@ class SignUpActivity : AppCompatActivity() {
                     )
                     userDao.insertUser(newUser)
                     Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
+
+                    val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("user_Id", username)  // username은 로그인된 사용자 아이디
+                    editor.apply()
+
 
                     val intent = Intent(this@SignUpActivity, LobbyActivty::class.java)
                     startActivity(intent)
