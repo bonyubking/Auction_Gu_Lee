@@ -25,6 +25,8 @@
         <activity android:name=".SignUpActivity" />
         <!-- 로그인 화면 -->
         <activity android:name=".MainActivity" />
+        <!-- 방 만들기 화면 -->
+        <activity android:name=".home.CreateRoomActivity" />
 
 
     </application>
