@@ -20,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
         // 3초 후 페이드 아웃 후 메인 화면으로 전환
         Handler(Looper.getMainLooper()).postDelayed({
 
-            val intent = Intent(this@SplashActivity, LobbyActivty::class.java)
+            val intent = Intent(this@SplashActivity, LobbyActivity::class.java)
             startActivity(intent)
             overridePendingTransition(0,0)
             finish()

@@ -42,6 +42,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.0.0")) // 최신 버전으로 변경
 
     // Firebase 관련 라이브러리 추가 (필요한 기능에 따라 추가)
+    implementation("com.google.firebase:firebase-database-ktx")  // Firebase Realtime Database
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("androidx.room:room-runtime:2.6.1")

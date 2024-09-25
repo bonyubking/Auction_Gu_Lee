@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "112969053103",
+    "project_id": "auction-gu-lee",
+    "storage_bucket": "auction-gu-lee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112969053103:android:64c7412b0c9dbdab76355a",
+        "android_client_info": {
+          "package_name": "com.example.auction_gu_lee"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvFcRV9XLmfhrOCRqPTUlfd9GafdCkp78"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

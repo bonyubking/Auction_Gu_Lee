@@ -1,22 +1,24 @@
 package com.example.auction_gu_lee
 
-import com.example.auction_gu_lee.Database.AppDatabase
-import com.example.auction_gu_lee.Database.User
 import android.content.Intent
-import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class SignUpActivity : AppCompatActivity() {
+
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
+
+        // FirebaseAuth 인스턴스 초기화
+        auth = FirebaseAuth.getInstance()
 
         val usernameEditText = findViewById<EditText>(R.id.et_username)
         val nameEditText = findViewById<EditText>(R.id.et_name)
@@ -26,54 +28,62 @@ class SignUpActivity : AppCompatActivity() {
         val signUpButton = findViewById<Button>(R.id.btn_signup)
 
         signUpButton.setOnClickListener {
-            val username = usernameEditText.text.toString().trim()
-            val name = nameEditText.text.toString().trim()
-            val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString().trim()
-            val phoneNumber = phoneEditText.text.toString().trim()
+            val username = usernameEditText.text.toString()
+            val name = nameEditText.text.toString()
+            val email = emailEditText.text.toString()
+            val password = passwordEditText.text.toString()
+            val phone = phoneEditText.text.toString()
 
-            if (username.isEmpty() || name.isEmpty() || email.isEmpty() || password.isEmpty() || phoneNumber.isEmpty()) {
-                Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // Room 데이터베이스 객체 가져오기
-            val db = AppDatabase.getDatabase(this)
-            val userDao = db.userDao()
-
-            // 비동기 작업 시작 (코루틴 사용)
-            lifecycleScope.launch {
-                val existingUser = userDao.getUserByUsername(username)
-                if (existingUser != null) {
-                    // 아이디가 이미 존재할 경우
-                    Toast.makeText(this@SignUpActivity, "이미 존재하는 아이디입니다.", Toast.LENGTH_SHORT)
-                        .show()
-                } else {
-                    // 아이디가 존재하지 않으면 회원가입 진행
-
-                    val newUser = User(
-                        username = username,
-                        name = name,
-                        email = email,
-                        password = password,
-                        phoneNumber = phoneNumber
-                    )
-                    userDao.insertUser(newUser)
-                    Toast.makeText(this@SignUpActivity, "회원가입 성공", Toast.LENGTH_SHORT).show()
-
-                    val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                    val editor = sharedPreferences.edit()
-                    editor.putString("user_Id", username)  // username은 로그인된 사용자 아이디
-                    editor.apply()
-
-
-                    val intent = Intent(this@SignUpActivity, LobbyActivty::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0, 0)
-                    finish()
-
-                }
+            if (email.isNotEmpty() && password.isNotEmpty()) {
+                signUpWithFirebase(email, password, username, name, phone)
+            } else {
+                Toast.makeText(this, "모든 필드를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun signUpWithFirebase(email: String, password: String, username: String, name: String, phone: String) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // 회원가입 성공
+                    val user = auth.currentUser
+                    Toast.makeText(this, "회원가입 성공: ${user?.email}", Toast.LENGTH_SHORT).show()
+
+                    // Firebase Realtime Database에 사용자 정보 저장
+                    saveUserToFirebaseDatabase(user?.uid, username, name, email, phone)
+
+                    // 회원가입 후 다음 화면으로 이동
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+
+                } else {
+                    // 회원가입 실패
+                    Toast.makeText(this, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun saveUserToFirebaseDatabase(uid: String?, username: String, name: String, email: String, phone: String) {
+        val database = FirebaseDatabase.getInstance().getReference("users")
+        val user = User(uid, username, name, email, phone)
+
+        database.child(uid ?: "").setValue(user)
+            .addOnSuccessListener {
+                Toast.makeText(this, "사용자 정보 저장 성공", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "사용자 정보 저장 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
 }
+
+// 사용자 데이터 모델
+data class User(
+    val uid: String?,
+    val username: String,
+    val name: String,
+    val email: String,
+    val phone: String
+)

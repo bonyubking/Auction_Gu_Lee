@@ -12,6 +12,8 @@ import com.example.auction_gu_lee.R
 import android.widget.TextView
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
 import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class ProfileFragment : Fragment() {
 
@@ -36,18 +38,41 @@ class ProfileFragment : Fragment() {
     }
 
     // onViewCreated에서 버튼 클릭 리스너 설정
+    // onViewCreated에서 버튼 클릭 리스너 설정
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // SharedPreferences에서 사용자 아이디를 불러오기 (예시)
-        val sharedPreferences = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userId = sharedPreferences.getString("user_Id", "사용자 없음")  // "user_id" 키로 저장된 아이디 가져오기
+        // FirebaseAuth를 통해 현재 로그인된 사용자 가져오기
+        val currentUser = FirebaseAuth.getInstance().currentUser
 
-        // TextView를 찾아서 사용자의 아이디를 출력
-        val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
+        if (currentUser != null) {
+            // 사용자 ID 가져오기 (Firebase에서 UID로 사용됨)
+            val userId = currentUser.uid
 
-        // TextView에 아이디 설정
-        userIdTextView.text = "반갑습니다, $userId 님"
+            // Firebase Realtime Database에서 추가 사용자 정보 가져오기
+            val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId)
+            databaseReference.get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val userName = snapshot.child("username").getValue(String::class.java) ?: "사용자 없음"
+
+                    // TextView를 찾아서 사용자 이름 출력
+                    val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
+                    userIdTextView.text = "반갑습니다, $userName 님"
+                } else {
+                    // 사용자 정보가 없을 때 처리
+                    val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
+                    userIdTextView.text = "사용자 정보를 불러올 수 없습니다."
+                }
+            }.addOnFailureListener {
+                // 데이터베이스 읽기 실패 시 처리
+                val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
+                userIdTextView.text = "데이터베이스 오류가 발생했습니다."
+            }
+        } else {
+            // 로그인되지 않은 경우 처리
+            val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
+            userIdTextView.text = "로그인된 사용자가 없습니다."
+        }
 
         // 관심 목록 버튼 클릭 리스너 설정
         val wishlistButton = view.findViewById<TextView>(R.id.btn_wishlist)
