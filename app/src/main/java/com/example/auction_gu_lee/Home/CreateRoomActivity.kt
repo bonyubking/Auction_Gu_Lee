@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
@@ -27,6 +28,9 @@ import java.util.*
 
 class CreateRoomActivity : AppCompatActivity() {
 
+    private lateinit var EA: CheckBox
+    private lateinit var kg: CheckBox
+    private lateinit var box: CheckBox
     private lateinit var storage: FirebaseStorage
     private lateinit var firestore: FirebaseFirestore
     private lateinit var editTextItem: EditText
@@ -45,6 +49,12 @@ class CreateRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_auction)
 
+        // CheckBox 연결
+        EA = findViewById(R.id.EA)
+        kg = findViewById(R.id.kg)
+        box = findViewById(R.id.box)
+
+
         // 버튼과 이미지뷰 초기화 초기화
         editTextItem = findViewById(R.id.editText_item) // xml의 EditText id와 연결
         editTextQuantity = findViewById(R.id.editText_quantity) // xml의 EditText id와 연결
@@ -56,13 +66,14 @@ class CreateRoomActivity : AppCompatActivity() {
         firestore = FirebaseFirestore.getInstance()
         buttonComplete = findViewById(R.id.button_complete)
 
+
         // 사진 첨부 버튼 클릭 리스너
         buttonAttachPhoto.setOnClickListener {
             showImageOptions()
         }
         // 완료 버튼 클릭 리스너 (서버에 데이터 저장)
         buttonComplete.setOnClickListener {
-            if (photoUri != null) {
+            if (::photoUri.isInitialized && photoUri != null) {
                 uploadAuctionData() // Firebase에 데이터 저장 함수 호출
             } else {
                 Toast.makeText(this, "사진을 첨부해주세요", Toast.LENGTH_SHORT).show()
@@ -156,6 +167,9 @@ class CreateRoomActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK && result.data != null) {
             val selectedImageUri: Uri? = result.data?.data
             selectedImageUri?.let {
+
+                photoUri = it
+
                 imageViewPreview.setImageURI(it)
                 imageViewPreview.visibility = ImageView.VISIBLE
             }
@@ -203,10 +217,15 @@ class CreateRoomActivity : AppCompatActivity() {
         val uploadTask = storage.putFile(photoUri!!)
         uploadTask.addOnSuccessListener { taskSnapshot ->
             storage.downloadUrl.addOnSuccessListener { uri ->
+                val unit = when {
+                    EA.isChecked -> "개"
+                    box.isChecked -> "박스"
+                    kg.isChecked -> "kg"
+                    else -> ""}
                 // Firebase Realtime Database에 저장할 경매 데이터
                 val auction = hashMapOf(
                     "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
-                    "quantity" to editTextQuantity.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "quantity" to editTextQuantity.text.toString()+""+unit,  // EditText에서 문자열 값 가져오기
                     "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
                     "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
                     "photoUrl" to uri.toString(),  // 업로드된 사진의 URL

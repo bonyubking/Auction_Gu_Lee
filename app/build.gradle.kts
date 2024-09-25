@@ -38,6 +38,9 @@ android {
 }
 
 dependencies {
+
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    kapt("com.github.bumptech.glide:compiler:4.14.2")
     // Room dependencies 추가
     implementation(platform("com.google.firebase:firebase-bom:32.0.0")) // 최신 버전으로 변경
 

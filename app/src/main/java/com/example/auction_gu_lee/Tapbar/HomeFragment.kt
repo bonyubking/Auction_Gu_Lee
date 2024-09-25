@@ -7,13 +7,22 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.home.CreateRoomActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.Intent
 import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
+import com.google.firebase.database.*
+import com.example.auction_gu_lee.models.Auction
+
+
 
 class HomeFragment : Fragment() {
+
+    private lateinit var auctionAdapter: AuctionAdapter
+    private lateinit var auctionList: MutableList<Auction>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,5 +59,43 @@ class HomeFragment : Fragment() {
             val intent = Intent(requireContext(), CreateRoomActivity::class.java)
             startActivity(intent)
         }
+
+        // RecyclerView 설정
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        auctionList = mutableListOf()
+        auctionAdapter = AuctionAdapter(auctionList)
+        recyclerView.adapter = auctionAdapter
+
+        // Firebase에서 최신 데이터 가져오기
+        fetchLatestAuctions()
+    }
+
+    // Firebase Realtime Database에서 최신 경매 데이터를 가져오는 함수
+    private fun fetchLatestAuctions() {
+        val database = FirebaseDatabase.getInstance().reference
+        val auctionRef = database.child("auctions")
+
+        auctionRef.orderByChild("timestamp").limitToLast(10)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    auctionList.clear()
+                    for (auctionSnapshot in snapshot.children) {
+                        val auction = auctionSnapshot.getValue(Auction::class.java)
+                        auction?.let { auctionList.add(it) }
+                    }
+
+                    // 최신 데이터가 뒤에 있을 수 있으니 리스트를 역순으로 정렬
+                    auctionList.reverse()
+
+                    // UI에 최신 데이터를 반영
+                    auctionAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }
+
