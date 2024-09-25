@@ -11,8 +11,22 @@ import androidx.fragment.app.Fragment
 import com.example.auction_gu_lee.R
 import android.widget.TextView
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
+import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
 
 class ProfileFragment : Fragment() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 뒤로가기 버튼 비활성화
+        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // 아무 동작도 하지 않게 뒤로가기 버튼 무효화
+                // 이곳에 필요한 동작을 추가할 수 있음
+            }
+        })
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,8 +38,6 @@ class ProfileFragment : Fragment() {
     // onViewCreated에서 버튼 클릭 리스너 설정
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
 
         // SharedPreferences에서 사용자 아이디를 불러오기 (예시)
         val sharedPreferences = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
@@ -55,9 +67,6 @@ class ProfileFragment : Fragment() {
             Toast.makeText(requireContext(), "판매 내역 버튼 클릭됨", Toast.LENGTH_SHORT).show()
         }
 
-
-
-
         // 입찰 내역 버튼 클릭 리스너 설정
         val bidHistoryButton = view.findViewById<TextView>(R.id.btn_bid_history)
         bidHistoryButton.setOnClickListener {
@@ -76,7 +85,6 @@ class ProfileFragment : Fragment() {
             Toast.makeText(requireContext(), "알림 설정 버튼 클릭됨", Toast.LENGTH_SHORT).show()
         }
 
-
         // 채팅 버튼 클릭 리스너 설정
         val chatButton = view.findViewById<TextView>(R.id.btn_chat)
         chatButton.setOnClickListener {
@@ -89,15 +97,11 @@ class ProfileFragment : Fragment() {
             Toast.makeText(requireContext(), "키워드 알림 버튼 클릭됨", Toast.LENGTH_SHORT).show()
         }
 
-
-
         // 사용자 설정 버튼 클릭 리스너 설정
         val userSettingButton = view.findViewById<TextView>(R.id.btn_user_setting)
         userSettingButton.setOnClickListener {
             Toast.makeText(requireContext(), "사용자 설정 버튼 클릭됨", Toast.LENGTH_SHORT).show()
         }
-
-
 
         // 언어 설정 버튼 클릭 리스너 설정
         val languageSettingButton = view.findViewById<TextView>(R.id.btn_language_setting)
@@ -112,6 +116,7 @@ class ProfileFragment : Fragment() {
             val intent = Intent(requireContext(), DeleteDataActivity::class.java)
             startActivity(intent)  // DeleteDataActivity로 이동
         }
+
         // 최신 버전 업데이트 버튼 클릭 리스너 설정
         val updateButton = view.findViewById<TextView>(R.id.btn_update)
         updateButton.setOnClickListener {

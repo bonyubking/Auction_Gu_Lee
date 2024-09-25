@@ -11,8 +11,21 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.home.CreateRoomActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.Intent
+import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
 
 class HomeFragment : Fragment() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 뒤로가기 버튼 비활성화
+        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // 뒤로가기 버튼 동작을 무효화
+            }
+        })
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -29,6 +42,7 @@ class HomeFragment : Fragment() {
         magnifierImageView.setOnClickListener {
             Toast.makeText(requireContext(), "Magnifier clicked!", Toast.LENGTH_SHORT).show()
         }
+
         // FloatingActionButton 클릭 이벤트
         val floatingActionButton = view.findViewById<FloatingActionButton>(R.id.floatingActionButton)
         floatingActionButton.setOnClickListener {
@@ -36,6 +50,5 @@ class HomeFragment : Fragment() {
             val intent = Intent(requireContext(), CreateRoomActivity::class.java)
             startActivity(intent)
         }
-
     }
 }
