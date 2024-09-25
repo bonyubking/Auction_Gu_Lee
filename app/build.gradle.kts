@@ -1,6 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("kotlin-android")
+    id("com.google.gms.google-services")
     id("kotlin-kapt")
 }
 
@@ -38,6 +39,11 @@ android {
 
 dependencies {
     // Room dependencies 추가
+    implementation(platform("com.google.firebase:firebase-bom:32.0.0")) // 최신 버전으로 변경
+
+    // Firebase 관련 라이브러리 추가 (필요한 기능에 따라 추가)
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
