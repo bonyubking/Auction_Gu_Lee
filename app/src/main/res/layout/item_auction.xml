@@ -60,4 +60,6 @@
         android:layout_marginStart="8dp"
         android:scaleType="centerCrop"
         tools:srcCompat="@tools:sample/avatars" />
+
+
 </LinearLayout>

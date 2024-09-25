@@ -14,6 +14,7 @@ import com.example.auction_gu_lee.home.CreateRoomActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.Intent
 import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
+import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.firebase.database.*
 import com.example.auction_gu_lee.models.Auction
 
@@ -46,6 +47,14 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // RecyclerView 설정
+        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // DividerItemDecoration 추가 (구분선 추가)
+        val dividerItemDecoration = DividerItemDecoration(recyclerView.context, LinearLayoutManager.VERTICAL)
+        recyclerView.addItemDecoration(dividerItemDecoration)
+
         // fragment_home.xml의 ImageView를 가져와서 클릭 리스너 설정
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
@@ -60,9 +69,6 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
-        // RecyclerView 설정
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         auctionList = mutableListOf()
         auctionAdapter = AuctionAdapter(auctionList)
         recyclerView.adapter = auctionAdapter

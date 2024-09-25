@@ -45,6 +45,8 @@ class CreateRoomActivity : AppCompatActivity() {
 
     private val REQUEST_CAMERA_PERMISSION = 101
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_auction)

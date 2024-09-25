@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:gravity="center">
 
+
     <!-- Magnifier ImageView (오른쪽 상단) -->
     <ImageView
         android:id="@+id/magnifier"
@@ -98,6 +99,15 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
+    <!-- 구분선 추가 -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintTop_toBottomOf="@+id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- RecyclerView -->
 
