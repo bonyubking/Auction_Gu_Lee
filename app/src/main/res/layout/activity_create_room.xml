@@ -158,9 +158,11 @@
                     android:text="원" />
             </LinearLayout>
 
+            <!-- 기존 레이아웃 코드 유지 -->
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
@@ -170,15 +172,25 @@
                     android:layout_weight="1"
                     android:text="사진" />
 
-                <EditText
-                    android:id="@+id/editTextText10"
+                <!-- 사진 첨부 버튼 -->
+                <Button
+                    android:id="@+id/button_attach_photo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:inputType="text" />
+                    android:text="사진 첨부" />
             </LinearLayout>
 
+            <!-- 이미지 미리보기 창 -->
+            <ImageView
+                android:id="@+id/imageView_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:layout_marginTop="16dp"
+                android:contentDescription="Image Preview"
+                android:scaleType="centerCrop"
+                android:visibility="gone" /> <!-- 초기에는 숨김 -->
+
+            <!-- 경매 생성 버튼 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
