@@ -54,7 +54,7 @@ class SignUpActivity : AppCompatActivity() {
                     saveUserToFirebaseDatabase(user?.uid, username, name, email, phone)
 
                     // 회원가입 후 다음 화면으로 이동
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, LobbyActivity::class.java)
                     startActivity(intent)
                     finish()
 

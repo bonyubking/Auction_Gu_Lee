@@ -31,7 +31,7 @@ class CreateRoomActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_create_room)
+        setContentView(R.layout.activity_create_auction)
 
         // 버튼과 이미지뷰 초기화
         imageViewPreview = findViewById(R.id.imageView_preview)
