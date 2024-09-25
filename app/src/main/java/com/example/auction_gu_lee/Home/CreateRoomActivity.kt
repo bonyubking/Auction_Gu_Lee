@@ -7,7 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.auction_gu_lee.R
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -22,10 +27,17 @@ import java.util.*
 
 class CreateRoomActivity : AppCompatActivity() {
 
+    private lateinit var storage: FirebaseStorage
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var editTextItem: EditText
+    private lateinit var editTextQuantity: EditText
+    private lateinit var editTextDetail: EditText
+    private lateinit var editTextStartingPrice: EditText
     private lateinit var imageViewPreview: ImageView
     private lateinit var buttonAttachPhoto: Button
     private lateinit var photoFile: File
     private lateinit var photoUri: Uri
+    private lateinit var buttonComplete: Button
 
     private val REQUEST_CAMERA_PERMISSION = 101
 
@@ -34,12 +46,27 @@ class CreateRoomActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_auction)
 
         // 버튼과 이미지뷰 초기화 초기화
+        editTextItem = findViewById(R.id.editText_item) // xml의 EditText id와 연결
+        editTextQuantity = findViewById(R.id.editText_quantity) // xml의 EditText id와 연결
+        editTextDetail = findViewById(R.id.editText_detail) // xml의 EditText id와 연결
+        editTextStartingPrice = findViewById(R.id.editText_startingprice) // xml의 EditText id와 연결
         imageViewPreview = findViewById(R.id.imageView_preview)
         buttonAttachPhoto = findViewById(R.id.button_attach_photo)
+        storage = FirebaseStorage.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+        buttonComplete = findViewById(R.id.button_complete)
 
         // 사진 첨부 버튼 클릭 리스너
         buttonAttachPhoto.setOnClickListener {
             showImageOptions()
+        }
+        // 완료 버튼 클릭 리스너 (서버에 데이터 저장)
+        buttonComplete.setOnClickListener {
+            if (photoUri != null) {
+                uploadAuctionData() // Firebase에 데이터 저장 함수 호출
+            } else {
+                Toast.makeText(this, "사진을 첨부해주세요", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -167,4 +194,37 @@ class CreateRoomActivity : AppCompatActivity() {
             imageViewPreview.visibility = ImageView.VISIBLE
         }
     }
+    // Firebase에 데이터 업로드
+    private fun uploadAuctionData() {
+        val database = FirebaseDatabase.getInstance().getReference("auctions")
+        val storage = FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
+
+        // 사진 업로드
+        val uploadTask = storage.putFile(photoUri!!)
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            storage.downloadUrl.addOnSuccessListener { uri ->
+                // Firebase Realtime Database에 저장할 경매 데이터
+                val auction = hashMapOf(
+                    "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "quantity" to editTextQuantity.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
+                    "timestamp" to System.currentTimeMillis() // 경매 생성 시간
+                )
+                database.push().setValue(auction).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else {
+                        Toast.makeText(this, "경매 생성에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "사진 업로드에 실패했습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
+
+
