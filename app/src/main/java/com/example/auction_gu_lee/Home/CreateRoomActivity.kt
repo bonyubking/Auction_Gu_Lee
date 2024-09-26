@@ -56,6 +56,28 @@ class CreateRoomActivity : AppCompatActivity() {
         kg = findViewById(R.id.kg)
         box = findViewById(R.id.box)
 
+        // CheckBox 선택 시 다른 체크박스 해제
+        EA.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                kg.isChecked = false
+                box.isChecked = false
+            }
+        }
+
+        kg.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                EA.isChecked = false
+                box.isChecked = false
+            }
+        }
+
+        box.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                EA.isChecked = false
+                kg.isChecked = false
+            }
+        }
+
 
         // 버튼과 이미지뷰 초기화 초기화
         editTextItem = findViewById(R.id.editText_item) // xml의 EditText id와 연결
