@@ -46,7 +46,7 @@
 
                 <EditText
                     android:id="@+id/editText_item"
-                    android:layout_width="wrap_content"
+                    android:layout_width="187dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"
@@ -60,61 +60,75 @@
 
                 <TextView
                     android:id="@+id/quantity"
-                    android:layout_width="wrap_content"
+                    android:layout_width="15dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="수량" />
 
                 <EditText
                     android:id="@+id/editText_quantity"
-                    android:layout_width="15dp"
+                    android:layout_width="5dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:ems="10"
                     android:inputType="text" />
 
-                <LinearLayout
-                    android:layout_width="114dp"
+                <CheckBox
+                    android:id="@+id/EA"
+                    android:layout_width="50dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:text="개" />
 
-                    <CheckBox
-                        android:id="@+id/EA"
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:text="개" />
+                <CheckBox
+                    android:id="@+id/box"
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:text="박스" />
 
-                    <CheckBox
-                        android:id="@+id/box"
-                        android:layout_width="60dp"
-                        android:layout_height="wrap_content"
-                        android:text="박스" />
-
-                    <CheckBox
-                        android:id="@+id/kg"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="kg" />
-                </LinearLayout>
+                <CheckBox
+                    android:id="@+id/kg"
+                    android:layout_width="59dp"
+                    android:layout_height="wrap_content"
+                    android:text="kg" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="147dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/detail"
-                    android:layout_width="wrap_content"
+                    android:layout_width="73dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="상세 정보" />
+                    android:text="한줄 설명" />
 
                 <EditText
                     android:id="@+id/editText_detail"
                     android:layout_width="229dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/moredetail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="상세 설명" />
+
+                <EditText
+                    android:id="@+id/editText_moredetail"
+                    android:layout_width="wrap_content"
                     android:layout_height="119dp"
                     android:layout_margin="16dp"
                     android:layout_weight="1"
@@ -144,7 +158,7 @@
 
                 <EditText
                     android:id="@+id/editText_startingprice"
-                    android:layout_width="148dp"
+                    android:layout_width="119dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"

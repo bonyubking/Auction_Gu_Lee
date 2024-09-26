@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="이름"
+            android:text="품목"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
             android:gravity="center"
-            android:text="설명"
+            android:text="한줄 설명"
             android:textSize="16sp"
             android:textStyle="bold" />
 

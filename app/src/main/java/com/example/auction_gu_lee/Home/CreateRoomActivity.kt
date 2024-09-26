@@ -36,6 +36,7 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var editTextItem: EditText
     private lateinit var editTextQuantity: EditText
     private lateinit var editTextDetail: EditText
+    private lateinit var editTextMoreDetail: EditText
     private lateinit var editTextStartingPrice: EditText
     private lateinit var imageViewPreview: ImageView
     private lateinit var buttonAttachPhoto: Button
@@ -83,6 +84,7 @@ class CreateRoomActivity : AppCompatActivity() {
         editTextItem = findViewById(R.id.editText_item) // xml의 EditText id와 연결
         editTextQuantity = findViewById(R.id.editText_quantity) // xml의 EditText id와 연결
         editTextDetail = findViewById(R.id.editText_detail) // xml의 EditText id와 연결
+        editTextMoreDetail = findViewById(R.id.editText_moredetail) // xml의 EditText id와 연결
         editTextStartingPrice = findViewById(R.id.editText_startingprice) // xml의 EditText id와 연결
         imageViewPreview = findViewById(R.id.imageView_preview)
         buttonAttachPhoto = findViewById(R.id.button_attach_photo)
@@ -250,6 +252,7 @@ class CreateRoomActivity : AppCompatActivity() {
                 val auction = hashMapOf(
                     "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
                     "quantity" to editTextQuantity.text.toString()+""+unit,  // EditText에서 문자열 값 가져오기
+                    "moredetail" to editTextMoreDetail.text.toString(),  // EditText에서 문자열 값 가져오기
                     "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
                     "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
                     "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
