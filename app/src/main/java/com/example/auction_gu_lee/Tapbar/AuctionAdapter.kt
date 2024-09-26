@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Auction
 
-class AuctionAdapter(private val auctionList: List<Auction>) :
+class AuctionAdapter(private var auctionList: MutableList<Auction>) :
     RecyclerView.Adapter<AuctionAdapter.AuctionViewHolder>() {
 
     class AuctionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -20,6 +20,13 @@ class AuctionAdapter(private val auctionList: List<Auction>) :
         val photoImageView: ImageView = view.findViewById(R.id.imageView_photo)
         val quantityTextView: TextView = view.findViewById(R.id.textView_quantity)
     }
+
+    fun updateList(newList: List<Auction>) {
+        auctionList.clear()  // 기존 리스트 초기화
+        auctionList.addAll(newList)  // 새로운 리스트 추가
+        notifyDataSetChanged()  // 어댑터에 데이터가 변경되었음을 알림
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AuctionViewHolder {
         val view = LayoutInflater.from(parent.context)

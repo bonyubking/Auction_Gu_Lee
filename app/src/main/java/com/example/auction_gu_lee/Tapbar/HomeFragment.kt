@@ -15,6 +15,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.Intent
 import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
 import androidx.recyclerview.widget.DividerItemDecoration
+import com.example.auction_gu_lee.Home.SearchRoomActivity
 import com.google.firebase.database.*
 import com.example.auction_gu_lee.models.Auction
 
@@ -58,7 +59,8 @@ class HomeFragment : Fragment() {
         // fragment_home.xml의 ImageView를 가져와서 클릭 리스너 설정
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
-            Toast.makeText(requireContext(), "Magnifier clicked!", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), SearchRoomActivity::class.java)
+            startActivity(intent)
         }
 
         // FloatingActionButton 클릭 이벤트
@@ -91,10 +93,8 @@ class HomeFragment : Fragment() {
                         auction?.let { auctionList.add(it) }
                     }
 
-                    // 최신 데이터가 뒤에 있을 수 있으니 리스트를 역순으로 정렬
+                    // 리스트 역순 정렬 후 어댑터 갱신
                     auctionList.reverse()
-
-                    // UI에 최신 데이터를 반영
                     auctionAdapter.notifyDataSetChanged()
                 }
 
@@ -102,6 +102,7 @@ class HomeFragment : Fragment() {
                     Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
+
     }
 }
 

@@ -49,6 +49,8 @@
         <activity android:name=".MainActivity" />
         <!-- 방 만들기 화면 -->
         <activity android:name=".home.CreateRoomActivity" />
+        <!-- 검색 화면 -->
+        <activity android:name=".Home.SearchRoomActivity" />
 
         <activity android:name=".Profile.DeleteDataActivity"></activity>
 
