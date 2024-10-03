@@ -364,7 +364,7 @@ class CreateRoomActivity : AppCompatActivity() {
                         "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
                         "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
                         "timestamp" to System.currentTimeMillis(), // 경매 생성 시간
-                        "endTime" to formattedDateTime, // 종료 날짜 및 시간
+                        "endTime" to selectedDateTime.timeInMillis,  // endTime을 Long으로 저장
                         "remainingTime" to resultTextView.text.toString() // 남은 시간
                     )
                     database.push().setValue(auction).addOnCompleteListener { task ->

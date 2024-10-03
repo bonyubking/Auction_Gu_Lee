@@ -1,5 +1,6 @@
 package com.example.auction_gu_lee.Tapbar
 
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +15,11 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
     RecyclerView.Adapter<AuctionAdapter.AuctionViewHolder>() {
 
     class AuctionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val itemTextView: TextView = view.findViewById(R.id.textView_item)
-        val detailTextView: TextView = view.findViewById(R.id.textView_detail)
-        val priceTextView: TextView = view.findViewById(R.id.textView_price)
         val photoImageView: ImageView = view.findViewById(R.id.imageView_photo)
-        val quantityTextView: TextView = view.findViewById(R.id.textView_quantity)
+        val itemTextView: TextView = view.findViewById(R.id.textView_item)
+        val priceTextView: TextView = view.findViewById(R.id.textView_startingPrice)
+        val remainingTimeTextView: TextView = view.findViewById(R.id.textView_remainingTime)
+        var countDownTimer: CountDownTimer? = null  // CountDownTimer를 추가
     }
 
     fun updateList(newList: List<Auction>) {
@@ -26,7 +27,6 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
         auctionList.addAll(newList)  // 새로운 리스트 추가
         notifyDataSetChanged()  // 어댑터에 데이터가 변경되었음을 알림
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AuctionViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -37,9 +37,42 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
     override fun onBindViewHolder(holder: AuctionViewHolder, position: Int) {
         val auction = auctionList[position]
         holder.itemTextView.text = auction.item
-        holder.detailTextView.text = auction.detail
         holder.priceTextView.text = auction.startingPrice
-        holder.quantityTextView.text = auction.quantity
+
+        // CountDownTimer가 이미 있으면 취소
+        holder.countDownTimer?.cancel()
+
+        // 경매 종료 시간을 Long으로 처리 (endTime이 null일 수 있으므로 처리)
+        val endTime = auction.endTime
+        if (endTime != null) {
+            val currentTime = System.currentTimeMillis()
+            val remainingTime = endTime - currentTime
+
+            // 만약 남은 시간이 0보다 크면 카운트다운 시작
+            if (remainingTime > 0) {
+                holder.countDownTimer = object : CountDownTimer(remainingTime, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        val days = millisUntilFinished / (1000 * 60 * 60 * 24)
+                        val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
+                        val minutes = (millisUntilFinished / (1000 * 60)) % 60
+                        val seconds = (millisUntilFinished / 1000) % 60
+
+                        // 남은 시간을 실시간으로 업데이트
+                        holder.remainingTimeTextView.text = String.format(
+                            "%02d:%02d:%02d:%02d",
+                            days, hours, minutes, seconds
+                        )
+                    }
+
+                    override fun onFinish() {
+                        holder.remainingTimeTextView.text = "경매 종료"
+                    }
+                }.start()
+            } else {
+                holder.remainingTimeTextView.text = "경매 종료"
+            }
+        }
+
 
         // Glide로 사진 URL을 ImageView에 로드
         Glide.with(holder.photoImageView.context)
@@ -49,5 +82,5 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
             .into(holder.photoImageView)
     }
 
-    override fun getItemCount(): Int = auctionList.size
+    override fun getItemCount(): Int = auctionList.size  // getItemCount 함수가 제대로 위치하도록 수정
 }

@@ -53,7 +53,9 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    // For control over item selection of both touch and mouse driven selection
+    implementation("androidx.recyclerview:recyclerview-selection:1.1.0")
 
     // 코루틴 사용 시 필요한 의존성
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")

@@ -80,28 +80,30 @@ class HomeFragment : Fragment() {
     }
 
     // Firebase Realtime Database에서 최신 경매 데이터를 가져오는 함수
+    // Firebase에서 데이터 가져오기
     private fun fetchLatestAuctions() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
 
-        auctionRef.orderByChild("timestamp").limitToLast(10)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    auctionList.clear()
-                    for (auctionSnapshot in snapshot.children) {
-                        val auction = auctionSnapshot.getValue(Auction::class.java)
-                        auction?.let { auctionList.add(it) }
+        auctionRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                auctionList.clear()
+                for (auctionSnapshot in snapshot.children) {
+                    val auction = auctionSnapshot.getValue(Auction::class.java)
+                    auction?.let {
+                        // endTime을 Long 타입으로 가져옴
+                        if (auction.endTime is Long) {
+                            auctionList.add(it)
+                        }
                     }
-
-                    // 리스트 역순 정렬 후 어댑터 갱신
-                    auctionList.reverse()
-                    auctionAdapter.notifyDataSetChanged()
                 }
+                auctionAdapter.notifyDataSetChanged()
+            }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
 
     }
 }
