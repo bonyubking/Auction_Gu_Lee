@@ -97,6 +97,9 @@ class HomeFragment : Fragment() {
                         }
                     }
                 }
+                // 역순으로 정렬 (가장 최근 경매가 맨 위로 오게)
+                auctionList.reverse()
+
                 auctionAdapter.notifyDataSetChanged()
             }
 
