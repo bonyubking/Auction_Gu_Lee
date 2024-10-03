@@ -7,11 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.auction_gu_lee.R
 import android.widget.TextView
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
-import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
+import androidx.activity.OnBackPressedCallback
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -153,5 +154,40 @@ class ProfileFragment : Fragment() {
         otherSettingsButton.setOnClickListener {
             Toast.makeText(requireContext(), "기타 설정 버튼 클릭됨", Toast.LENGTH_SHORT).show()
         }
+
+        // 로그아웃 버튼 클릭 리스너 설정
+        val logoutButton = view.findViewById<TextView>(R.id.btn_logout)
+        logoutButton.setOnClickListener {
+            showLogoutDialog()
+        }
     }
+
+    // 로그아웃 확인 다이얼로그 표시
+    private fun showLogoutDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("로그아웃")
+        builder.setMessage("정말 로그아웃 하시겠습니까?")
+        builder.setPositiveButton("예") { _, _ ->
+            // SharedPreferences 초기화하여 자동 로그인 정보 삭제
+            val sharedPreferences = requireActivity().getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.clear()  // 모든 SharedPreferences 데이터 삭제
+            editor.apply()
+
+            // Firebase 로그아웃 처리
+            FirebaseAuth.getInstance().signOut()
+
+            // LobbyActivity로 이동
+            val intent = Intent(activity, com.example.auction_gu_lee.LobbyActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        }
+        builder.setNegativeButton("아니오") { dialog, _ ->
+            // 아니오 클릭 시 대화상자 닫기
+            dialog.dismiss()
+        }
+        builder.show()
+    }
+
+
 }

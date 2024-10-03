@@ -209,6 +209,15 @@
                 android:text="최신 버전 업데이트"
                 android:textSize="16sp" />
 
+            <TextView
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="로그아웃"
+                android:textSize="16sp"
+                android:textColor="#FF0000" /> <!-- 텍스트 색깔을 빨간색으로 설정 (원하는 색으로 변경 가능) -->
+
 
         </LinearLayout>
     </ScrollView>
