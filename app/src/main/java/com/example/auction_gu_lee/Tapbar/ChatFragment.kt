@@ -17,17 +17,8 @@ import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.*
 import android.text.format.DateUtils
+import com.example.auction_gu_lee.models.ChatItem
 
-// Firebase에서 가져올 데이터 모델
-data class ChatItem(
-    val item: String = "",
-    val username: String = "",
-    val photoUrl: String = "",
-    val lastMessage: String = "",
-    val timestamp: Long = 0L,
-    var isRead: Boolean = true // 읽음 여부 표시
-
-)
 
 class ChatFragment : Fragment() {
 
@@ -93,9 +84,9 @@ class ChatAdapter(private val chatItems: List<ChatItem>) : RecyclerView.Adapter<
     class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.chat_profile_image)
         val itemTitle: TextView = itemView.findViewById(R.id.chat_item_title)
-        val userName: TextView = itemView.findViewById(R.id.chat_user_name)
         val lastMessage: TextView = itemView.findViewById(R.id.chat_last_message)
-        val chatTime: TextView = itemView.findViewById(R.id.chat_time)  // 마지막 채팅 시간 텍스트뷰
+        val chatTime: TextView = itemView.findViewById(R.id.chat_time)
+        val creatorUsername: TextView = itemView.findViewById(R.id.chat_creator_username)// 마지막 채팅 시간 텍스트뷰
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
@@ -114,8 +105,8 @@ class ChatAdapter(private val chatItems: List<ChatItem>) : RecyclerView.Adapter<
             .into(holder.profileImage)
 
         holder.itemTitle.text = chatItem.item
-        holder.userName.text = chatItem.username
-
+        // 방 생성자의 이름을 TextView에 표시
+        holder.creatorUsername.text = "${chatItem.creatorUsername}"  // 방 생성자 표시
         // 마지막 채팅 내용 설정
         holder.lastMessage.text = if (chatItem.lastMessage.isNotEmpty()) {
             chatItem.lastMessage

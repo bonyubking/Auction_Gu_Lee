@@ -11,4 +11,5 @@ data class Auction(
     val photoUrl: String? = null,
     val timestamp: Long? = null,
     val endTime: Long? = null, // 여기서 long 타입을 사용하고 있는지 확인 // End time in milliseconds (timestamp)
-)
+    val creatorUsername: String? = null,
+    )

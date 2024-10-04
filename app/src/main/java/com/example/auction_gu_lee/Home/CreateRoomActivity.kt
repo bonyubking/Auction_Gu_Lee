@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee.home
+package com.example.auction_gu_lee.Home
 
 import android.Manifest
 import android.app.DatePickerDialog
@@ -31,6 +31,11 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.auction_gu_lee.models.User
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 class CreateRoomActivity : AppCompatActivity() {
 
@@ -52,6 +57,7 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var buttonComplete: Button
     private lateinit var resultTextView: TextView
     private lateinit var dateTimeButton: Button
+    private lateinit var username: String  // 현재 로그인한 사용자의 username을 저장할 변수
     private var selectedDateTime: Calendar = Calendar.getInstance()
     private var countDownTimer: CountDownTimer? = null
 
@@ -62,8 +68,36 @@ class CreateRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_auction)
 
+        storage = FirebaseStorage.getInstance()
+        database = FirebaseDatabase.getInstance().getReference("auctions")
+        val auth = FirebaseAuth.getInstance()
+
+// 현재 로그인한 사용자의 UID로 사용자 정보 가져오기
+        val userUid = auth.currentUser?.uid
+        if (userUid != null) {
+            FirebaseDatabase.getInstance().getReference("users").child(userUid)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // `User` 데이터 모델로 변환
+                        val currentUser = snapshot.getValue(User::class.java)
+                        if (currentUser != null) {
+                            // `User` 객체에서 `username`을 가져와 변수에 저장
+                            username = currentUser.username
+                            buttonComplete.isEnabled = true // username을 가져온 후 버튼 활성화
+                        } else {
+                            Toast.makeText(this@CreateRoomActivity, "사용자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@CreateRoomActivity, "사용자 정보를 가져올 수 없습니다: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        } else {
+            Toast.makeText(this, "사용자 인증 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
         // FirebaseDatabase 인스턴스 초기화
-        database = FirebaseDatabase.getInstance().getReference("auctions")  // 수정된 부분
 
         EA = findViewById(R.id.EA)
         kg = findViewById(R.id.kg)
@@ -365,7 +399,8 @@ class CreateRoomActivity : AppCompatActivity() {
                         "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
                         "timestamp" to System.currentTimeMillis(), // 경매 생성 시간
                         "endTime" to selectedDateTime.timeInMillis,  // endTime을 Long으로 저장
-                        "remainingTime" to resultTextView.text.toString() // 남은 시간
+                        "remainingTime" to resultTextView.text.toString(), // 남은 시간\
+                        "creatorUsername" to username  // 로그인한 사용자의 username 저장
                     )
                     database.push().setValue(auction).addOnCompleteListener { task ->
                         if (task.isSuccessful) {

@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.R
-import com.example.auction_gu_lee.home.CreateRoomActivity
+import com.example.auction_gu_lee.Home.CreateRoomActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.content.Intent
 import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가

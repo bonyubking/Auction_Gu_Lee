@@ -1,8 +1,9 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.ChatFragment
 import com.example.auction_gu_lee.Tapbar.HomeFragment
 import com.example.auction_gu_lee.Tapbar.PastFragment

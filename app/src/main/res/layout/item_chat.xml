@@ -38,7 +38,7 @@
 
         <!-- 사용자 이름 -->
         <TextView
-            android:id="@+id/chat_user_name"
+            android:id="@+id/chat_creator_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="사용자 이름"
@@ -52,6 +52,7 @@
             android:layout_height="wrap_content"
             android:text="마지막 채팅 내용"
             android:textSize="14sp" />
+
     </LinearLayout>
 
     <!-- 채팅 시간 -->

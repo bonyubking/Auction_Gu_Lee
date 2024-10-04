@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Lobby
 
 import android.content.Context
 import android.content.Intent
@@ -7,7 +7,9 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
+import com.example.auction_gu_lee.R
 import androidx.appcompat.app.AppCompatActivity
+import com.example.auction_gu_lee.Main.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class LobbyActivity : AppCompatActivity() {

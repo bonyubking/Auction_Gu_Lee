@@ -178,7 +178,7 @@ class ProfileFragment : Fragment() {
             FirebaseAuth.getInstance().signOut()
 
             // LobbyActivity로 이동
-            val intent = Intent(activity, com.example.auction_gu_lee.LobbyActivity::class.java)
+            val intent = Intent(activity, com.example.auction_gu_lee.Lobby.LobbyActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }

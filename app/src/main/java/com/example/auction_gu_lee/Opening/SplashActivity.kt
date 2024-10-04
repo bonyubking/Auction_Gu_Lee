@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee
+package com.example.auction_gu_lee.Opening
 
 import android.content.Context
 import android.content.Intent
@@ -7,6 +7,9 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.auction_gu_lee.Lobby.LobbyActivity
+import com.example.auction_gu_lee.Main.MainActivity
+import com.example.auction_gu_lee.R
 
 class SplashActivity : AppCompatActivity() {
 
