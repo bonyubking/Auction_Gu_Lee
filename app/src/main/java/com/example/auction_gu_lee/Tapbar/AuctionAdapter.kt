@@ -20,6 +20,7 @@ class AuctionAdapter(
         val photoImageView: ImageView = view.findViewById(R.id.imageView_photo)
         val itemTextView: TextView = view.findViewById(R.id.textView_item)
         val priceTextView: TextView = view.findViewById(R.id.textView_startingPrice)
+        val highestPriceTextView: TextView = view.findViewById(R.id.textView_highestPrice)
         val remainingTimeTextView: TextView = view.findViewById(R.id.textView_remainingTime)
         var countDownTimer: CountDownTimer? = null  // CountDownTimer를 추가
     }
@@ -40,6 +41,17 @@ class AuctionAdapter(
         val auction = auctionList[position]
         holder.itemTextView.text = auction.item
         holder.priceTextView.text = "${auction.startingPrice} ₩"
+
+        // 최고 가격 표시 및 색상 변경
+        val highestPrice = auction.highestPrice ?: auction.startingPrice ?: 0L
+        holder.highestPriceTextView.text = "$highestPrice ₩"
+
+        // 최고 가격이 시작 가격보다 높을 경우 빨간색으로 표시
+        if (highestPrice > (auction.startingPrice ?: 0L)) {
+            holder.highestPriceTextView.setTextColor(android.graphics.Color.RED)
+        } else {
+            holder.highestPriceTextView.setTextColor(android.graphics.Color.BLACK)
+        }
 
         // CountDownTimer가 이미 있으면 취소
         holder.countDownTimer?.cancel()
