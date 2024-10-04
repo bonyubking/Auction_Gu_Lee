@@ -11,10 +11,8 @@ import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.databinding.ActivityAuctionRoomBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
+
 import java.util.concurrent.TimeUnit
 
 class AuctionRoomActivity : AppCompatActivity() {
@@ -27,6 +25,8 @@ class AuctionRoomActivity : AppCompatActivity() {
     private var countDownTimer: CountDownTimer? = null
     private lateinit var creatorUid: String
     private lateinit var uid: String
+    private lateinit var auctionId: String
+    private val databaseReference = FirebaseDatabase.getInstance().reference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,73 +34,94 @@ class AuctionRoomActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Initialize data from Intent
-        creatorUid = intent.getStringExtra("creator_uid")?.trim() ?: ""
-        uid = FirebaseAuth.getInstance().currentUser?.uid?.trim() ?: ""
-        val itemName = intent.getStringExtra("item_name") ?: "항목 없음"
-        val itemDetail = intent.getStringExtra("item_detail") ?: "세부사항 없음"
-        val startingPriceString = intent.getStringExtra("starting_price") ?: "0"
-        val photoUrl = intent.getStringExtra("photo_url") ?: ""
+        auctionId = intent.getStringExtra("auction_id") ?: ""
+        uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-        startingPrice = startingPriceString.toInt()
-        highestPrice = startingPrice
-        remainingTimeMillis = intent.getLongExtra("remaining_time", 0)
+        // Firebase Realtime Database에서 경매 데이터 가져오기
+        if (auctionId.isNotEmpty()) {
+            databaseReference.child("auctions").child(auctionId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            val itemName = snapshot.child("item").getValue(String::class.java) ?: "항목 없음"
+                            val itemDetail = snapshot.child("detail").getValue(String::class.java) ?: "세부사항 없음"
+                            startingPrice = snapshot.child("startingPrice").getValue(Long::class.java)?.toInt() ?: 0
+                            highestPrice = snapshot.child("highestPrice").getValue(Long::class.java)?.toInt() ?: startingPrice
+                            remainingTimeMillis = snapshot.child("endTime").getValue(Long::class.java)
+                                ?.minus(System.currentTimeMillis()) ?: 0
+                            creatorUid = snapshot.child("creatorUid").getValue(String::class.java) ?: ""
 
-        // Firebase Realtime Database에서 사용자 이름 가져오기
-        if (creatorUid.isNotEmpty()) {
-            val database = FirebaseDatabase.getInstance().getReference("users")
-            database.child(creatorUid).addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        val creatorUsername = dataSnapshot.child("username").getValue(String::class.java) ?: "사용자 이름 없음"
-                        binding.username.text = creatorUsername
-                    } else {
-                        binding.username.text = "사용자 이름 없음"
+                            // Set initial values in the UI
+                            binding.itemName.text = itemName
+                            binding.itemDetail.text = itemDetail
+                            binding.startingPrice.text = "시작 가격: $startingPrice ₩"
+                            binding.highestPrice.text = "최고 가격: $highestPrice ₩"
+                            updateHighestPriceColor()
+
+                            // Load auction item photo using Glide
+                            val photoUrl = snapshot.child("photoUrl").getValue(String::class.java) ?: ""
+                            if (photoUrl.isNotEmpty()) {
+                                Glide.with(this@AuctionRoomActivity)
+                                    .load(photoUrl)
+                                    .placeholder(R.drawable.placeholder_image)
+                                    .error(R.drawable.error_image)
+                                    .into(binding.itemPhoto)
+                            } else {
+                                binding.itemPhoto.setImageResource(R.drawable.error_image)
+                            }
+
+                            // 참가자 수 초기화
+                            if (snapshot.hasChild("participants")) {
+                                participantUids = snapshot.child("participants").children.mapNotNull { it.key }.toMutableSet()
+                            }
+                            binding.participantsCount.text = "참가자 수: ${participantUids.size} 명"
+
+                            // Update UI for Bid Button visibility
+                            binding.fabBid.visibility = View.VISIBLE
+                            if (creatorUid == uid) {
+                                binding.fabBid.isEnabled = false // 경매 생성자는 입찰 불가
+                            } else {
+                                binding.fabBid.isEnabled = true
+                                binding.fabBid.setOnClickListener {
+                                    placeBid()
+                                }
+                            }
+
+                            // Firebase에서 사용자 이름 가져오기
+                            databaseReference.child("users").child(creatorUid)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(userSnapshot: DataSnapshot) {
+                                        if (userSnapshot.exists()) {
+                                            val creatorUsername = userSnapshot.child("username").getValue(String::class.java) ?: "사용자 이름 없음"
+                                            binding.username.text = creatorUsername
+                                        } else {
+                                            binding.username.text = "사용자 이름 없음"
+                                        }
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        binding.username.text = "사용자 이름 없음"
+                                        Log.e("FirebaseError", "데이터 읽기 실패: ${error.message}")
+                                    }
+                                })
+
+                            // Start countdown timer
+                            startCountDownTimer()
+
+                        } else {
+                            Toast.makeText(this@AuctionRoomActivity, "경매 데이터를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    binding.username.text = "사용자 이름 없음"
-                    Log.e("FirebaseError", "데이터 읽기 실패: ${error.message}")
-                }
-            })
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@AuctionRoomActivity, "데이터베이스 오류: ${error.message}", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                })
         } else {
-            binding.username.text = "사용자 이름 없음"
-        }
-
-        // Log to check values
-        Log.d("AuctionRoomActivity", "creatorUid: $creatorUid, uid: $uid")
-
-        // Set initial values
-        binding.itemName.text = itemName
-        binding.itemDetail.text = itemDetail
-        binding.startingPrice.text = "시작 가격: $startingPrice ₩"
-        binding.highestPrice.text = "최고 가격: $highestPrice ₩"
-
-        // Load auction item photo using Glide
-        if (photoUrl.isNotEmpty()) {
-            Glide.with(this)
-                .load(photoUrl)
-                .placeholder(R.drawable.placeholder_image)
-                .error(R.drawable.error_image)
-                .into(binding.itemPhoto)
-        } else {
-            binding.itemPhoto.setImageResource(R.drawable.error_image)
-        }
-
-        startCountDownTimer()
-        updateHighestPriceColor()
-
-        // Bid Button visibility & functionality
-        binding.fabBid.visibility = View.VISIBLE
-        if (creatorUid == uid) {
-            // 경매 생성자에게 입찰 버튼을 비활성화
-            binding.fabBid.isEnabled = false
-        } else {
-            // 경매 생성자가 아닌 경우 입찰 버튼을 활성화
-            binding.fabBid.isEnabled = true
-            binding.fabBid.setOnClickListener {
-                placeBid()
-            }
+            Toast.makeText(this, "경매 ID가 올바르지 않습니다.", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         // Chat Button Click Listener
@@ -151,15 +172,26 @@ class AuctionRoomActivity : AppCompatActivity() {
     }
 
     private fun placeBid() {
-        // Logic to place a bid
         val newBid = highestPrice + 1000  // Increase by 1000 ₩ for each bid
         highestPrice = newBid
         binding.highestPrice.text = "최고 가격: $highestPrice ₩"
         updateHighestPriceColor()
 
-        // Add user to participant list
+        // Firebase에 최고 가격 및 참가자 수 업데이트
+        val auctionRef = databaseReference.child("auctions").child(auctionId)
+        auctionRef.child("highestPrice").setValue(highestPrice)
+
+
+        // 참가자 추가
         participantUids.add(uid)
-        binding.participantsCount.text = "참가자 수: ${participantUids.size} 명"
+        auctionRef.child("participants").setValue(participantUids.associateWith { true })
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    binding.participantsCount.text = "참가자 수: ${participantUids.size} 명"
+                } else {
+                    Toast.makeText(this, "참가자 수 업데이트에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     private fun openChat() {

@@ -24,6 +24,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var auctionAdapter: AuctionAdapter
     private lateinit var auctionList: MutableList<Auction>
+    private lateinit var auctionIdList: MutableList<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +44,6 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    // onCreateView 이후에 뷰가 생성된 후 호출되는 메서드
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -65,22 +65,24 @@ class HomeFragment : Fragment() {
         // FloatingActionButton 클릭 이벤트
         val floatingActionButton = view.findViewById<FloatingActionButton>(R.id.floatingActionButton)
         floatingActionButton.setOnClickListener {
-            // 새 방 만들기 화면으로 이동하는 Intent
             val intent = Intent(requireContext(), CreateRoomActivity::class.java)
             startActivity(intent)
         }
 
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
+        auctionIdList = mutableListOf()
         auctionAdapter = AuctionAdapter(auctionList) { auction ->
             // 경매 항목 클릭 시 AuctionRoomActivity로 이동
+            val position = auctionList.indexOf(auction)
+            val auctionId = auctionIdList[position]
+
             val intent = Intent(requireContext(), AuctionRoomActivity::class.java).apply {
-                putExtra("creator_uid", auction.creatorUid)
-                putExtra("username", auction.username) // 사용자 이름 전달 추가
+                putExtra("auction_id", auctionId)  // Firebase 데이터베이스에서 가져온 auction의 id 전달
                 putExtra("item_name", auction.item)
                 putExtra("item_detail", auction.detail)
                 putExtra("starting_price", auction.startingPrice)
-                putExtra("photo_url", auction.photoUrl)
+                putExtra("photo_url", auction.photoUrl)  // photoUrl 전달
                 val remainingTime = auction.endTime?.minus(System.currentTimeMillis()) ?: 0L
                 putExtra("remaining_time", remainingTime)
             }
@@ -92,7 +94,6 @@ class HomeFragment : Fragment() {
         fetchLatestAuctions()
     }
 
-    // Firebase Realtime Database에서 최신 경매 데이터를 가져오는 함수
     private fun fetchLatestAuctions() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
@@ -100,16 +101,19 @@ class HomeFragment : Fragment() {
         auctionRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
+                auctionIdList.clear()
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
                         if (auction.endTime is Long) {
                             auctionList.add(it)
+                            auctionIdList.add(auctionSnapshot.key ?: "")
                         }
                     }
                 }
                 // 역순으로 정렬 (가장 최근 경매가 맨 위로 오게)
                 auctionList.reverse()
+                auctionIdList.reverse()
 
                 auctionAdapter.notifyDataSetChanged()
             }

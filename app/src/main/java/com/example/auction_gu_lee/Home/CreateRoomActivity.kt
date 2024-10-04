@@ -365,8 +365,7 @@ class CreateRoomActivity : AppCompatActivity() {
     // Firebase에 데이터 업로드
     private fun uploadAuctionData() {
         val database = FirebaseDatabase.getInstance().getReference("auctions")
-        val storage =
-            FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
+        val storage = FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
 
         // 사진 업로드
         val uploadTask = storage.putFile(photoUri!!)
@@ -383,33 +382,40 @@ class CreateRoomActivity : AppCompatActivity() {
 
                 // Firebase Realtime Database에 저장할 경매 데이터
                 val auction = hashMapOf(
-                    "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
-                    "quantity" to editTextQuantity.text.toString() + "" + unit,  // EditText에서 문자열 값 가져오기
-                    "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
-                    "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
-                    "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
-                    "timestamp" to System.currentTimeMillis(), // 경매 생성 시간
-                    "endTime" to selectedDateTime.timeInMillis,  // endTime을 Long으로 저장
-                    "remainingTime" to resultTextView.text.toString(), // 남은 시간
-                    "creatorUid" to Uid  // 로그인한 사용자의 UID 저장
+                    "item" to editTextItem.text.toString(),
+                    "quantity" to "${editTextQuantity.text} $unit",
+                    "detail" to editTextDetail.text.toString(),
+                    "startingPrice" to editTextStartingPrice.text.toString().toLong(),  // Long 타입으로 저장
+                    "photoUrl" to uri.toString(),
+                    "timestamp" to System.currentTimeMillis(),
+                    "endTime" to selectedDateTime.timeInMillis,
+                    "remainingTime" to resultTextView.text.toString(),
+                    "creatorUid" to Uid
                 )
-                database.push().setValue(auction).addOnCompleteListener { task ->
+
+
+                val auctionRef = database.push() // 새로운 경매 노드 생성
+                auctionRef.setValue(auction).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
 
-                        // HomeFragment로 이동
-                        val intent = Intent(this, HomeFragment::class.java) // MainActivity에 HomeFragment 포함
-                        intent.putExtra("fragment", "home") // HomeFragment를 지정하는 값 전달
-                        startActivity(intent) // 화면 전환
+                        // HomeFragment로 이동 (auction의 ID를 전달)
+                        val intent = Intent(this, HomeFragment::class.java).apply {
+                            putExtra("fragment", "home")
+                            putExtra("auction_id", auctionRef.key) // auction의 고유 ID를 전달
+                        }
+                        startActivity(intent)
 
-                        finish() // 현재 액티비티 종료
+                        finish()
                     } else {
                         Toast.makeText(this, "경매 생성에 실패했습니다", Toast.LENGTH_SHORT).show()
                     }
                 }
+
             }
         }.addOnFailureListener {
             Toast.makeText(this, "사진 업로드에 실패했습니다", Toast.LENGTH_SHORT).show()
         }
     }
+
 }
