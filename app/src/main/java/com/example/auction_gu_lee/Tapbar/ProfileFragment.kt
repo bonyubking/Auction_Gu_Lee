@@ -22,12 +22,14 @@ class ProfileFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         // 뒤로가기 버튼 비활성화
-        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                // 아무 동작도 하지 않게 뒤로가기 버튼 무효화
-                // 이곳에 필요한 동작을 추가할 수 있음
-            }
-        })
+        requireActivity().onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // 아무 동작도 하지 않게 뒤로가기 버튼 무효화
+                    // 이곳에 필요한 동작을 추가할 수 있음
+                }
+            })
     }
 
     override fun onCreateView(
@@ -51,10 +53,12 @@ class ProfileFragment : Fragment() {
             val userId = currentUser.uid
 
             // Firebase Realtime Database에서 추가 사용자 정보 가져오기
-            val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(userId)
+            val databaseReference =
+                FirebaseDatabase.getInstance().getReference("users").child(userId)
             databaseReference.get().addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    val userName = snapshot.child("username").getValue(String::class.java) ?: "사용자 없음"
+                    val userName =
+                        snapshot.child("username").getValue(String::class.java) ?: "사용자 없음"
 
                     // TextView를 찾아서 사용자 이름 출력
                     val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
@@ -162,32 +166,70 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // 로그아웃 확인 다이얼로그 표시
     private fun showLogoutDialog() {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("로그아웃")
-        builder.setMessage("정말 로그아웃 하시겠습니까?")
-        builder.setPositiveButton("예") { _, _ ->
-            // SharedPreferences 초기화하여 자동 로그인 정보 삭제
-            val sharedPreferences = requireActivity().getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.clear()  // 모든 SharedPreferences 데이터 삭제
-            editor.apply()
+        val currentActivity = activity
+        if (currentActivity != null) {
+            val builder = AlertDialog.Builder(currentActivity)
+            builder.setTitle("로그아웃")
+            builder.setMessage("정말 로그아웃 하시겠습니까?")
+            builder.setPositiveButton("예") { _, _ ->
+                // SharedPreferences 초기화하여 자동 로그인 정보 삭제
+                val sharedPreferences = currentActivity.getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.clear()  // 모든 SharedPreferences 데이터 삭제
+                editor.apply()
 
-            // Firebase 로그아웃 처리
-            FirebaseAuth.getInstance().signOut()
+                val auth = FirebaseAuth.getInstance()
+                val userUid = auth.currentUser?.uid
 
-            // LobbyActivity로 이동
-            val intent = Intent(activity, com.example.auction_gu_lee.Lobby.LobbyActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+                if (userUid != null) {
+                    // Firebase의 isLoggedIn 상태를 false로 설정 (로그아웃 상태로 변경)
+                    val database = FirebaseDatabase.getInstance().getReference("users")
+                    database.child(userUid).child("isLoggedIn").setValue(false)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // `isLoggedIn` 업데이트 후에 로그아웃 처리 및 화면 전환
+                                if (isAdded && !isRemoving) {
+                                    try {
+                                        auth.signOut()
+                                        moveToLobbyActivity()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(currentActivity, "로그아웃 중 문제가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    Toast.makeText(currentActivity, "화면 상태가 유효하지 않습니다. 로그아웃할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(currentActivity, "로그아웃 처리 중 오류 발생: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                } else {
+                    // currentUser가 null일 경우 바로 LobbyActivity로 이동
+                    moveToLobbyActivity()
+                }
+            }
+            builder.setNegativeButton("아니요") { dialog, _ -> dialog.dismiss() }
+            builder.show()
+        } else {
+            Toast.makeText(context, "현재 액티비티를 찾을 수 없습니다. 로그아웃할 수 없습니다.", Toast.LENGTH_SHORT).show()
         }
-        builder.setNegativeButton("아니오") { dialog, _ ->
-            // 아니오 클릭 시 대화상자 닫기
-            dialog.dismiss()
-        }
-        builder.show()
     }
 
+    // LobbyActivity로 안전하게 이동하는 함수
+    private fun moveToLobbyActivity() {
+        val currentActivity = activity
+        if (currentActivity != null) {
+            val intent = Intent(currentActivity, com.example.auction_gu_lee.Lobby.LobbyActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            try {
+                startActivity(intent)
+                // 추가 작업을 하지 않습니다.
+            } catch (e: Exception) {
+                Toast.makeText(currentActivity, "LobbyActivity로 이동하는 동안 문제가 발생했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(currentActivity, "로그아웃 후 화면 전환에 실패했습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 }

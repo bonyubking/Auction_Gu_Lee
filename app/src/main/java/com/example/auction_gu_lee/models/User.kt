@@ -5,5 +5,6 @@ data class User(
     val username: String = "",
     val name: String = "",
     val email: String = "",
-    val phone: String = ""
+    val phone: String = "",
+    var isLoggedIn: Boolean = false  // 기본 값 false로 설정
 )

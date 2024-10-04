@@ -45,7 +45,7 @@
         </activity>
 
         <!-- MainActivity 설정 -->
-        <activity android:name=".Lobby.LobbyActivity" />
+        <activity android:name=".Lobby.LobbyActivity" android:exported="true"/>
         <!-- 회원가입 화면 설정 -->
         <activity android:name=".Lobby.SignUpActivity" />
         <!-- 로그인 화면 -->
