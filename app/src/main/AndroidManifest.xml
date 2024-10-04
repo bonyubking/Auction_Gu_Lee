@@ -54,6 +54,8 @@
         <activity android:name=".Home.CreateRoomActivity" />
         <!-- 검색 화면 -->
         <activity android:name=".Home.SearchRoomActivity" />
+        <!-- 경매 방 화면 -->
+        <activity android:name=".Home.AuctionRoomActivity" />
 
         <activity android:name=".Profile.DeleteDataActivity"></activity>
 

@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.AuctionAdapter
-import com.example.auction_gu_lee.models.Auction  // models 패키지의 Auction 클래스를 사용
+import com.example.auction_gu_lee.models.Auction
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-
+import android.content.Intent
 
 class SearchRoomActivity : AppCompatActivity() {
 
@@ -39,7 +39,18 @@ class SearchRoomActivity : AppCompatActivity() {
 
         auctionList = mutableListOf()
         originalAuctionList = mutableListOf()  // 원본 데이터 리스트 초기화
-        auctionAdapter = AuctionAdapter(auctionList)
+        auctionAdapter = AuctionAdapter(auctionList) { auction ->
+            // 경매 항목 클릭 시 AuctionRoomActivity로 이동
+            val intent = Intent(this, AuctionRoomActivity::class.java).apply {
+                putExtra("username", auction.username)
+                putExtra("item_name", auction.item)
+                putExtra("item_detail", auction.detail)
+                putExtra("starting_price", auction.startingPrice)
+                val remainingTime = auction.endTime?.minus(System.currentTimeMillis()) ?: 0L
+                putExtra("remaining_time", remainingTime)
+            }
+            startActivity(intent)
+        }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = auctionAdapter
 
@@ -73,7 +84,6 @@ class SearchRoomActivity : AppCompatActivity() {
         })
     }
 
-
     private fun filterAuctions(query: String) {
         if (query.isBlank()) {
             recyclerView.visibility = View.GONE  // 검색어가 없으면 RecyclerView 숨김
@@ -94,6 +104,4 @@ class SearchRoomActivity : AppCompatActivity() {
 
         auctionAdapter.updateList(filteredList)
     }
-
-
 }

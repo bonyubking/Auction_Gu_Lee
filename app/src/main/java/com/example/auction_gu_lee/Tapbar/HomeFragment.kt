@@ -6,20 +6,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import android.content.Intent
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Home.CreateRoomActivity
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import android.content.Intent
-import androidx.activity.OnBackPressedCallback  // 뒤로가기 비활성화를 위한 import 추가
-import androidx.recyclerview.widget.DividerItemDecoration
+import com.example.auction_gu_lee.Home.AuctionRoomActivity
 import com.example.auction_gu_lee.Home.SearchRoomActivity
-import com.google.firebase.database.*
 import com.example.auction_gu_lee.models.Auction
-
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.database.*
+import androidx.activity.OnBackPressedCallback
+import androidx.recyclerview.widget.DividerItemDecoration
 
 class HomeFragment : Fragment() {
 
@@ -71,8 +70,22 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
 
+        // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
-        auctionAdapter = AuctionAdapter(auctionList)
+        auctionAdapter = AuctionAdapter(auctionList) { auction ->
+            // 경매 항목 클릭 시 AuctionRoomActivity로 이동
+            val intent = Intent(requireContext(), AuctionRoomActivity::class.java).apply {
+                putExtra("creator_uid", auction.creatorUid)
+                putExtra("username", auction.username) // 사용자 이름 전달 추가
+                putExtra("item_name", auction.item)
+                putExtra("item_detail", auction.detail)
+                putExtra("starting_price", auction.startingPrice)
+                putExtra("photo_url", auction.photoUrl)
+                val remainingTime = auction.endTime?.minus(System.currentTimeMillis()) ?: 0L
+                putExtra("remaining_time", remainingTime)
+            }
+            startActivity(intent)
+        }
         recyclerView.adapter = auctionAdapter
 
         // Firebase에서 최신 데이터 가져오기
@@ -80,7 +93,6 @@ class HomeFragment : Fragment() {
     }
 
     // Firebase Realtime Database에서 최신 경매 데이터를 가져오는 함수
-    // Firebase에서 데이터 가져오기
     private fun fetchLatestAuctions() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
@@ -91,7 +103,6 @@ class HomeFragment : Fragment() {
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        // endTime을 Long 타입으로 가져옴
                         if (auction.endTime is Long) {
                             auctionList.add(it)
                         }
@@ -107,7 +118,5 @@ class HomeFragment : Fragment() {
                 Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })
-
     }
 }
-

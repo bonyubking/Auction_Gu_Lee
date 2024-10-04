@@ -48,7 +48,6 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var editTextItem: EditText
     private lateinit var editTextQuantity: EditText
     private lateinit var editTextDetail: EditText
-    private lateinit var editTextMoreDetail: EditText
     private lateinit var editTextStartingPrice: EditText
     private lateinit var imageViewPreview: ImageView
     private lateinit var buttonAttachPhoto: Button
@@ -57,10 +56,9 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var buttonComplete: Button
     private lateinit var resultTextView: TextView
     private lateinit var dateTimeButton: Button
-    private lateinit var username: String  // 현재 로그인한 사용자의 username을 저장할 변수
+    private lateinit var Uid: String  // 현재 로그인한 사용자의 UID를 저장할 변수
     private var selectedDateTime: Calendar = Calendar.getInstance()
     private var countDownTimer: CountDownTimer? = null
-
 
     private val REQUEST_CAMERA_PERMISSION = 101
 
@@ -72,23 +70,19 @@ class CreateRoomActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance().getReference("auctions")
         val auth = FirebaseAuth.getInstance()
 
-// 현재 로그인한 사용자의 UID로 사용자 정보 가져오기
-        val userUid = auth.currentUser?.uid
-        if (userUid != null) {
-            FirebaseDatabase.getInstance().getReference("users").child(userUid)
+        // 현재 로그인한 사용자의 UID 가져오기
+        Uid = auth.currentUser?.uid ?: ""
+        if (Uid.isNotEmpty()) {
+            FirebaseDatabase.getInstance().getReference("users").child(Uid)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        // `User` 데이터 모델로 변환
                         val currentUser = snapshot.getValue(User::class.java)
                         if (currentUser != null) {
-                            // `User` 객체에서 `username`을 가져와 변수에 저장
-                            username = currentUser.username
-                            buttonComplete.isEnabled = true // username을 가져온 후 버튼 활성화
+                            buttonComplete.isEnabled = true // UID를 가져온 후 버튼 활성화
                         } else {
                             Toast.makeText(this@CreateRoomActivity, "사용자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
                         }
                     }
-
                     override fun onCancelled(error: DatabaseError) {
                         Toast.makeText(this@CreateRoomActivity, "사용자 정보를 가져올 수 없습니다: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -130,7 +124,6 @@ class CreateRoomActivity : AppCompatActivity() {
         editTextItem = findViewById(R.id.editText_item)
         editTextQuantity = findViewById(R.id.editText_quantity)
         editTextDetail = findViewById(R.id.editText_detail)
-        editTextMoreDetail = findViewById(R.id.editText_moredetail)
         editTextStartingPrice = findViewById(R.id.editText_startingprice)
         imageViewPreview = findViewById(R.id.imageView_preview)
         buttonAttachPhoto = findViewById(R.id.button_attach_photo)
@@ -183,8 +176,6 @@ class CreateRoomActivity : AppCompatActivity() {
         galleryLauncher.launch(intent)
     }
 
-
-
     // 날짜 및 시간 선택 다이얼로그 표시
     private fun showDateTimePicker() {
         val currentDate = Calendar.getInstance()
@@ -232,6 +223,7 @@ class CreateRoomActivity : AppCompatActivity() {
                     val seconds = (millisUntilFinished / 1000) % 60
 
                     resultTextView.text = String.format(
+                        Locale.getDefault(),
                         "%02d:%02d:%02d:%02d",
                         days, hours, minutes, seconds
                     )
@@ -246,191 +238,178 @@ class CreateRoomActivity : AppCompatActivity() {
         }
     }
 
-        // 카메라 권한 확인 및 요청
-        private fun checkCameraPermission() {
-            if (ContextCompat.checkSelfPermission(
+    // 카메라 권한 확인 및 요청
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // 권한이 거부되었는지 확인
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
                     this,
                     Manifest.permission.CAMERA
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // 권한이 거부되었는지 확인
-                if (ActivityCompat.shouldShowRequestPermissionRationale(
-                        this,
-                        Manifest.permission.CAMERA
-                    )
-                ) {
-                    // 권한 설명 다이얼로그 표시
-                    AlertDialog.Builder(this)
-                        .setTitle("카메라 권한 필요")
-                        .setMessage("사진 촬영을 위해 카메라 권한이 필요합니다.")
-                        .setPositiveButton("권한 요청") { _, _ ->
-                            requestCameraPermission()
-                        }
-                        .setNegativeButton("취소") { dialog, _ -> dialog.dismiss() }
-                        .show()
-                } else {
-                    // 권한 직접 요청
-                    requestCameraPermission()
-                }
-            } else {
-                // 권한이 이미 허용된 경우
-                takePhoto()
-            }
-        }
-
-        // 카메라 권한 요청
-        private fun requestCameraPermission() {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA),
-                REQUEST_CAMERA_PERMISSION
-            )
-        }
-
-        // 권한 요청 결과 처리
-        override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>,
-            grantResults: IntArray
-        ) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-            if (requestCode == REQUEST_CAMERA_PERMISSION) {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // 카메라 권한이 허용된 경우 사진 촬영 시작
-                    takePhoto()
-                } else {
-                    // 권한이 거부된 경우
-                    AlertDialog.Builder(this)
-                        .setTitle("카메라 권한 거부됨")
-                        .setMessage("카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.")
-                        .setPositiveButton("설정으로 이동") { _, _ ->
-                            goToAppSettings()
-                        }
-                        .setNegativeButton("취소") { dialog, _ -> dialog.dismiss() }
-                        .show()
-                }
-            }
-        }
-
-        // 설정으로 이동
-        private fun goToAppSettings() {
-            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            val uri = Uri.fromParts("package", packageName, null)
-            intent.data = uri
-            startActivity(intent)
-        }
-
-        private val galleryLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK && result.data != null) {
-                    val selectedImageUri: Uri? = result.data?.data
-                    selectedImageUri?.let {
-
-                        photoUri = it
-
-                        imageViewPreview.setImageURI(it)
-                        imageViewPreview.visibility = ImageView.VISIBLE
-                    }
-                }
-            }
-
-        // 카메라로 사진 촬영
-        private fun takePhoto() {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
-            // 사진을 저장할 파일 생성
-            try {
-                photoFile = createImageFile()
-                photoUri = FileProvider.getUriForFile(
-                    this,
-                    "${packageName}.provider",
-                    photoFile
                 )
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-                cameraLauncher.launch(intent)
-            } catch (ex: IOException) {
-                ex.printStackTrace()
-            }
-        }
-
-        private fun createImageFile(): File {
-            val timeStamp: String =
-                SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val storageDir: File? = getExternalFilesDir(null)
-            return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-        }
-
-        // 카메라로 촬영된 이미지 처리
-        private val cameraLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    imageViewPreview.setImageURI(photoUri)
-                    imageViewPreview.visibility = ImageView.VISIBLE
-                }
-            }
-
-        // Firebase에 데이터 업로드
-        private fun uploadAuctionData() {
-            val database = FirebaseDatabase.getInstance().getReference("auctions")
-            val storage =
-                FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
-
-            // 사진 업로드
-            val uploadTask = storage.putFile(photoUri!!)
-            uploadTask.addOnSuccessListener { taskSnapshot ->
-                storage.downloadUrl.addOnSuccessListener { uri ->
-                    val unit = when {
-                        EA.isChecked -> "개"
-                        box.isChecked -> "박스"
-                        kg.isChecked -> "kg"
-                        else -> ""
+            ) {
+                // 권한 설명 다이얼로그 표시
+                AlertDialog.Builder(this)
+                    .setTitle("카메라 권한 필요")
+                    .setMessage("사진 촬영을 위해 카메라 권한이 필요합니다.")
+                    .setPositiveButton("권한 요청") { _, _ ->
+                        requestCameraPermission()
                     }
-                    val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                    val formattedDateTime = dateTimeFormat.format(selectedDateTime.time)
+                    .setNegativeButton("취소") { dialog, _ -> dialog.dismiss() }
+                    .show()
+            } else {
+                // 권한 직접 요청
+                requestCameraPermission()
+            }
+        } else {
+            // 권한이 이미 허용된 경우
+            takePhoto()
+        }
+    }
 
-                    // Firebase Realtime Database에 저장할 경매 데이터
-                    val auction = hashMapOf(
-                        "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
-                        "quantity" to editTextQuantity.text.toString() + "" + unit,  // EditText에서 문자열 값 가져오기
-                        "moredetail" to editTextMoreDetail.text.toString(),  // EditText에서 문자열 값 가져오기
-                        "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
-                        "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
-                        "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
-                        "timestamp" to System.currentTimeMillis(), // 경매 생성 시간
-                        "endTime" to selectedDateTime.timeInMillis,  // endTime을 Long으로 저장
-                        "remainingTime" to resultTextView.text.toString(), // 남은 시간\
-                        "creatorUsername" to username  // 로그인한 사용자의 username 저장
-                    )
-                    database.push().setValue(auction).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
+    // 카메라 권한 요청
+    private fun requestCameraPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.CAMERA),
+            REQUEST_CAMERA_PERMISSION
+        )
+    }
 
-                            // HomeFragment로 이동
-                            val intent = Intent(this, HomeFragment::class.java) // MainActivity에 HomeFragment 포함
-                            intent.putExtra("fragment", "home") // HomeFragment를 지정하는 값 전달
-                            startActivity(intent) // 화면 전환
+    // 권한 요청 결과 처리
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-                            finish() // 현재 액티비티 종료
-                        } else {
-                            Toast.makeText(this, "경매 생성에 실패했습니다", Toast.LENGTH_SHORT).show()
-                        }
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 카메라 권한이 허용된 경우 사진 촬영 시작
+                takePhoto()
+            } else {
+                // 권한이 거부된 경우
+                AlertDialog.Builder(this)
+                    .setTitle("카메라 권한 거부됨")
+                    .setMessage("카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.")
+                    .setPositiveButton("설정으로 이동") { _, _ ->
+                        goToAppSettings()
                     }
-                }
-            }.addOnFailureListener {
-                Toast.makeText(this, "사진 업로드에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    .setNegativeButton("취소") { dialog, _ -> dialog.dismiss() }
+                    .show()
             }
         }
     }
 
+    // 설정으로 이동
+    private fun goToAppSettings() {
+        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
+    }
 
+    private val galleryLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val selectedImageUri: Uri? = result.data?.data
+                selectedImageUri?.let {
 
+                    photoUri = it
 
+                    imageViewPreview.setImageURI(it)
+                    imageViewPreview.visibility = ImageView.VISIBLE
+                }
+            }
+        }
 
+    // 카메라로 사진 촬영
+    private fun takePhoto() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
+        // 사진을 저장할 파일 생성
+        try {
+            photoFile = createImageFile()
+            photoUri = FileProvider.getUriForFile(
+                this,
+                "${packageName}.provider",
+                photoFile
+            )
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+            cameraLauncher.launch(intent)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+    }
 
+    private fun createImageFile(): File {
+        val timeStamp: String =
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = getExternalFilesDir(null)
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+    }
 
+    // 카메라로 촬영된 이미지 처리
+    private val cameraLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                imageViewPreview.setImageURI(photoUri)
+                imageViewPreview.visibility = ImageView.VISIBLE
+            }
+        }
 
+    // Firebase에 데이터 업로드
+    private fun uploadAuctionData() {
+        val database = FirebaseDatabase.getInstance().getReference("auctions")
+        val storage =
+            FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
 
+        // 사진 업로드
+        val uploadTask = storage.putFile(photoUri!!)
+        uploadTask.addOnSuccessListener { taskSnapshot ->
+            storage.downloadUrl.addOnSuccessListener { uri ->
+                val unit = when {
+                    EA.isChecked -> "개"
+                    box.isChecked -> "박스"
+                    kg.isChecked -> "kg"
+                    else -> ""
+                }
+                val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val formattedDateTime = dateTimeFormat.format(selectedDateTime.time)
 
+                // Firebase Realtime Database에 저장할 경매 데이터
+                val auction = hashMapOf(
+                    "item" to editTextItem.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "quantity" to editTextQuantity.text.toString() + "" + unit,  // EditText에서 문자열 값 가져오기
+                    "detail" to editTextDetail.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "startingPrice" to editTextStartingPrice.text.toString(),  // EditText에서 문자열 값 가져오기
+                    "photoUrl" to uri.toString(),  // 업로드된 사진의 URL
+                    "timestamp" to System.currentTimeMillis(), // 경매 생성 시간
+                    "endTime" to selectedDateTime.timeInMillis,  // endTime을 Long으로 저장
+                    "remainingTime" to resultTextView.text.toString(), // 남은 시간
+                    "creatorUid" to Uid  // 로그인한 사용자의 UID 저장
+                )
+                database.push().setValue(auction).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
 
+                        // HomeFragment로 이동
+                        val intent = Intent(this, HomeFragment::class.java) // MainActivity에 HomeFragment 포함
+                        intent.putExtra("fragment", "home") // HomeFragment를 지정하는 값 전달
+                        startActivity(intent) // 화면 전환
+
+                        finish() // 현재 액티비티 종료
+                    } else {
+                        Toast.makeText(this, "경매 생성에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "사진 업로드에 실패했습니다", Toast.LENGTH_SHORT).show()
+        }
+    }
+}

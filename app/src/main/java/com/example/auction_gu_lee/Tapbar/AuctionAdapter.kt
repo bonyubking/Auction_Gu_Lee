@@ -11,8 +11,10 @@ import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Auction
 
-class AuctionAdapter(private var auctionList: MutableList<Auction>) :
-    RecyclerView.Adapter<AuctionAdapter.AuctionViewHolder>() {
+class AuctionAdapter(
+    private var auctionList: MutableList<Auction>,
+    private val itemClickListener: (Auction) -> Unit  // 아이템 클릭 리스너 추가
+) : RecyclerView.Adapter<AuctionAdapter.AuctionViewHolder>() {
 
     class AuctionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val photoImageView: ImageView = view.findViewById(R.id.imageView_photo)
@@ -37,7 +39,7 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
     override fun onBindViewHolder(holder: AuctionViewHolder, position: Int) {
         val auction = auctionList[position]
         holder.itemTextView.text = auction.item
-        holder.priceTextView.text = auction.startingPrice
+        holder.priceTextView.text = "${auction.startingPrice} ₩"
 
         // CountDownTimer가 이미 있으면 취소
         holder.countDownTimer?.cancel()
@@ -62,6 +64,13 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
                             "%02d:%02d:%02d:%02d",
                             days, hours, minutes, seconds
                         )
+
+                        // 남은 시간이 24시간 이내인 경우 빨간색으로 표시
+                        if (millisUntilFinished <= 24 * 60 * 60 * 1000) {
+                            holder.remainingTimeTextView.setTextColor(android.graphics.Color.RED)
+                        } else {
+                            holder.remainingTimeTextView.setTextColor(android.graphics.Color.BLACK)
+                        }
                     }
 
                     override fun onFinish() {
@@ -73,13 +82,17 @@ class AuctionAdapter(private var auctionList: MutableList<Auction>) :
             }
         }
 
-
         // Glide로 사진 URL을 ImageView에 로드
         Glide.with(holder.photoImageView.context)
             .load(auction.photoUrl)
             .placeholder(R.drawable.placehoder_image) // 이미지 로딩 중일 때 표시할 기본 이미지
             .error(R.drawable.error_image) // 오류 시 표시할 이미지
             .into(holder.photoImageView)
+
+        // 아이템 클릭 리스너 설정
+        holder.itemView.setOnClickListener {
+            itemClickListener(auction)
+        }
     }
 
     override fun getItemCount(): Int = auctionList.size  // getItemCount 함수가 제대로 위치하도록 수정
