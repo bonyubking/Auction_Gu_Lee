@@ -172,15 +172,15 @@ class AuctionRoomActivity : AppCompatActivity() {
     }
 
     private fun placeBid() {
-        val newBid = highestPrice + 1000  // Increase by 1000 ₩ for each bid
+        val newBid = highestPrice + 1000  // 입찰가를 1000 ₩ 증가
         highestPrice = newBid
         binding.highestPrice.text = "최고 가격: $highestPrice ₩"
         updateHighestPriceColor()
 
-        // Firebase에 최고 가격 및 참가자 수 업데이트
+        // Firebase에 최고 가격 및 입찰자 정보 업데이트
         val auctionRef = databaseReference.child("auctions").child(auctionId)
         auctionRef.child("highestPrice").setValue(highestPrice)
-
+        auctionRef.child("highestBidderUid").setValue(uid) // 입찰자의 UID 저장
 
         // 참가자 추가
         participantUids.add(uid)
@@ -193,6 +193,7 @@ class AuctionRoomActivity : AppCompatActivity() {
                 }
             }
     }
+
 
     private fun openChat() {
         // Logic to open chat with auction creator
