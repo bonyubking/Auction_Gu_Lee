@@ -119,7 +119,9 @@ class HomeFragment : Fragment() {
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        if (auction.endTime is Long) {
+                        val currentTime = System.currentTimeMillis()
+                        if (auction.endTime is Long && auction.endTime > currentTime) {
+                            // 남은 시간이 0이 아니고, 경매가 종료되지 않은 경우에만 목록에 추가
                             auctionList.add(it)
                             auctionIdList.add(auctionSnapshot.key ?: "")
                         }
@@ -139,4 +141,5 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
 }
