@@ -200,8 +200,8 @@ class AuctionRoomActivity : AppCompatActivity() {
     private fun openChat() {
         val intent = Intent(this, ChatActivity::class.java)
         intent.putExtra("auction_id", auctionId)
-        intent.putExtra("seller_uid", creatorUid) // 판매자의 UID도 추가로 전달
-        intent.putExtra("bidder_uid", uid) // 구매자의 UID도 추가로 전달
+        intent.putExtra("seller_uid", creatorUid)
+        intent.putExtra("bidder_uid", uid)
         startActivity(intent)
     }
     override fun onDestroy() {

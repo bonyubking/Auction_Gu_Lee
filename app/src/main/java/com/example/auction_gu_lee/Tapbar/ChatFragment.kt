@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
-import com.google.firebase.database.* // Firebase Database 관련 클래스 임포트
+import com.google.firebase.database.*
 import android.widget.ImageView
 import android.widget.TextView
 import java.text.SimpleDateFormat
@@ -22,6 +22,7 @@ import android.text.format.DateUtils
 import com.example.auction_gu_lee.Chat.ChatActivity
 import com.example.auction_gu_lee.models.ChatItem
 import com.google.firebase.auth.FirebaseAuth
+import android.util.Log
 
 class ChatFragment : Fragment() {
 
@@ -63,10 +64,12 @@ class ChatFragment : Fragment() {
 
     private fun loadDataFromFirebase() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        Log.d("ChatFragment", "Current User ID: $currentUserId")
 
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                chatList.clear() // 기존 데이터 초기화
+                chatList.clear()
+                var pendingTasks = 0
 
                 for (auctionSnapshot in snapshot.children) {
                     val auctionId = auctionSnapshot.key ?: continue
@@ -76,56 +79,69 @@ class ChatFragment : Fragment() {
                     val chatsSnapshot = auctionSnapshot.child("chats")
                     for (chatRoomSnapshot in chatsSnapshot.children) {
                         val chatRoomId = chatRoomSnapshot.key ?: continue
+                        Log.d("ChatFragment", "Processing chatRoomId: $chatRoomId")
 
-                        // chatRoomId를 고유하게 생성
-                        val generatedChatRoomId = if (auctionCreatorUid < currentUserId) {
-                            "${auctionId}_${auctionCreatorUid}_$currentUserId"
-                        } else {
-                            "${auctionId}_${currentUserId}_$auctionCreatorUid"
+                        // chatRoomId를 분해하여 auctionId와 UID 추출
+                        val chatRoomIdParts = chatRoomId.split("_")
+                        if (chatRoomIdParts.size != 3) {
+                            Log.w("ChatFragment", "Invalid chatRoomId format: $chatRoomId")
+                            continue
                         }
 
-                        if (chatRoomId == generatedChatRoomId) {
-                            // 각 채팅방의 최신 메시지를 가져오기 위해 orderByChild와 limitToLast 사용
-                            chatRoomSnapshot.ref.orderByChild("timestamp").limitToLast(1)
-                                .addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onDataChange(messageSnapshot: DataSnapshot) {
-                                        for (message in messageSnapshot.children) {
-                                            val messageData = message.getValue(ChatItem::class.java) ?: continue
+                        val roomAuctionId = chatRoomIdParts[0]
+                        val uid1 = chatRoomIdParts[1]
+                        val uid2 = chatRoomIdParts[2]
 
-                                            // 현재 사용자가 판매자이거나 메시지의 발신자인 경우 처리
-                                            if (auctionCreatorUid == currentUserId || messageData.senderUid == currentUserId) {
-                                                val chatItem = messageData.apply {
-                                                    this.auctionId = auctionId
-                                                    this.creatorUid = auctionCreatorUid
-                                                    this.bidderUid = messageData.senderUid // 발신자를 구매자로 간주
-                                                    this.photoUrl = photoUrl
-                                                }
-                                                chatList.add(chatItem)
-                                            }
-                                        }
+                        val uidList = listOf(uid1, uid2)
 
-                                        chatList.sortByDescending { it.timestamp } // 최신 순으로 정렬
-                                        adapter.notifyDataSetChanged() // 어댑터에 변경사항 알림
-                                    }
+                        if (roomAuctionId != auctionId) continue
+                        if (!uidList.contains(currentUserId)) continue
 
-                                    override fun onCancelled(error: DatabaseError) {
-                                        // 에러 처리
-                                    }
-                                })
-                        }
+                        val otherUid = if (uid1 == currentUserId) uid2 else uid1
+                        Log.d("ChatFragment", "Found chatRoomId involving currentUser: $chatRoomId with otherUid: $otherUid")
+
+                        pendingTasks++
+
+                        // 최신 메시지를 가져옴
+                        chatRoomSnapshot.ref.orderByChild("timestamp").limitToLast(1).get()
+                            .addOnSuccessListener { messageSnapshot ->
+                                for (message in messageSnapshot.children) {
+                                    val messageData = message.getValue(ChatItem::class.java) ?: continue
+
+                                    // 필요한 추가 정보 설정
+                                    messageData.auctionId = auctionId
+                                    messageData.creatorUid = auctionCreatorUid
+                                    messageData.bidderUid = if (currentUserId == auctionCreatorUid) otherUid else currentUserId
+                                    messageData.photoUrl = photoUrl
+
+                                    chatList.add(messageData)
+                                    Log.d("ChatFragment", "Added chatItem: $messageData")
+                                }
+                            }
+                            .addOnCompleteListener {
+                                pendingTasks--
+                                if (pendingTasks == 0) {
+                                    chatList.sortByDescending { it.timestamp }
+                                    adapter.notifyDataSetChanged()
+                                    Log.d("ChatFragment", "All pending tasks completed. Updated chatList.")
+                                }
+                            }
                     }
+                }
+
+                if (pendingTasks == 0) {
+                    chatList.sortByDescending { it.timestamp }
+                    adapter.notifyDataSetChanged()
+                    Log.d("ChatFragment", "No pending tasks. Updated chatList.")
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 // 에러 처리
+                Log.e("ChatFragment", "Database error: ${error.message}")
             }
         })
     }
-
-
-
-
 }
 
 class ChatAdapter(
@@ -139,7 +155,7 @@ class ChatAdapter(
         val lastMessage: TextView = itemView.findViewById(R.id.chat_last_message)
         val chatTime: TextView = itemView.findViewById(R.id.chat_time)
         val creatorUsername: TextView = itemView.findViewById(R.id.chat_creator_username)
-        val highestBid: TextView = itemView.findViewById(R.id.chat_highest_bid) // 최고 입찰가 추가
+        val highestBid: TextView = itemView.findViewById(R.id.chat_highest_bid)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
@@ -220,13 +236,21 @@ class ChatAdapter(
         holder.itemView.setOnClickListener {
             val intent = Intent(context, ChatActivity::class.java)
             intent.putExtra("auction_id", chatItem.auctionId)
-            intent.putExtra("seller_uid", chatItem.creatorUid) // 판매자의 uid 전달
-            intent.putExtra("bidder_uid", chatItem.bidderUid) // 구매자의 uid 전달
+
+            // 현재 사용자가 판매자인지 구매자인지에 따라 UID 설정
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            if (currentUserId == chatItem.creatorUid) {
+                // 현재 사용자가 판매자일 경우
+                intent.putExtra("seller_uid", chatItem.creatorUid)
+                intent.putExtra("bidder_uid", chatItem.bidderUid)
+            } else {
+                // 현재 사용자가 구매자일 경우
+                intent.putExtra("seller_uid", chatItem.creatorUid)
+                intent.putExtra("bidder_uid", currentUserId)
+            }
             context.startActivity(intent)
         }
     }
-
-
 
     override fun getItemCount(): Int = chatItems.size
 

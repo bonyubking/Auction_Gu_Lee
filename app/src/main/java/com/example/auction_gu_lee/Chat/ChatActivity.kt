@@ -64,11 +64,8 @@ class ChatActivity : AppCompatActivity() {
         }
 
         // 1:1 채팅방 고유 ID 생성
-        chatRoomId = if (sellerUid < bidderUid) {
-            "${auctionId}_${sellerUid}_$bidderUid"
-        } else {
-            "${auctionId}_${bidderUid}_$sellerUid"
-        }
+        val uidList = listOf(sellerUid, bidderUid).sorted()
+        chatRoomId = "${auctionId}_${uidList.joinToString("_")}"
 
         // 상단에 경매의 사진 및 정보를 표시
         loadAuctionDetails()
