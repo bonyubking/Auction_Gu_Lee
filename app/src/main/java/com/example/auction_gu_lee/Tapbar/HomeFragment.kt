@@ -19,12 +19,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class HomeFragment : Fragment() {
 
     private lateinit var auctionAdapter: AuctionAdapter
     private lateinit var auctionList: MutableList<Auction>
     private lateinit var auctionIdList: MutableList<String>
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +48,12 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // SwipeRefreshLayout 설정
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            fetchLatestAuctions()
+        }
 
         // RecyclerView 설정
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
@@ -78,11 +86,11 @@ class HomeFragment : Fragment() {
             val auctionId = auctionIdList[position]
 
             val intent = Intent(requireContext(), AuctionRoomActivity::class.java).apply {
-                putExtra("auction_id", auctionId)  // Firebase 데이터베이스에서 가져온 auction의 id 전달
+                putExtra("auction_id", auctionId)
                 putExtra("item_name", auction.item)
                 putExtra("item_detail", auction.detail)
                 putExtra("starting_price", auction.startingPrice)
-                putExtra("photo_url", auction.photoUrl)  // photoUrl 전달
+                putExtra("photo_url", auction.photoUrl)
                 val remainingTime = auction.endTime?.minus(System.currentTimeMillis()) ?: 0L
                 putExtra("remaining_time", remainingTime)
             }
@@ -90,7 +98,13 @@ class HomeFragment : Fragment() {
         }
         recyclerView.adapter = auctionAdapter
 
-        // Firebase에서 최신 데이터 가져오기
+        // 최신 데이터를 자동으로 로드하지 않음
+        // 사용자가 다른 화면에서 돌아오거나, 수동으로 새로고침을 할 때만 데이터 로드
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 화면이 다시 보일 때 최신 데이터를 가져옴
         fetchLatestAuctions()
     }
 
@@ -98,14 +112,16 @@ class HomeFragment : Fragment() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
 
-        auctionRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
+        auctionRef.orderByChild("timestamp").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
                 auctionIdList.clear()
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        if (auction.endTime is Long) {
+                        val currentTime = System.currentTimeMillis()
+                        if (auction.endTime is Long && auction.endTime > currentTime) {
+                            // 남은 시간이 0이 아니고, 경매가 종료되지 않은 경우에만 목록에 추가
                             auctionList.add(it)
                             auctionIdList.add(auctionSnapshot.key ?: "")
                         }
@@ -117,10 +133,12 @@ class HomeFragment : Fragment() {
 
                 // 데이터가 업데이트된 후 어댑터에 변경사항 알림
                 auctionAdapter.notifyDataSetChanged()
+                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
             }
         })
     }
