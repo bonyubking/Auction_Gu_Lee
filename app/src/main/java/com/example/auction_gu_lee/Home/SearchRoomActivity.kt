@@ -103,5 +103,6 @@ class SearchRoomActivity : AppCompatActivity() {
         }
 
         auctionAdapter.updateList(filteredList)
+        auctionAdapter.notifyDataSetChanged()  // 업데이트 후 어댑터에 변경사항 알림
     }
 }

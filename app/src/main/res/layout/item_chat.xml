@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
@@ -25,35 +26,58 @@
         app:layout_constraintStart_toEndOf="@id/chat_profile_image"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/chat_time"> <!-- 시간 텍스트뷰와의 제약 조건 설정 -->
+        app:layout_constraintEnd_toStartOf="@id/chat_time"
+        app:layout_constraintHorizontal_weight="1"> <!-- 마지막 메시지와의 제약 조건 설정 -->
 
-        <!-- 품목명 -->
-        <TextView
-            android:id="@+id/chat_item_title"
+        <!-- 품목명 및 판매자 ID 레이아웃 -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="품목명"
-            android:textStyle="bold"
-            android:textSize="16sp" />
+            android:orientation="horizontal">
 
-        <!-- 사용자 이름 -->
+            <!-- 품목명 -->
+            <TextView
+                android:id="@+id/chat_item_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="품목명"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginEnd="8dp" />
+
+            <!-- 판매자 ID -->
+            <TextView
+                android:id="@+id/chat_creator_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="판매자 ID"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- 현재 최고 입찰가 -->
         <TextView
-            android:id="@+id/chat_creator_username"
+            android:id="@+id/chat_highest_bid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="사용자 이름"
+            android:text="0₩"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/holo_red_dark" />
 
-        <!-- 마지막 채팅 내용 -->
         <TextView
             android:id="@+id/chat_last_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:maxLines="1"
             android:text="마지막 채팅 내용"
-            android:textSize="14sp" />
+            android:textSize="18sp" /> <!-- 빨간색 글씨로 표시 -->
 
     </LinearLayout>
+
+    <!-- 마지막 채팅 내용 -->
 
     <!-- 채팅 시간 -->
     <TextView

@@ -1,5 +1,6 @@
 package com.example.auction_gu_lee.Home
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -8,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.auction_gu_lee.Chat.ChatActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.databinding.ActivityAuctionRoomBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -196,9 +198,12 @@ class AuctionRoomActivity : AppCompatActivity() {
 
 
     private fun openChat() {
-        // Logic to open chat with auction creator
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra("auction_id", auctionId)
+        intent.putExtra("seller_uid", creatorUid) // 판매자의 UID도 추가로 전달
+        intent.putExtra("bidder_uid", uid) // 구매자의 UID도 추가로 전달
+        startActivity(intent)
     }
-
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel() // 타이머가 계속 실행되지 않도록 해제

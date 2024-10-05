@@ -1,5 +1,7 @@
 package com.example.auction_gu_lee.Tapbar
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,8 +19,9 @@ import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.*
 import android.text.format.DateUtils
+import com.example.auction_gu_lee.Chat.ChatActivity
 import com.example.auction_gu_lee.models.ChatItem
-
+import com.google.firebase.auth.FirebaseAuth
 
 class ChatFragment : Fragment() {
 
@@ -46,12 +49,11 @@ class ChatFragment : Fragment() {
         chatRecyclerView = view.findViewById(R.id.chat_recycler_view)
         chatRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        adapter = ChatAdapter(requireContext(), chatList)
+        chatRecyclerView.adapter = adapter
+
         // Firebase Database 초기화
         database = FirebaseDatabase.getInstance().getReference("auctions")
-
-        // 어댑터 초기화 및 연결
-        adapter = ChatAdapter(chatList)
-        chatRecyclerView.adapter = adapter
 
         // Firebase에서 데이터 읽기
         loadDataFromFirebase()
@@ -59,15 +61,42 @@ class ChatFragment : Fragment() {
         return view
     }
 
-    // Firebase에서 데이터 불러오기 함수
     private fun loadDataFromFirebase() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                chatList.clear()  // 기존 데이터 초기화
+                chatList.clear() // 기존 데이터 초기화
+
                 for (auctionSnapshot in snapshot.children) {
-                    val chatItem = auctionSnapshot.getValue(ChatItem::class.java)
-                    chatItem?.let { chatList.add(it) }
+                    val auctionId = auctionSnapshot.key ?: continue
+                    val auctionCreatorUid = auctionSnapshot.child("creatorUid").getValue(String::class.java)
+                    val photoUrl = auctionSnapshot.child("photoUrl").getValue(String::class.java) ?: ""
+
+                    auctionSnapshot.child("chats").children.forEach { bidderChatSnapshot ->
+                        val bidderUid = bidderChatSnapshot.key ?: return@forEach
+
+                        // 현재 사용자가 판매자이거나 구매자인 경우 처리
+                        if (auctionCreatorUid == currentUserId || bidderUid == currentUserId) {
+                            val lastMessageSnapshot = bidderChatSnapshot.children.maxByOrNull {
+                                it.child("timestamp").getValue(Long::class.java) ?: 0L
+                            }
+
+                            lastMessageSnapshot?.let {
+                                val chatItem = lastMessageSnapshot.getValue(ChatItem::class.java)
+                                chatItem?.let { item ->
+                                    // 추가 정보 설정
+                                    item.auctionId = auctionId
+                                    item.creatorUid = auctionCreatorUid ?: ""
+                                    item.bidderUid = bidderUid
+                                    item.photoUrl = photoUrl // photoUrl 설정
+                                    chatList.add(item)
+                                }
+                            }
+                        }
+                    }
                 }
+
                 chatList.sortByDescending { it.timestamp } // 최신 순으로 정렬
                 adapter.notifyDataSetChanged() // 어댑터에 변경사항 알림
             }
@@ -77,16 +106,22 @@ class ChatFragment : Fragment() {
             }
         })
     }
+
+
 }
 
-class ChatAdapter(private val chatItems: List<ChatItem>) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
+class ChatAdapter(
+    private val context: Context,
+    private val chatItems: List<ChatItem>
+) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
     class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val profileImage: ImageView = itemView.findViewById(R.id.chat_profile_image)
         val itemTitle: TextView = itemView.findViewById(R.id.chat_item_title)
         val lastMessage: TextView = itemView.findViewById(R.id.chat_last_message)
         val chatTime: TextView = itemView.findViewById(R.id.chat_time)
-        val creatorUsername: TextView = itemView.findViewById(R.id.chat_creator_username)// 마지막 채팅 시간 텍스트뷰
+        val creatorUsername: TextView = itemView.findViewById(R.id.chat_creator_username)
+        val highestBid: TextView = itemView.findViewById(R.id.chat_highest_bid) // 최고 입찰가 추가
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
@@ -97,54 +132,97 @@ class ChatAdapter(private val chatItems: List<ChatItem>) : RecyclerView.Adapter<
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val chatItem = chatItems[position]
 
-        // Glide 사용하여 이미지 로드
+        // Glide 사용하여 이미지 로드 (프로필 이미지)
         Glide.with(holder.profileImage.context)
             .load(chatItem.photoUrl)
-            .placeholder(R.drawable.placehoder_image)
-            .error(R.drawable.placehoder_image)
+            .placeholder(R.drawable.placeholder_image)
+            .error(R.drawable.placeholder_image)
             .into(holder.profileImage)
 
-        holder.itemTitle.text = chatItem.item
-        // 방 생성자의 이름을 TextView에 표시
-        holder.creatorUsername.text = "${chatItem.creatorUsername}"  // 방 생성자 표시
-        // 마지막 채팅 내용 설정
-        holder.lastMessage.text = if (chatItem.lastMessage.isNotEmpty()) {
-            chatItem.lastMessage
+        // Firebase에서 경매 데이터를 조회하여 품목명과 최고 입찰가 설정
+        val auctionReference = FirebaseDatabase.getInstance().getReference("auctions").child(chatItem.auctionId)
+        auctionReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // 품목명 설정
+                val itemName = snapshot.child("item").getValue(String::class.java) ?: "품목 없음"
+                holder.itemTitle.text = itemName
+
+                // 최고 입찰가 설정
+                val highestPrice = snapshot.child("highestPrice").getValue(Long::class.java) ?: 0L
+                holder.highestBid.text = if (highestPrice > 0) {
+                    "${highestPrice}₩"
+                } else {
+                    "입찰 없음"
+                }
+
+                // 판매자 UID를 통해 사용자 이름 조회
+                val creatorUid = snapshot.child("creatorUid").getValue(String::class.java)
+                if (creatorUid != null) {
+                    val userReference = FirebaseDatabase.getInstance().getReference("users").child(creatorUid)
+                    userReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(userSnapshot: DataSnapshot) {
+                            val creatorUsername = userSnapshot.child("username").getValue(String::class.java) ?: "판매자 정보 없음"
+                            holder.creatorUsername.text = creatorUsername
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            holder.creatorUsername.text = "판매자 정보 없음"
+                        }
+                    })
+                } else {
+                    holder.creatorUsername.text = "판매자 정보 없음"
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                holder.itemTitle.text = "품목 없음"
+                holder.creatorUsername.text = "판매자 정보 없음"
+                holder.highestBid.text = "입찰 없음"
+            }
+        })
+
+        // 마지막 메시지 설정
+        holder.lastMessage.text = if (chatItem.message.isNotEmpty()) {
+            chatItem.message
         } else {
             "마지막 채팅 없음"
         }
 
-        // 마지막 채팅 시간을 설정 (시간 형식: 24시간 이내 → hh:mm a, 24시간 이상 → X일 전)
+        // 채팅 시간 설정
         holder.chatTime.text = formatTimestamp(chatItem.timestamp)
 
-        // 채팅 읽음 여부에 따른 텍스트 스타일 설정
+        // 메시지 읽음 여부에 따라 스타일 설정
         if (chatItem.isRead) {
             holder.lastMessage.setTypeface(null, Typeface.NORMAL)
         } else {
             holder.lastMessage.setTypeface(null, Typeface.BOLD)
         }
 
-        // 구분선의 가시성 설정 (마지막 항목에서는 구분선 숨김)
+        // 항목 클릭 리스너 추가 - 채팅 액티비티로 이동
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, ChatActivity::class.java)
+            intent.putExtra("auction_id", chatItem.auctionId)
+            intent.putExtra("seller_uid", chatItem.creatorUid) // 판매자의 uid 전달
+            intent.putExtra("bidder_uid", chatItem.bidderUid) // 구매자의 uid 전달
+            context.startActivity(intent)
+        }
     }
+
 
     override fun getItemCount(): Int = chatItems.size
 
-    // timestamp 형식을 변환하는 함수 추가
     private fun formatTimestamp(timestamp: Long): String {
         val now = System.currentTimeMillis()
 
         return when {
-            // 24시간 이내일 경우 시간 형식 (예: 12:30 PM)
             DateUtils.isToday(timestamp) -> {
                 val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                 dateFormat.format(Date(timestamp))
             }
-            // 24시간 이상일 경우 "X일 전" 형식
-            now - timestamp < 7 * 24 * 60 * 60 * 1000 -> {  // 일주일 이내일 경우 "X일 전"
+            now - timestamp < 7 * 24 * 60 * 60 * 1000 -> {
                 val daysAgo = (now - timestamp) / (24 * 60 * 60 * 1000)
                 "${daysAgo}일 전"
             }
-            // 일주일이 넘으면 날짜 표시 (예: 2024/10/12)
             else -> {
                 val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
                 dateFormat.format(Date(timestamp))

@@ -115,6 +115,7 @@ class HomeFragment : Fragment() {
                 auctionList.reverse()
                 auctionIdList.reverse()
 
+                // 데이터가 업데이트된 후 어댑터에 변경사항 알림
                 auctionAdapter.notifyDataSetChanged()
             }
 
@@ -123,4 +124,5 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
 }

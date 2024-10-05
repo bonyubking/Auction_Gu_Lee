@@ -40,7 +40,7 @@ class AuctionAdapter(
     override fun onBindViewHolder(holder: AuctionViewHolder, position: Int) {
         val auction = auctionList[position]
         holder.itemTextView.text = auction.item
-        holder.priceTextView.text = "${auction.startingPrice} ₩"
+        holder.priceTextView.text = "${auction.startingPrice}₩"
 
         // 최고 가격 표시 및 색상 변경
         val highestPrice = auction.highestPrice ?: auction.startingPrice ?: 0L

@@ -13,4 +13,5 @@ data class Auction(
     val endTime: Long? = null,
     val creatorUid: String? = null,
     val uid: String? = null,
+    val chats: Map<String, ChatItem>? = null // 새로운 필드 추가
 )
