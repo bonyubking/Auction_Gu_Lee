@@ -70,35 +70,51 @@ class ChatFragment : Fragment() {
 
                 for (auctionSnapshot in snapshot.children) {
                     val auctionId = auctionSnapshot.key ?: continue
-                    val auctionCreatorUid = auctionSnapshot.child("creatorUid").getValue(String::class.java)
+                    val auctionCreatorUid = auctionSnapshot.child("creatorUid").getValue(String::class.java) ?: ""
                     val photoUrl = auctionSnapshot.child("photoUrl").getValue(String::class.java) ?: ""
 
-                    auctionSnapshot.child("chats").children.forEach { bidderChatSnapshot ->
-                        val bidderUid = bidderChatSnapshot.key ?: return@forEach
+                    val chatsSnapshot = auctionSnapshot.child("chats")
+                    for (chatRoomSnapshot in chatsSnapshot.children) {
+                        val chatRoomId = chatRoomSnapshot.key ?: continue
 
-                        // 현재 사용자가 판매자이거나 구매자인 경우 처리
-                        if (auctionCreatorUid == currentUserId || bidderUid == currentUserId) {
-                            val lastMessageSnapshot = bidderChatSnapshot.children.maxByOrNull {
-                                it.child("timestamp").getValue(Long::class.java) ?: 0L
-                            }
+                        // chatRoomId를 고유하게 생성
+                        val generatedChatRoomId = if (auctionCreatorUid < currentUserId) {
+                            "${auctionId}_${auctionCreatorUid}_$currentUserId"
+                        } else {
+                            "${auctionId}_${currentUserId}_$auctionCreatorUid"
+                        }
 
-                            lastMessageSnapshot?.let {
-                                val chatItem = lastMessageSnapshot.getValue(ChatItem::class.java)
-                                chatItem?.let { item ->
-                                    // 추가 정보 설정
-                                    item.auctionId = auctionId
-                                    item.creatorUid = auctionCreatorUid ?: ""
-                                    item.bidderUid = bidderUid
-                                    item.photoUrl = photoUrl // photoUrl 설정
-                                    chatList.add(item)
-                                }
-                            }
+                        if (chatRoomId == generatedChatRoomId) {
+                            // 각 채팅방의 최신 메시지를 가져오기 위해 orderByChild와 limitToLast 사용
+                            chatRoomSnapshot.ref.orderByChild("timestamp").limitToLast(1)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(messageSnapshot: DataSnapshot) {
+                                        for (message in messageSnapshot.children) {
+                                            val messageData = message.getValue(ChatItem::class.java) ?: continue
+
+                                            // 현재 사용자가 판매자이거나 메시지의 발신자인 경우 처리
+                                            if (auctionCreatorUid == currentUserId || messageData.senderUid == currentUserId) {
+                                                val chatItem = messageData.apply {
+                                                    this.auctionId = auctionId
+                                                    this.creatorUid = auctionCreatorUid
+                                                    this.bidderUid = messageData.senderUid // 발신자를 구매자로 간주
+                                                    this.photoUrl = photoUrl
+                                                }
+                                                chatList.add(chatItem)
+                                            }
+                                        }
+
+                                        chatList.sortByDescending { it.timestamp } // 최신 순으로 정렬
+                                        adapter.notifyDataSetChanged() // 어댑터에 변경사항 알림
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        // 에러 처리
+                                    }
+                                })
                         }
                     }
                 }
-
-                chatList.sortByDescending { it.timestamp } // 최신 순으로 정렬
-                adapter.notifyDataSetChanged() // 어댑터에 변경사항 알림
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -106,6 +122,8 @@ class ChatFragment : Fragment() {
             }
         })
     }
+
+
 
 
 }
@@ -182,10 +200,10 @@ class ChatAdapter(
         })
 
         // 마지막 메시지 설정
-        holder.lastMessage.text = if (chatItem.message.isNotEmpty()) {
-            chatItem.message
-        } else {
-            "마지막 채팅 없음"
+        holder.lastMessage.text = when {
+            chatItem.message.isNotEmpty() -> chatItem.message
+            chatItem.imageUrls.isNotEmpty() -> "이미지 메시지"
+            else -> "마지막 채팅 없음"
         }
 
         // 채팅 시간 설정
@@ -207,6 +225,7 @@ class ChatAdapter(
             context.startActivity(intent)
         }
     }
+
 
 
     override fun getItemCount(): Int = chatItems.size
