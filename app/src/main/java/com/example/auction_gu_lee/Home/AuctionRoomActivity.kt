@@ -204,6 +204,7 @@ class AuctionRoomActivity : AppCompatActivity() {
         intent.putExtra("bidder_uid", uid)
         startActivity(intent)
     }
+
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel() // 타이머가 계속 실행되지 않도록 해제

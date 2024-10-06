@@ -56,6 +56,8 @@ class ChatFragment : Fragment() {
         // Firebase Database 초기화
         database = FirebaseDatabase.getInstance().getReference("auctions")
 
+        Log.d("ChatFragment", "Firebase 데이터 불러오기 시작")
+
         // Firebase에서 데이터 읽기
         loadDataFromFirebase()
 
@@ -68,11 +70,20 @@ class ChatFragment : Fragment() {
 
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    Log.w("ChatFragment", "Snapshot 데이터가 존재하지 않습니다.")
+                    return
+                }
+
+                Log.d("ChatFragment", "데이터 스냅샷을 불러왔습니다. 데이터 개수: ${snapshot.childrenCount}")
                 chatList.clear()
-                var pendingTasks = 0
+
+                val chatMap = mutableMapOf<String, ChatItem>()
 
                 for (auctionSnapshot in snapshot.children) {
                     val auctionId = auctionSnapshot.key ?: continue
+                    Log.d("ChatFragment", "Auction ID: $auctionId")
+
                     val auctionCreatorUid = auctionSnapshot.child("creatorUid").getValue(String::class.java) ?: ""
                     val photoUrl = auctionSnapshot.child("photoUrl").getValue(String::class.java) ?: ""
 
@@ -82,8 +93,8 @@ class ChatFragment : Fragment() {
                         Log.d("ChatFragment", "Processing chatRoomId: $chatRoomId")
 
                         // chatRoomId를 분해하여 auctionId와 UID 추출
-                        val chatRoomIdParts = chatRoomId.split("_")
-                        if (chatRoomIdParts.size != 3) {
+                        val chatRoomIdParts = chatRoomId.split("|")
+                        if (chatRoomIdParts.size < 3) {
                             Log.w("ChatFragment", "Invalid chatRoomId format: $chatRoomId")
                             continue
                         }
@@ -92,48 +103,43 @@ class ChatFragment : Fragment() {
                         val uid1 = chatRoomIdParts[1]
                         val uid2 = chatRoomIdParts[2]
 
-                        val uidList = listOf(uid1, uid2)
+                        // 방 ID의 경매 ID와 현재 경매 항목의 ID가 일치하지 않는 경우 무시
+                        if (roomAuctionId != auctionId) {
+                            Log.w("ChatFragment", "roomAuctionId와 auctionId가 일치하지 않습니다. roomAuctionId: $roomAuctionId, auctionId: $auctionId")
+                            continue
+                        }
 
-                        if (roomAuctionId != auctionId) continue
-                        if (!uidList.contains(currentUserId)) continue
+                        // 현재 사용자가 채팅방에 참여하지 않은 경우 무시
+                        if (currentUserId != uid1 && currentUserId != uid2) {
+                            Log.w("ChatFragment", "현재 사용자는 이 채팅방에 참여하지 않았습니다. currentUserId: $currentUserId, uid1: $uid1, uid2: $uid2")
+                            continue
+                        }
 
                         val otherUid = if (uid1 == currentUserId) uid2 else uid1
                         Log.d("ChatFragment", "Found chatRoomId involving currentUser: $chatRoomId with otherUid: $otherUid")
 
-                        pendingTasks++
-
                         // 최신 메시지를 가져옴
-                        chatRoomSnapshot.ref.orderByChild("timestamp").limitToLast(1).get()
-                            .addOnSuccessListener { messageSnapshot ->
-                                for (message in messageSnapshot.children) {
-                                    val messageData = message.getValue(ChatItem::class.java) ?: continue
+                        val lastMessageSnapshot = chatRoomSnapshot.children.lastOrNull()
+                        val messageData = lastMessageSnapshot?.getValue(ChatItem::class.java) ?: continue
+                        Log.d("ChatFragment", "최신 메시지 데이터: $messageData")
 
-                                    // 필요한 추가 정보 설정
-                                    messageData.auctionId = auctionId
-                                    messageData.creatorUid = auctionCreatorUid
-                                    messageData.bidderUid = if (currentUserId == auctionCreatorUid) otherUid else currentUserId
-                                    messageData.photoUrl = photoUrl
+                        // 필요한 추가 정보 설정
+                        messageData.auctionId = auctionId
+                        messageData.creatorUid = auctionCreatorUid
+                        messageData.bidderUid = if (currentUserId == auctionCreatorUid) otherUid else currentUserId
+                        messageData.photoUrl = photoUrl
 
-                                    chatList.add(messageData)
-                                    Log.d("ChatFragment", "Added chatItem: $messageData")
-                                }
-                            }
-                            .addOnCompleteListener {
-                                pendingTasks--
-                                if (pendingTasks == 0) {
-                                    chatList.sortByDescending { it.timestamp }
-                                    adapter.notifyDataSetChanged()
-                                    Log.d("ChatFragment", "All pending tasks completed. Updated chatList.")
-                                }
-                            }
+                        // 채팅방 ID를 키로 하여 중복 추가 방지
+                        chatMap[chatRoomId] = messageData
+                        Log.d("ChatFragment", "Added chatItem for chatRoomId $chatRoomId: $messageData")
                     }
                 }
-
-                if (pendingTasks == 0) {
-                    chatList.sortByDescending { it.timestamp }
-                    adapter.notifyDataSetChanged()
-                    Log.d("ChatFragment", "No pending tasks. Updated chatList.")
-                }
+                // Map의 값들을 리스트로 변환하여 정렬 후 UI 업데이트
+                chatList.clear()
+                chatList.addAll(chatMap.values)
+                Log.d("ChatFragment", "채팅 리스트 정렬 및 어댑터 업데이트")
+                chatList.sortByDescending { it.timestamp }
+                adapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -142,9 +148,12 @@ class ChatFragment : Fragment() {
             }
         })
     }
-}
 
-class ChatAdapter(
+
+
+
+
+    class ChatAdapter(
     private val context: Context,
     private val chatItems: List<ChatItem>
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
@@ -272,4 +281,4 @@ class ChatAdapter(
             }
         }
     }
-}
+}}
