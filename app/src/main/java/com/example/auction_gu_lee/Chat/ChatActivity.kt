@@ -359,18 +359,37 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun loadChatMessages(bidderUid: String) {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
         database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val chatList = mutableListOf<ChatItem>()
+                    val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
+
                     for (messageSnapshot in snapshot.children) {
-                        val chatItem = messageSnapshot.getValue(ChatItem::class.java)
-                        chatItem?.let {
-                            chatList.add(it)
-                            Log.d("ChatActivity", "Loaded chat item: $chatItem")
+                        val chatItem = messageSnapshot.getValue(ChatItem::class.java) ?: continue  // null 체크 후 continue
+                        chatList.add(chatItem)
+                        Log.d("ChatActivity", "Loaded chat item: $chatItem")
+
+                        val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
+
+                        // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
+                        if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
+                            // isRead 값을 true로 설정
+                            updates["$messageKey/isRead"] = true
                         }
                     }
+
+
+                    // 채팅 UI 업데이트
                     updateChatUI(chatList)
+
+                    // 읽음 상태 업데이트
+                    if (updates.isNotEmpty()) {
+                        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+                            .updateChildren(updates)
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -378,6 +397,7 @@ class ChatActivity : AppCompatActivity() {
                 }
             })
     }
+
 
     private fun updateChatUI(chatList: List<ChatItem>) {
         val layoutManager = LinearLayoutManager(this)
