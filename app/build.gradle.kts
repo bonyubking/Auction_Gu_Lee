@@ -9,6 +9,11 @@ android {
     namespace = "com.example.auction_gu_lee"
     compileSdk = 34
 
+    buildFeatures {
+        viewBinding = true
+    }
+
+
     defaultConfig {
         applicationId = "com.example.auction_gu_lee"
         minSdk = 24
@@ -39,7 +44,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+
+
     }
+
 }
 
 dependencies {
