@@ -168,9 +168,9 @@ class ProfileFragment : Fragment() {
             builder.setPositiveButton("예") { _, _ ->
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user != null) {
-                    // Realtime Database에서 isloggedin을 false로 업데이트
+                    // Realtime Database에서 loggedin을 false로 업데이트
                     val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(user.uid)
-                    val updates = mapOf<String, Any>("isLoggedIn" to false)
+                    val updates = mapOf<String, Any>("loggedin" to false)
 
                     // 로그아웃 전에 데이터베이스 업데이트 수행
                     databaseReference.updateChildren(updates).addOnCompleteListener { task ->

@@ -47,15 +47,15 @@ class LobbyActivity : AppCompatActivity() {
             val savedPassword = sharedPreferences.getString("password", "")
 
             if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
-                // Realtime Database에서 isLoggedIn 상태 확인
+                // Realtime Database에서 loggedin 상태 확인
                 val userUid = auth.currentUser?.uid
                 if (userUid != null) {
-                    database.child(userUid).child("isLoggedIn")
+                    database.child(userUid).child("loggedin")
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                val isLoggedIn = snapshot.getValue(Boolean::class.java) ?: false
-                                if (!isLoggedIn) {
-                                    // isLoggedIn이 false인 경우에만 자동 로그인 시도
+                                val loggedin = snapshot.getValue(Boolean::class.java) ?: false
+                                if (!loggedin) {
+                                    // loggedin이 false인 경우에만 자동 로그인 시도
                                     loginWithEmail(savedEmail, savedPassword, editor)
                                 }
                             }
@@ -96,12 +96,12 @@ class LobbyActivity : AppCompatActivity() {
                             val userUid = auth.currentUser?.uid
                             if (userUid != null) {
                                 // Firebase에서 중복 로그인 상태 확인
-                                database.child(userUid).child("isLoggedIn")
+                                database.child(userUid).child("loggedin")
                                     .addListenerForSingleValueEvent(object : ValueEventListener {
                                         override fun onDataChange(snapshot: DataSnapshot) {
-                                            val isLoggedIn =
+                                            val loggedin =
                                                 snapshot.getValue(Boolean::class.java) ?: false
-                                            if (isLoggedIn) {
+                                            if (loggedin) {
                                                 // 중복 로그인 감지 시
                                                 Toast.makeText(
                                                     this@LobbyActivity,
@@ -156,7 +156,7 @@ class LobbyActivity : AppCompatActivity() {
         editor: SharedPreferences.Editor
     ) {
         // 로그인 상태를 true로 설정하여 다른 기기에서 중복 로그인이 발생하지 않도록 함
-        database.child(userUid).child("isLoggedIn").setValue(true)
+        database.child(userUid).child("loggedin").setValue(true)
 
         // 자동 로그인 체크박스가 체크되어 있으면 자동 로그인 정보 SharedPreferences에 저장
         if (autoLoginCheckBox.isChecked) {
@@ -193,6 +193,6 @@ class LobbyActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // 이곳에서 `isLoggedIn`을 변경하지 않습니다.
+        // 이곳에서 `loggedin`을 변경하지 않습니다.
     }
 }
