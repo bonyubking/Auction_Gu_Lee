@@ -166,8 +166,25 @@ class ProfileFragment : Fragment() {
             builder.setTitle("로그아웃")
             builder.setMessage("정말 로그아웃 하시겠습니까?")
             builder.setPositiveButton("예") { _, _ ->
-                FirebaseAuth.getInstance().signOut()
-                moveToLobbyActivity()
+                val user = FirebaseAuth.getInstance().currentUser
+                if (user != null) {
+                    // Realtime Database에서 isloggedin을 false로 업데이트
+                    val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(user.uid)
+                    val updates = mapOf<String, Any>("isLoggedIn" to false)
+
+                    // 로그아웃 전에 데이터베이스 업데이트 수행
+                    databaseReference.updateChildren(updates).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // 데이터베이스 업데이트가 완료되면 로그아웃 수행
+                            FirebaseAuth.getInstance().signOut()
+                            moveToLobbyActivity()
+                        } else {
+                            Toast.makeText(currentActivity, "로그아웃 상태 업데이트 실패", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(currentActivity, "사용자 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
             builder.setNegativeButton("아니요") { dialog, _ -> dialog.dismiss() }
             builder.show()
@@ -175,6 +192,7 @@ class ProfileFragment : Fragment() {
             Toast.makeText(context, "현재 액티비티를 찾을 수 없습니다. 로그아웃할 수 없습니다.", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     private fun moveToLobbyActivity() {
         val currentActivity = activity

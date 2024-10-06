@@ -24,26 +24,22 @@ class LobbyActivity : AppCompatActivity() {
     private lateinit var loginButton: Button
     private lateinit var signUpButton: Button
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lobby)
 
-        // FirebaseAuth 및 Database 인스턴스 초기화
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance()
-            .getReference("users") // Firebase Realtime Database의 'users' 경로 참조
+        database = FirebaseDatabase.getInstance().getReference("users")
 
-        // UI 요소와 연결
         emailEditText = findViewById(R.id.et_username)
         passwordEditText = findViewById(R.id.et_password)
         loginButton = findViewById(R.id.btn_login)
         signUpButton = findViewById(R.id.btn_signup)
         autoLoginCheckBox = findViewById(R.id.checkbox_auto_login)
 
-        // SharedPreferences 초기화 (자동 로그인 정보 저장을 위한)
         val sharedPreferences = getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-
 
         // 자동 로그인 설정 확인
         if (sharedPreferences.getBoolean("autoLogin", false)) {
@@ -51,10 +47,35 @@ class LobbyActivity : AppCompatActivity() {
             val savedPassword = sharedPreferences.getString("password", "")
 
             if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
-                // 저장된 이메일과 비밀번호로 자동 로그인 시도
-                loginWithEmail(savedEmail, savedPassword, editor)
+                // Realtime Database에서 isLoggedIn 상태 확인
+                val userUid = auth.currentUser?.uid
+                if (userUid != null) {
+                    database.child(userUid).child("isLoggedIn")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val isLoggedIn = snapshot.getValue(Boolean::class.java) ?: false
+                                if (!isLoggedIn) {
+                                    // isLoggedIn이 false인 경우에만 자동 로그인 시도
+                                    loginWithEmail(savedEmail, savedPassword, editor)
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                Toast.makeText(
+                                    this@LobbyActivity,
+                                    "로그인 상태를 확인할 수 없습니다: ${error.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        })
+                }
             }
         }
+
+            // 나머지 코드 동일...
+
+
+
 
         // 회원가입 버튼 클릭 시 회원가입 화면으로 이동
         signUpButton.setOnClickListener {
