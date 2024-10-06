@@ -38,6 +38,15 @@ class AuctionRoomActivity : AppCompatActivity() {
         // Initialize data from Intent
         auctionId = intent.getStringExtra("auction_id") ?: ""
         uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        // 관심 목록 상태 초기화
+        updateWishlistButtonState()
+
+        // 관심 목록 버튼 클릭 리스너 설정
+        binding.btnAddToWishlist.setOnClickListener {
+            toggleWishlist()
+        }
+
+
 
         // Firebase Realtime Database에서 경매 데이터 가져오기
         if (auctionId.isNotEmpty()) {
@@ -45,13 +54,21 @@ class AuctionRoomActivity : AppCompatActivity() {
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
-                            val itemName = snapshot.child("item").getValue(String::class.java) ?: "항목 없음"
-                            val itemDetail = snapshot.child("detail").getValue(String::class.java) ?: "세부사항 없음"
-                            startingPrice = snapshot.child("startingPrice").getValue(Long::class.java)?.toInt() ?: 0
-                            highestPrice = snapshot.child("highestPrice").getValue(Long::class.java)?.toInt() ?: startingPrice
-                            remainingTimeMillis = snapshot.child("endTime").getValue(Long::class.java)
-                                ?.minus(System.currentTimeMillis()) ?: 0
-                            creatorUid = snapshot.child("creatorUid").getValue(String::class.java) ?: ""
+                            val itemName =
+                                snapshot.child("item").getValue(String::class.java) ?: "항목 없음"
+                            val itemDetail =
+                                snapshot.child("detail").getValue(String::class.java) ?: "세부사항 없음"
+                            startingPrice =
+                                snapshot.child("startingPrice").getValue(Long::class.java)?.toInt()
+                                    ?: 0
+                            highestPrice =
+                                snapshot.child("highestPrice").getValue(Long::class.java)?.toInt()
+                                    ?: startingPrice
+                            remainingTimeMillis =
+                                snapshot.child("endTime").getValue(Long::class.java)
+                                    ?.minus(System.currentTimeMillis()) ?: 0
+                            creatorUid =
+                                snapshot.child("creatorUid").getValue(String::class.java) ?: ""
 
                             // Set initial values in the UI
                             binding.itemName.text = itemName
@@ -61,7 +78,8 @@ class AuctionRoomActivity : AppCompatActivity() {
                             updateHighestPriceColor()
 
                             // Load auction item photo using Glide
-                            val photoUrl = snapshot.child("photoUrl").getValue(String::class.java) ?: ""
+                            val photoUrl =
+                                snapshot.child("photoUrl").getValue(String::class.java) ?: ""
                             if (photoUrl.isNotEmpty()) {
                                 Glide.with(this@AuctionRoomActivity)
                                     .load(photoUrl)
@@ -74,16 +92,25 @@ class AuctionRoomActivity : AppCompatActivity() {
 
                             // 참가자 수 초기화
                             if (snapshot.hasChild("participants")) {
-                                participantUids = snapshot.child("participants").children.mapNotNull { it.key }.toMutableSet()
+                                participantUids =
+                                    snapshot.child("participants").children.mapNotNull { it.key }
+                                        .toMutableSet()
                             }
                             binding.participantsCount.text = "참가자 수: ${participantUids.size} 명"
 
-                            // Update UI for Bid Button visibility
+                            // Update UI for Bid and Chat Button visibility
                             binding.fabBid.visibility = View.VISIBLE
+                            binding.fabChat.visibility = View.VISIBLE
+
                             if (creatorUid == uid) {
-                                binding.fabBid.isEnabled = false // 경매 생성자는 입찰 불가
+                                // 판매자일 경우 입찰과 채팅 불가
+                                disableButtons()
+                            } else if (remainingTimeMillis <= 0) {
+                                // 경매 종료 시 모든 버튼 비활성화
+                                disableButtons()
                             } else {
                                 binding.fabBid.isEnabled = true
+                                binding.fabChat.isEnabled = true
                                 binding.fabBid.setOnClickListener {
                                     placeBid()
                                 }
@@ -94,7 +121,8 @@ class AuctionRoomActivity : AppCompatActivity() {
                                 .addListenerForSingleValueEvent(object : ValueEventListener {
                                     override fun onDataChange(userSnapshot: DataSnapshot) {
                                         if (userSnapshot.exists()) {
-                                            val creatorUsername = userSnapshot.child("username").getValue(String::class.java) ?: "사용자 이름 없음"
+                                            val creatorUsername = userSnapshot.child("username")
+                                                .getValue(String::class.java) ?: "사용자 이름 없음"
                                             binding.username.text = creatorUsername
                                         } else {
                                             binding.username.text = "사용자 이름 없음"
@@ -111,13 +139,21 @@ class AuctionRoomActivity : AppCompatActivity() {
                             startCountDownTimer()
 
                         } else {
-                            Toast.makeText(this@AuctionRoomActivity, "경매 데이터를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@AuctionRoomActivity,
+                                "경매 데이터를 불러올 수 없습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             finish()
                         }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-                        Toast.makeText(this@AuctionRoomActivity, "데이터베이스 오류: ${error.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@AuctionRoomActivity,
+                            "데이터베이스 오류: ${error.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         finish()
                     }
                 })
@@ -128,10 +164,23 @@ class AuctionRoomActivity : AppCompatActivity() {
 
         // Chat Button Click Listener
         binding.fabChat.setOnClickListener {
-            openChat()
+            if (remainingTimeMillis > 0 && creatorUid != uid) {
+                openChat()
+            } else {
+                Toast.makeText(this, "채팅을 이용할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
+    // 버튼 비활성화 메서드 추가
+    private fun disableButtons() {
+        binding.fabBid.isEnabled = false
+        binding.fabChat.isEnabled = false
+        binding.fabBid.setBackgroundColor(Color.GRAY)
+        binding.fabChat.setBackgroundColor(Color.GRAY)
+    }
+
+    // 타이머 종료 시 버튼 비활성화
     private fun startCountDownTimer() {
         countDownTimer?.cancel() // 기존 타이머가 있으면 취소
 
@@ -145,7 +194,8 @@ class AuctionRoomActivity : AppCompatActivity() {
                     val minutes = (TimeUnit.MILLISECONDS.toMinutes(remainingTimeMillis) % 60)
                     val seconds = (TimeUnit.MILLISECONDS.toSeconds(remainingTimeMillis) % 60)
 
-                    binding.remainingTime.text = String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+                    binding.remainingTime.text =
+                        String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
 
                     if (remainingTimeMillis <= TimeUnit.HOURS.toMillis(24)) {
                         binding.remainingTime.setTextColor(Color.RED)
@@ -157,13 +207,20 @@ class AuctionRoomActivity : AppCompatActivity() {
                 override fun onFinish() {
                     binding.remainingTime.text = "경매 종료"
                     binding.remainingTime.setTextColor(Color.RED)
+
+                    // 경매 종료 시 모든 버튼 비활성화
+                    disableButtons()
                 }
             }.start()
         } else {
             binding.remainingTime.text = "경매 종료"
             binding.remainingTime.setTextColor(Color.RED)
+
+            // 경매 종료 시 모든 버튼 비활성화
+            disableButtons()
         }
     }
+
 
     private fun updateHighestPriceColor() {
         if (highestPrice > startingPrice) {
@@ -196,6 +253,47 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
     }
 
+    // 관심 목록 추가/제거 토글
+    private fun toggleWishlist() {
+        val wishlistReference = databaseReference.child("users").child(uid).child("wishlist")
+        wishlistReference.child(auctionId).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // 이미 관심 목록에 존재 -> 삭제
+                wishlistReference.child(auctionId).removeValue().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "관심 목록에서 제거되었습니다.", Toast.LENGTH_SHORT).show()
+                        binding.btnAddToWishlist.setImageResource(R.drawable.baseline_star_25)
+                    } else {
+                        Toast.makeText(this, "관심 목록 제거에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                // 관심 목록에 없음 -> 추가
+                wishlistReference.child(auctionId).setValue(true).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "관심 목록에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                        binding.btnAddToWishlist.setImageResource(R.drawable.baseline_star_24)
+                    } else {
+                        Toast.makeText(this, "관심 목록 추가에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateWishlistButtonState() {
+        val wishlistReference = databaseReference.child("users").child(uid).child("wishlist")
+        wishlistReference.child(auctionId).get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                // 관심 목록에 있으면 채워진 별 모양으로 설정
+                binding.btnAddToWishlist.setImageResource(R.drawable.baseline_star_24)
+            } else {
+                // 관심 목록에 없으면 빈 별 모양으로 설정
+                binding.btnAddToWishlist.setImageResource(R.drawable.baseline_star_25)
+            }
+        }
+    }
+
 
     private fun openChat() {
         val intent = Intent(this, ChatActivity::class.java)
@@ -210,3 +308,4 @@ class AuctionRoomActivity : AppCompatActivity() {
         countDownTimer?.cancel() // 타이머가 계속 실행되지 않도록 해제
     }
 }
+

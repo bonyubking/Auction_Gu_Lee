@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Username and Remaining Time -->
+        <!-- Username and Remaining Time with Wishlist -->
         <LinearLayout
             android:id="@+id/username_remainingTime_layout"
             android:layout_width="match_parent"
@@ -20,12 +20,12 @@
 
             <TextView
                 android:id="@+id/username"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Username"
                 android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_weight="1"/>
+                android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/remaining_time"
@@ -34,7 +34,21 @@
                 android:text="Remaining Time"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#000000"/>
+                android:textColor="#000000"
+                android:layout_marginEnd="8dp" />
+
+            <ImageButton
+                android:id="@+id/btn_add_to_wishlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Add to Wishlist"
+                android:padding="8dp"
+                app:srcCompat="@drawable/baseline_star_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
         </LinearLayout>
 
         <!-- Auction Item Photo -->
@@ -65,8 +79,8 @@
         <!-- Starting Price and Highest Price -->
         <LinearLayout
             android:id="@+id/price_layout"
-            android:layout_width="342dp"
-            android:layout_height="42dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="23dp"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="23dp"
@@ -78,7 +92,7 @@
 
             <TextView
                 android:id="@+id/starting_price"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Starting Price"
@@ -130,7 +144,7 @@
             android:contentDescription="Bid Button"
             app:srcCompat="@drawable/icon_bid"
             app:layout_constraintBottom_toTopOf="@id/fab_chat"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_chat"
@@ -141,7 +155,6 @@
             app:srcCompat="@drawable/icon_chat"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

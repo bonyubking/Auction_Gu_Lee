@@ -64,11 +64,11 @@
         <!-- 경매 방 화면 -->
         <activity android:name=".Home.AuctionRoomActivity" />
 
-        <activity android:name=".Chat.ChatActivity" />
+        <activity android:name=".Chat.ChatActivity"/>
 
-        <activity android:name=".Profile.DeleteDataActivity">
+        <activity android:name=".Profile.WishlistActivity" />
 
-        </activity>
+        <activity android:name=".Profile.DeleteDataActivity"></activity>
 
     </application>
 </manifest>
