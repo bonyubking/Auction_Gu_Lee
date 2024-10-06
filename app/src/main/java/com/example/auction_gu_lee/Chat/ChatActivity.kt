@@ -5,10 +5,13 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
@@ -23,10 +26,20 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+
 
 class ChatActivity : AppCompatActivity() {
 
+    private val CAMERA_PERMISSION_REQUEST_CODE = 100
     private lateinit var binding: ActivityChatBinding
     private lateinit var auctionId: String
     private lateinit var chatRoomId: String
@@ -38,6 +51,7 @@ class ChatActivity : AppCompatActivity() {
 
     private val selectedImageUris = mutableListOf<Uri>()
     private lateinit var imagePreviewAdapter: ImagePreviewAdapter
+    private lateinit var photoURI: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +79,7 @@ class ChatActivity : AppCompatActivity() {
 
         // 1:1 채팅방 고유 ID 생성
         val uidList = listOf(sellerUid, bidderUid).sorted()
-        chatRoomId = "${auctionId}_${uidList.joinToString("_")}"
+        chatRoomId = "${auctionId}|${uidList.joinToString("|")}"
 
         // 상단에 경매의 사진 및 정보를 표시
         loadAuctionDetails()
@@ -106,18 +120,72 @@ class ChatActivity : AppCompatActivity() {
         builder.setItems(options) { _, which ->
             when (which) {
                 0 -> openImagePicker()
-                1 -> captureImageFromCamera()
+                1 -> {
+                    // 카메라 권한 체크 및 요청
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+                    } else {
+                        captureImageFromCamera()
+                    }
+                }
             }
         }
         builder.show()
     }
 
+    // onRequestPermissionsResult() 메서드 추가
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 권한이 허용되었으므로 카메라를 실행합니다.
+                captureImageFromCamera()
+            } else {
+                Toast.makeText(this, "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
     private fun captureImageFromCamera() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+            // 이미지 파일을 생성하여 URI를 가져옵니다.
+            val photoFile = createImageFile()
+            photoFile?.let {
+                photoURI = FileProvider.getUriForFile(
+                    this,
+                    "${applicationContext.packageName}.provider",
+                    it
+                )
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+
+                // URI 권한 제공 (카메라 앱이 해당 URI에 쓸 수 있도록 허용)
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+            }
         } else {
             Toast.makeText(this, "카메라를 사용할 수 없습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    private fun createImageFile(): File? {
+        return try {
+            val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val file = File.createTempFile(
+                "JPEG_${timeStamp}_",
+                ".jpg",
+                storageDir
+            )
+            Log.d("ChatActivity", "Created file: ${file.absolutePath}")
+            file
+        } catch (ex: IOException) {
+            Log.e("ChatActivity", "파일 생성 실패: ${ex.message}")
+            null
         }
     }
 
@@ -143,12 +211,9 @@ class ChatActivity : AppCompatActivity() {
                     imagePreviewAdapter.notifyDataSetChanged()
                 }
                 REQUEST_IMAGE_CAPTURE -> {
-                    val imageBitmap = data?.extras?.get("data") as Bitmap
-                    val uri = getImageUriFromBitmap(imageBitmap)
-                    uri?.let {
-                        selectedImageUris.add(it)
-                        imagePreviewAdapter.notifyDataSetChanged()
-                    }
+                    // 카메라 촬영 후 저장된 파일의 URI를 사용합니다.
+                    selectedImageUris.add(photoURI)
+                    imagePreviewAdapter.notifyDataSetChanged()
                 }
             }
         }

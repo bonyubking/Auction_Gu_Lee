@@ -14,7 +14,7 @@
         android:background="?android:attr/colorActivatedHighlight"
         android:padding="8dp"
         android:text="보낸 메시지 내용"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:visibility="gone" /> <!-- 기본적으로 안 보이도록 설정 -->
