@@ -52,6 +52,9 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var imagePreviewAdapter: ImagePreviewAdapter
     private lateinit var photoURI: Uri
 
+    private var isActivityVisible = false  // 액티비티 가시성 상태 변수 추가
+    private lateinit var messagesListener: ValueEventListener
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
@@ -112,10 +115,23 @@ class ChatActivity : AppCompatActivity() {
         loadChatMessages(bidderUid)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        // 리스너 제거
+        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+            .removeEventListener(messagesListener)
+    }
+
     // 여기에 onResume() 메서드 추가
     override fun onResume() {
         super.onResume()
         updateMessagesAsRead()
+        isActivityVisible = true  // 액티비티가 가시적으로 변경됨
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isActivityVisible = false  // 액티비티가 가시적이지 않음
     }
 
     // updateMessagesAsRead() 함수 추가
@@ -374,13 +390,15 @@ class ChatActivity : AppCompatActivity() {
 
                         val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
 
-                        // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
-                        if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
-                            // isRead 값을 true로 설정
-                            updates["$messageKey/isRead"] = true
+                        // 액티비티가 가시적인 경우에만 읽음 처리
+                        if (isActivityVisible) {
+                            // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
+                            if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
+                                // isRead 값을 true로 설정
+                                updates["$messageKey/isRead"] = true
+                            }
                         }
                     }
-
 
                     // 채팅 UI 업데이트
                     updateChatUI(chatList)
