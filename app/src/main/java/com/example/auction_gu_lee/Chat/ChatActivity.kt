@@ -36,7 +36,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 
-
 class ChatActivity : AppCompatActivity() {
 
     private val CAMERA_PERMISSION_REQUEST_CODE = 100
@@ -113,6 +112,38 @@ class ChatActivity : AppCompatActivity() {
         loadChatMessages(bidderUid)
     }
 
+    // 여기에 onResume() 메서드 추가
+    override fun onResume() {
+        super.onResume()
+        updateMessagesAsRead()
+    }
+
+    // updateMessagesAsRead() 함수 추가
+    private fun updateMessagesAsRead() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+
+        chatReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (messageSnapshot in snapshot.children) {
+                    val messageSenderUid = messageSnapshot.child("senderUid").getValue(String::class.java) ?: continue
+                    val isRead = messageSnapshot.child("isRead").getValue(Boolean::class.java) ?: false
+
+                    if (!isRead && messageSenderUid != currentUserId) {
+                        // 메시지를 읽음 처리
+                        messageSnapshot.ref.child("isRead").setValue(true)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatActivity", "Failed to update messages as read: ${error.message}")
+            }
+        })
+    }
+
+    // 이하 기존 코드 유지
+
     private fun showImageSourceDialog() {
         val options = arrayOf("갤러리에서 선택", "카메라로 촬영")
         val builder = android.app.AlertDialog.Builder(this)
@@ -146,7 +177,6 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-
     private fun captureImageFromCamera() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
@@ -163,14 +193,12 @@ class ChatActivity : AppCompatActivity() {
                 // URI 권한 제공 (카메라 앱이 해당 URI에 쓸 수 있도록 허용)
                 takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
             }
         } else {
             Toast.makeText(this, "카메라를 사용할 수 없습니다.", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     private fun createImageFile(): File? {
         return try {
@@ -262,7 +290,6 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-
     private fun loadAuctionDetails() {
         // 경매 정보 가져오기
         database.child("auctions").child(auctionId)
@@ -305,7 +332,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun sendMessage(bidderUid: String, message: String, imageUrls: List<String> = emptyList()) {
-        val messageId = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).push().key ?: return
+        val messageId = database.child("chats").child(chatRoomId).push().key ?: return
         val senderUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val timestamp = System.currentTimeMillis()
 
@@ -313,7 +340,8 @@ class ChatActivity : AppCompatActivity() {
             "senderUid" to senderUid,
             "message" to message,
             "timestamp" to timestamp,
-            "imageUrls" to imageUrls  // 빈 리스트라도 추가
+            "imageUrls" to imageUrls,  // 이미지 URL 리스트 추가 (빈 리스트라도 포함)
+            "isRead" to false  // 기본적으로 읽지 않은 상태로 설정
         )
 
         Log.d("ChatActivity", "Sending message with image URLs: $messageData")
@@ -329,7 +357,6 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
     }
-
 
     private fun loadChatMessages(bidderUid: String) {
         database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
@@ -352,7 +379,6 @@ class ChatActivity : AppCompatActivity() {
             })
     }
 
-
     private fun updateChatUI(chatList: List<ChatItem>) {
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
@@ -364,4 +390,3 @@ class ChatActivity : AppCompatActivity() {
         binding.chatMessagesRecyclerView.scrollToPosition(chatList.size - 1)
     }
 }
-

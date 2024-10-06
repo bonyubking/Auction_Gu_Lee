@@ -11,6 +11,8 @@ data class ChatItem(
     var message: String = "",
     var bidderUid: String = "",
     var timestamp: Long = 0L,
-    var isRead: Boolean = true,
-    var imageUrls: List<String> = listOf()
+    var imageUrls: List<String> = listOf(),
+    var isRead: Boolean = false,
+    var messageId: String = "",
+    var chatRoomId: String = ""
 )
