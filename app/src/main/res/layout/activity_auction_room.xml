@@ -45,9 +45,22 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Add to Wishlist"
                 android:padding="8dp"
-                app:srcCompat="@drawable/baseline_star_24"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/baseline_star_24" />
+
+            <TextView
+                android:id="@+id/favoritesCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="찜 수: 0"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/highestPrice"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
+
+
 
         </LinearLayout>
 
@@ -111,7 +124,7 @@
 
         <!-- Current Participants Count -->
         <TextView
-            android:id="@+id/participants_count"
+            android:id="@+id/participantsCount"
             android:layout_width="149dp"
             android:layout_height="32dp"
             android:layout_marginTop="8dp"
@@ -133,7 +146,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.491"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/participants_count" />
+            app:layout_constraintTop_toBottomOf="@+id/participantsCount" />
 
         <!-- Floating Action Buttons -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
