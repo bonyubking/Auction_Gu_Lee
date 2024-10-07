@@ -272,15 +272,16 @@ class AuctionRoomActivity : AppCompatActivity() {
                 auction.highestPrice = highestPrice
                 auction.highestBidderUid = uid
 
-                // 참가자 정보에 입찰자와 입찰 금액 저장
-                auction.participants[uid] = newBid
-
                 // 이미 참가자인지 확인
                 val isAlreadyParticipant = auction.participants.containsKey(uid)
 
                 if (!isAlreadyParticipant) {
-                    // 참가자에 추가 및 biddersCount 증가
+                    // 새로운 참가자라면 참가자 목록에 입찰 금액 추가 및 biddersCount 증가
+                    auction.participants[uid] = newBid
                     auction.biddersCount = (auction.biddersCount ?: 0) + 1
+                } else {
+                    // 기존 참가자라면 입찰 금액 업데이트
+                    auction.participants[uid] = newBid
                 }
 
                 // 업데이트된 경매 정보를 현재 데이터에 설정
@@ -298,8 +299,6 @@ class AuctionRoomActivity : AppCompatActivity() {
 
                         // participantsCount와 biddersCount를 UI에 업데이트
                         biddersCount = auction.biddersCount ?: 0
-
-                        // **여기서 participantsCount 텍스트 업데이트**
                         binding.participantsCount.text = "참가자 수: $biddersCount 명"
 
                         Toast.makeText(this@AuctionRoomActivity, "입찰 성공!", Toast.LENGTH_SHORT).show()
@@ -310,6 +309,9 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
+
+
+
 
 
 
