@@ -18,5 +18,5 @@ data class Auction(
     val chats: Map<String, ChatItem>? = null,
     var favoritesCount: Int? = 0,    // 찜 수
     var biddersCount: Int? = 0 ,      // 입찰자 수
-    var participants: MutableMap<String, Boolean> = mutableMapOf()
+    var participants: MutableMap<String, Long> = mutableMapOf()  // UID와 입찰가를 저장할 수 있도록 변경
 )
