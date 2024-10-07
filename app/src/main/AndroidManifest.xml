@@ -68,6 +68,8 @@
 
         <activity android:name=".Profile.WishlistActivity" />
 
+        <activity android:name=".Profile.SalesHistoryActivity" />
+
         <activity android:name=".Profile.DeleteDataActivity"></activity>
 
     </application>

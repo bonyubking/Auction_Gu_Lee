@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- 판매 내역 헤더 레이아웃 -->
+    <LinearLayout
+        android:id="@+id/header_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+
+        <!-- 판매 내역 제목 -->
+        <TextView
+            android:id="@+id/sales_history_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="판매 내역"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:text="판매 내역" />
+
+        <!-- 검색 버튼 -->
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="검색"
+            android:scaleType="centerInside"
+            android:src="@drawable/icon_magnifier" />
+    </LinearLayout>
+
+    <!-- 검색창 레이아웃 (처음엔 숨김) -->
+    <LinearLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:visibility="gone">
+
+        <!-- 검색어 입력 필드 -->
+        <EditText
+            android:id="@+id/search_edit_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="검색"
+            android:padding="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <!-- 닫기 버튼 (검색 레이아웃 닫기) -->
+        <ImageButton
+            android:id="@+id/btn_close_search"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="닫기"
+            android:scaleType="centerInside"
+            android:src="@drawable/baseline_cancel_24" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/no_results_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="검색 결과가 없습니다."
+        android:textColor="#808080"
+        android:textSize="18sp"
+        android:visibility="gone" />
+
+    <!-- 판매 내역 RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sales_history_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/item_sales_history" />
+
+</LinearLayout>

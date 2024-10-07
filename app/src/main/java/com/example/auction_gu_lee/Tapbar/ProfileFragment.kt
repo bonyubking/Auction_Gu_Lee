@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
+import com.example.auction_gu_lee.Profile.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.WishlistActivity
 import com.example.auction_gu_lee.R
 import com.google.firebase.auth.FirebaseAuth
@@ -88,7 +89,9 @@ class ProfileFragment : Fragment() {
         // 판매 내역 버튼 클릭 리스너 설정
         val salesHistoryButton = view.findViewById<TextView>(R.id.btn_sales_history)
         salesHistoryButton.setOnClickListener {
-            Toast.makeText(requireContext(), "판매 내역 버튼 클릭됨", Toast.LENGTH_SHORT).show()
+            // 판매 내역 액티비티로 이동하는 인텐트 설정
+            val intent = Intent(requireContext(), SalesHistoryActivity::class.java)
+            startActivity(intent)
         }
 
         // 입찰 내역 버튼 클릭 리스너 설정
