@@ -97,10 +97,12 @@ class SalesHistoryAdapter(
 
                     override fun onFinish() {
                         holder.binding.textViewRemainingTime.text = "경매 종료"
+                        holder.binding.textViewSalesStatus.text = "판매 완료" // 판매 상태 업데이트
                     }
                 }.start()
             } else {
                 holder.binding.textViewRemainingTime.text = "경매 종료"
+                holder.binding.textViewSalesStatus.text = "판매 완료" // 판매 상태 업데이트
             }
         }
 
