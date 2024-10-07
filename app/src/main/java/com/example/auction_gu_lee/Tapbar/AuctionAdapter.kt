@@ -107,5 +107,7 @@ class AuctionAdapter(
         }
     }
 
+
+
     override fun getItemCount(): Int = auctionList.size  // getItemCount 함수가 제대로 위치하도록 수정
 }
