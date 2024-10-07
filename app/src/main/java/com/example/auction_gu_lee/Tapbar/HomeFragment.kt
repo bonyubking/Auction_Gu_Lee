@@ -160,24 +160,37 @@ class HomeFragment : Fragment() {
 
 
     private fun sortAuctionListBy(sortType: String) {
+        // auctionList와 auctionIdList를 Pair로 묶음
+        val auctionPairs = auctionList.zip(auctionIdList).toMutableList()
+
+        // 정렬 기준에 따라 auctionPairs를 정렬
         when (sortType) {
-            "time" -> auctionList.sortByDescending { it.timestamp ?: 0L }
-            "participants" -> auctionList.sortWith(
-                compareByDescending<Auction> { it.biddersCount ?: 0 }
-                    .thenByDescending { it.timestamp ?: 0L }  // 같은 참가자 수일 경우, 생성 시간이 더 최근인 항목이 먼저 오도록 정렬
+            "time" -> auctionPairs.sortByDescending { it.first.timestamp ?: 0L }
+            "participants" -> auctionPairs.sortWith(
+                compareByDescending<Pair<Auction, String>> { it.first.biddersCount ?: 0 }
+                    .thenByDescending { it.first.timestamp ?: 0L }
             )
-            "favorites" -> auctionList.sortWith(
-                compareByDescending<Auction> { it.favoritesCount ?: 0 }
-                    .thenByDescending { it.timestamp ?: 0L }  // 같은 찜 수일 경우, 생성 시간이 더 최근인 항목이 먼저 오도록 정렬
+            "favorites" -> auctionPairs.sortWith(
+                compareByDescending<Pair<Auction, String>> { it.first.favoritesCount ?: 0 }
+                    .thenByDescending { it.first.timestamp ?: 0L }
             )
-            "highestPriceDesc" -> auctionList.sortByDescending { it.highestPrice ?: 0L }  // 입찰가 높은 순 정렬
-            "highestPriceAsc" -> auctionList.sortBy { it.highestPrice ?: 0L }  // 입찰가 낮은 순 정렬
-            "startingPriceDesc" -> auctionList.sortByDescending { it.startingPrice ?: 0L }  // 시작가 높은 순 정렬
-            "startingPriceAsc" -> auctionList.sortBy { it.startingPrice ?: 0L }  // 시작가 낮은 순 정렬
-            "remainingTime" -> auctionList.sortBy {
-                it.endTime?.minus(System.currentTimeMillis()) ?: Long.MAX_VALUE  // 남은 시간 순 정렬
+            "highestPriceDesc" -> auctionPairs.sortByDescending { it.first.highestPrice ?: 0L }
+            "highestPriceAsc" -> auctionPairs.sortBy { it.first.highestPrice ?: 0L }
+            "startingPriceDesc" -> auctionPairs.sortByDescending { it.first.startingPrice ?: 0L }
+            "startingPriceAsc" -> auctionPairs.sortBy { it.first.startingPrice ?: 0L }
+            "remainingTime" -> auctionPairs.sortBy {
+                it.first.endTime?.minus(System.currentTimeMillis()) ?: Long.MAX_VALUE
             }
         }
+
+        // 정렬된 Pair를 다시 분리하여 auctionList와 auctionIdList에 적용
+        val (sortedAuctions, sortedIds) = auctionPairs.unzip()
+        auctionList.clear()
+        auctionList.addAll(sortedAuctions)
+        auctionIdList.clear()
+        auctionIdList.addAll(sortedIds)
+
+        // 어댑터에 데이터 변경 알림
         auctionAdapter.notifyDataSetChanged()
     }
 
