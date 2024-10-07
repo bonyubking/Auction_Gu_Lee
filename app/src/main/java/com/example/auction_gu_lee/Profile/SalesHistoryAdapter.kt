@@ -57,6 +57,15 @@ class SalesHistoryAdapter(
                     } else {
                         holder.binding.textViewHighestPrice.setTextColor(android.graphics.Color.BLACK)
                     }
+
+                    // 판매 상태 업데이트
+                    if (holder.binding.textViewRemainingTime.text == "경매 종료") {
+                        if (highestPrice > (auctionItem.startingPrice ?: 0L)) {
+                            holder.binding.textViewSalesStatus.text = "판매 완료"
+                        } else {
+                            holder.binding.textViewSalesStatus.text = "판매 실패"
+                        }
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -97,12 +106,48 @@ class SalesHistoryAdapter(
 
                     override fun onFinish() {
                         holder.binding.textViewRemainingTime.text = "경매 종료"
-                        holder.binding.textViewSalesStatus.text = "판매 완료" // 판매 상태 업데이트
+
+                        // Firebase에서 최고 가격을 가져와 판매 상태 결정
+                        auctionItem.id?.let { auctionId ->
+                            auctionRef.child(auctionId).child("highestPrice")
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        val highestPrice = snapshot.getValue(Long::class.java) ?: auctionItem.startingPrice ?: 0L
+                                        if (highestPrice > (auctionItem.startingPrice ?: 0L)) {
+                                            holder.binding.textViewSalesStatus.text = "판매 완료"
+                                        } else {
+                                            holder.binding.textViewSalesStatus.text = "판매 실패"
+                                        }
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        // 에러 처리 (옵션)
+                                    }
+                                })
+                        }
                     }
                 }.start()
             } else {
                 holder.binding.textViewRemainingTime.text = "경매 종료"
-                holder.binding.textViewSalesStatus.text = "판매 완료" // 판매 상태 업데이트
+
+                // Firebase에서 최고 가격을 가져와 판매 상태 결정
+                auctionItem.id?.let { auctionId ->
+                    auctionRef.child(auctionId).child("highestPrice")
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val highestPrice = snapshot.getValue(Long::class.java) ?: auctionItem.startingPrice ?: 0L
+                                if (highestPrice > (auctionItem.startingPrice ?: 0L)) {
+                                    holder.binding.textViewSalesStatus.text = "판매 완료"
+                                } else {
+                                    holder.binding.textViewSalesStatus.text = "판매 실패"
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                // 에러 처리 (옵션)
+                            }
+                        })
+                }
             }
         }
 
@@ -117,6 +162,7 @@ class SalesHistoryAdapter(
             }
         }
     }
+
 
     override fun getItemCount(): Int = auctionList.size
 }
