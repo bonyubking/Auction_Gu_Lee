@@ -3,12 +3,14 @@ package com.example.auction_gu_lee.Home
 import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.MediaStore
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -141,6 +143,18 @@ class CreateRoomActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 리스너 (서버에 데이터 저장)
         buttonComplete.setOnClickListener {
+            val startingPriceText = editTextStartingPrice.text.toString()
+            if (startingPriceText.isEmpty()) {
+                Toast.makeText(this, "시작 가격을 입력해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val startingPrice = startingPriceText.toLongOrNull()
+            if (startingPrice == null || startingPrice < 100) {
+                Toast.makeText(this, "시작 가격은 최소 100 이상이어야 합니다", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (::photoUri.isInitialized && photoUri != null) {
                 uploadAuctionData() // Firebase에 데이터 저장 함수 호출
             } else {
@@ -148,8 +162,10 @@ class CreateRoomActivity : AppCompatActivity() {
             }
         }
 
+
         // 날짜 및 시간 선택 버튼 클릭 시
         dateTimeButton.setOnClickListener {
+            hideKeyboard()
             showDateTimePicker()
         }
     }
@@ -196,6 +212,7 @@ class CreateRoomActivity : AppCompatActivity() {
                         selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
                         selectedDateTime.set(Calendar.MINUTE, minute)
                         startCountDown() // 남은 시간 계산 및 표시
+
                     },
                     currentDate.get(Calendar.HOUR_OF_DAY),
                     currentDate.get(Calendar.MINUTE),
@@ -206,6 +223,15 @@ class CreateRoomActivity : AppCompatActivity() {
             currentDate.get(Calendar.MONTH),
             currentDate.get(Calendar.DAY_OF_MONTH)
         ).show()
+    }
+
+    // 키보드를 숨기는 함수
+    private fun hideKeyboard() {
+        val view = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
     }
 
     // 카운트다운 타이머 시작

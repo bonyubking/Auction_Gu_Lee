@@ -227,7 +227,35 @@ class AuctionRoomActivity : AppCompatActivity() {
     }
 
     private fun placeBid() {
-        val newBid = highestPrice + 1000  // 입찰가를 1000 ₩ 증가
+        // 입찰 증가폭 결정 로직
+        val increment = when (startingPrice) {
+            in 100..499 -> 1
+            in 500..999 -> 5
+            in 1000..4999 -> 10
+            in 5000..9999 -> 50
+            in 10000..49999 -> 100
+            in 50000..99999 -> 500
+            in 100000..499999 -> 1000
+            in 500000..999999 -> 5000
+            in 1000000..4999999 -> 10000
+            in 5000000..9999999 -> 50000
+            in 10000000..49999999 -> 100000
+            in 50000000..99999999 -> 500000
+            in 100000000..499999999 -> 1000000
+            in 500000000..999999999 -> 5000000
+            in 1000000000..4999999999 -> 10000000
+            in 5000000000..9999999999 -> 50000000
+            in 10000000000..49999999999 -> 100000000
+            in 50000000000..99999999999 -> 500000000
+            in 100000000000..499999999999 -> 1000000000
+            in 500000000000..999999999999 -> 5000000000
+            in 1000000000000..4999999999999 -> 10000000000
+            in 5000000000000..9999999999999 -> 50000000000
+            in 10000000000000..100000000000000 -> 100000000000
+            else -> startingPrice / 100  // 100억 초과 시 시작 가격의 1%로 증가
+        }
+
+        val newBid = highestPrice + increment  // 입찰가를 증가폭만큼 증가
         highestPrice = newBid
         binding.highestPrice.text = "최고 가격: $highestPrice ₩"
         updateHighestPriceColor()
@@ -244,12 +272,14 @@ class AuctionRoomActivity : AppCompatActivity() {
                 auction.highestPrice = highestPrice
                 auction.highestBidderUid = uid
 
+                // 참가자 정보에 입찰자와 입찰 금액 저장
+                auction.participants[uid] = newBid
+
                 // 이미 참가자인지 확인
                 val isAlreadyParticipant = auction.participants.containsKey(uid)
 
                 if (!isAlreadyParticipant) {
                     // 참가자에 추가 및 biddersCount 증가
-                    auction.participants[uid] = true
                     auction.biddersCount = (auction.biddersCount ?: 0) + 1
                 }
 
@@ -280,6 +310,10 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
+
+
+
+
 
 
 

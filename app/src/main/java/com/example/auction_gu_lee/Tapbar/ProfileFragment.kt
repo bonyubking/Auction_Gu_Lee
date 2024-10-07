@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import com.example.auction_gu_lee.Profile.BiddingHistoryActivity
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
 import com.example.auction_gu_lee.Profile.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.WishlistActivity
@@ -97,7 +98,8 @@ class ProfileFragment : Fragment() {
         // 입찰 내역 버튼 클릭 리스너 설정
         val bidHistoryButton = view.findViewById<TextView>(R.id.btn_bid_history)
         bidHistoryButton.setOnClickListener {
-            Toast.makeText(requireContext(), "입찰 내역 버튼 클릭됨", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), BiddingHistoryActivity::class.java)
+            startActivity(intent)
         }
 
         // 내 비지니스 광고하기 버튼 클릭 리스너 설정

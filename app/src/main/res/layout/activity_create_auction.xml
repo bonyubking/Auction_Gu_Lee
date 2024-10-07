@@ -71,7 +71,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="text" />
+                    android:gravity="end"
+                    android:inputType="number" />
 
                 <CheckBox
                     android:id="@+id/EA"
@@ -141,7 +142,9 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ems="10"
-                    android:inputType="text" />
+                    android:gravity="end"
+                    android:hint="100이상"
+                    android:inputType="number" />
 
                 <TextView
                     android:id="@+id/koreapricewon"
