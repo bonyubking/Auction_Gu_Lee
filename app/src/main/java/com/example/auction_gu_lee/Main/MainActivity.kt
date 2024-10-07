@@ -19,8 +19,23 @@ class MainActivity : AppCompatActivity() {
         // BottomNavigationView 설정
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // 기본 프래그먼트 설정 (처음 시작할 때 HomeFragment를 보여줌)
-        replaceFragment(HomeFragment())
+        // Intent에서 전달된 값 확인
+        val fragmentName = intent.getStringExtra("fragment")  // "home" 값을 받을 변수
+        val auctionId = intent.getStringExtra("auction_id")   // "auction_id" 값을 받을 변수
+
+        // 기본 프래그먼트 설정
+        if (fragmentName == "home" && auctionId != null) {
+            // HomeFragment로 이동하며 auction_id를 전달
+            val homeFragment = HomeFragment().apply {
+                arguments = Bundle().apply {
+                    putString("auction_id", auctionId)
+                }
+            }
+            replaceFragment(homeFragment)
+        } else {
+            // 기본적으로 HomeFragment를 표시
+            replaceFragment(HomeFragment())
+        }
 
         // BottomNavigationView의 메뉴 아이템 클릭 시 프래그먼트 교체
         bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->

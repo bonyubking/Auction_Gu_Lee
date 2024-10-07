@@ -5,8 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import android.content.Intent
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,10 +30,17 @@ class HomeFragment : Fragment() {
     private lateinit var auctionList: MutableList<Auction>
     private lateinit var auctionIdList: MutableList<String>
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var sortSpinner: Spinner
+    private var auctionId: String? = null
+
+    private var currentSortType: String = "time"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        arguments?.let {
+            auctionId = it.getString("auction_id")
+        }
         // 뒤로가기 버튼 비활성화
         requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -48,6 +58,11 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        auctionId?.let {
+            // 필요한 경우 auctionId로 특정 경매 항목을 가져와서 UI 업데이트
+            Toast.makeText(requireContext(), "새로운 경매 생성됨!", Toast.LENGTH_SHORT).show()
+        }
 
         // SwipeRefreshLayout 설정
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
@@ -76,6 +91,9 @@ class HomeFragment : Fragment() {
             val intent = Intent(requireContext(), CreateRoomActivity::class.java)
             startActivity(intent)
         }
+
+        // 정렬 Spinner 설정
+        setupSortSpinner(view)
 
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
@@ -108,6 +126,62 @@ class HomeFragment : Fragment() {
         fetchLatestAuctions()
     }
 
+    // 정렬 Spinner 설정 함수
+    private fun setupSortSpinner(view: View) {
+        sortSpinner = view.findViewById(R.id.sortSpinner)
+
+        // Spinner 항목을 두 개로 나눔: 등록시간, 입찰자, 관심, 입찰가(높은 순), 입찰가(낮은 순), 시작가(높은 순), 시작가(낮은 순), 남은시간
+        val sortOptions = arrayOf("등록시간", "입찰자", "관심", "입찰가(높은 순)", "입찰가(낮은 순)", "시작가(높은 순)", "시작가(낮은 순)", "남은시간")
+
+        // Adapter에 커스텀 레이아웃 적용 (필요시 적용)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        sortSpinner.adapter = adapter
+
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                currentSortType = when (position) {
+                    0 -> "time"
+                    1 -> "participants"
+                    2 -> "favorites"
+                    3 -> "highestPriceDesc"  // 입찰가(높은 순)
+                    4 -> "highestPriceAsc"   // 입찰가(낮은 순)
+                    5 -> "startingPriceDesc" // 시작가(높은 순)
+                    6 -> "startingPriceAsc"  // 시작가(낮은 순)
+                    7 -> "remainingTime"
+                    else -> "time"
+                }
+                sortAuctionListBy(currentSortType)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+    }
+
+
+    private fun sortAuctionListBy(sortType: String) {
+        when (sortType) {
+            "time" -> auctionList.sortByDescending { it.timestamp ?: 0L }
+            "participants" -> auctionList.sortWith(
+                compareByDescending<Auction> { it.biddersCount ?: 0 }
+                    .thenByDescending { it.timestamp ?: 0L }  // 같은 참가자 수일 경우, 생성 시간이 더 최근인 항목이 먼저 오도록 정렬
+            )
+            "favorites" -> auctionList.sortWith(
+                compareByDescending<Auction> { it.favoritesCount ?: 0 }
+                    .thenByDescending { it.timestamp ?: 0L }  // 같은 찜 수일 경우, 생성 시간이 더 최근인 항목이 먼저 오도록 정렬
+            )
+            "highestPriceDesc" -> auctionList.sortByDescending { it.highestPrice ?: 0L }  // 입찰가 높은 순 정렬
+            "highestPriceAsc" -> auctionList.sortBy { it.highestPrice ?: 0L }  // 입찰가 낮은 순 정렬
+            "startingPriceDesc" -> auctionList.sortByDescending { it.startingPrice ?: 0L }  // 시작가 높은 순 정렬
+            "startingPriceAsc" -> auctionList.sortBy { it.startingPrice ?: 0L }  // 시작가 낮은 순 정렬
+            "remainingTime" -> auctionList.sortBy {
+                it.endTime?.minus(System.currentTimeMillis()) ?: Long.MAX_VALUE  // 남은 시간 순 정렬
+            }
+        }
+        auctionAdapter.notifyDataSetChanged()
+    }
+
+
     private fun fetchLatestAuctions() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
@@ -128,12 +202,9 @@ class HomeFragment : Fragment() {
                     }
                 }
                 // 역순으로 정렬 (가장 최근 경매가 맨 위로 오게)
-                auctionList.reverse()
-                auctionIdList.reverse()
-
-                // 데이터가 업데이트된 후 어댑터에 변경사항 알림
-                auctionAdapter.notifyDataSetChanged()
-                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
+                // 현재 선택된 정렬 기준에 따라 정렬
+                sortAuctionListBy(currentSortType)
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onCancelled(error: DatabaseError) {

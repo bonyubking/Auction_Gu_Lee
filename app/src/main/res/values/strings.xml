@@ -1,3 +1,15 @@
 <resources>
-    <string name="app_name">Auction_Gu_Lee</string>
+    <string name="app_name">Auction Gu Lee</string>
+
+    <!-- Spinner 항목 옵션 배열 -->
+    <string-array name="sort_options">
+        <item>등록시간</item>
+        <item>입찰자</item>
+        <item>관심</item>
+        <item>입찰가 높은 순</item>
+        <item>입찰가 낮은 순</item>
+        <item>시작가 높은 순</item>
+        <item>시작가 낮은 순</item>
+        <item>남은시간</item>
+    </string-array>
 </resources>

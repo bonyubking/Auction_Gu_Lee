@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.auction_gu_lee.Main.MainActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.HomeFragment
 import com.google.firebase.database.DatabaseReference
@@ -390,7 +391,9 @@ class CreateRoomActivity : AppCompatActivity() {
                     "timestamp" to System.currentTimeMillis(),
                     "endTime" to selectedDateTime.timeInMillis,
                     "remainingTime" to resultTextView.text.toString(),
-                    "creatorUid" to Uid
+                    "creatorUid" to Uid,
+                    "biddersCount" to 0,  // 참가자 수를 0으로 초기화
+                    "favoritesCount" to 0  // 찜 수를 0으로 초기화
                 )
 
 
@@ -400,7 +403,7 @@ class CreateRoomActivity : AppCompatActivity() {
                         Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
 
                         // HomeFragment로 이동 (auction의 ID를 전달)
-                        val intent = Intent(this, HomeFragment::class.java).apply {
+                        val intent = Intent(this, MainActivity::class.java).apply {
                             putExtra("fragment", "home")
                             putExtra("auction_id", auctionRef.key) // auction의 고유 ID를 전달
                         }
