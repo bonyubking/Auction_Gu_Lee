@@ -117,9 +117,10 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // 리스너 제거
-        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-            .removeEventListener(messagesListener)
+        messagesListener?.let {
+            database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+                .removeEventListener(it)
+        }
     }
 
     // 여기에 onResume() 메서드 추가
@@ -377,43 +378,47 @@ class ChatActivity : AppCompatActivity() {
     private fun loadChatMessages(bidderUid: String) {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val chatList = mutableListOf<ChatItem>()
-                    val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
+        // messagesListener 초기화 및 할당
+        messagesListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val chatList = mutableListOf<ChatItem>()
+                val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
 
-                    for (messageSnapshot in snapshot.children) {
-                        val chatItem = messageSnapshot.getValue(ChatItem::class.java) ?: continue  // null 체크 후 continue
-                        chatList.add(chatItem)
-                        Log.d("ChatActivity", "Loaded chat item: $chatItem")
+                for (messageSnapshot in snapshot.children) {
+                    val chatItem = messageSnapshot.getValue(ChatItem::class.java) ?: continue  // null 체크 후 continue
+                    chatList.add(chatItem)
+                    Log.d("ChatActivity", "Loaded chat item: $chatItem")
 
-                        val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
+                    val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
 
-                        // 액티비티가 가시적인 경우에만 읽음 처리
-                        if (isActivityVisible) {
-                            // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
-                            if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
-                                // isRead 값을 true로 설정
-                                updates["$messageKey/isRead"] = true
-                            }
+                    // 액티비티가 가시적인 경우에만 읽음 처리
+                    if (isActivityVisible) {
+                        // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
+                        if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
+                            // isRead 값을 true로 설정
+                            updates["$messageKey/isRead"] = true
                         }
                     }
-
-                    // 채팅 UI 업데이트
-                    updateChatUI(chatList)
-
-                    // 읽음 상태 업데이트
-                    if (updates.isNotEmpty()) {
-                        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-                            .updateChildren(updates)
-                    }
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // 에러 처리
+                // 채팅 UI 업데이트
+                updateChatUI(chatList)
+
+                // 읽음 상태 업데이트
+                if (updates.isNotEmpty()) {
+                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+                        .updateChildren(updates)
                 }
-            })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatActivity", "Failed to load chat messages: ${error.message}")
+            }
+        }
+
+        // 리스너 등록
+        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+            .addValueEventListener(messagesListener)
     }
 
 
