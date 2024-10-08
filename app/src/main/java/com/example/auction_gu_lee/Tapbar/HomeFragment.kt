@@ -203,28 +203,66 @@ class HomeFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
                 auctionIdList.clear()
+
+                val updateTasks = mutableListOf<DatabaseReference>() // 카테고리 업데이트 목록
+
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
-                    auction?.let {
-                        val currentTime = System.currentTimeMillis()
-                        if (auction.endTime is Long && auction.endTime > currentTime) {
-                            // 남은 시간이 0이 아니고, 경매가 종료되지 않은 경우에만 목록에 추가
-                            auctionList.add(it)
-                            auctionIdList.add(auctionSnapshot.key ?: "")
+
+                    // 경매가 null이면 무시 (continue 대신 if 문 사용)
+                    if (auction == null) {
+                        continue  // 여기서 발생하는 오류는 `continue` 키워드를 잘못된 위치에서 사용한 것입니다.
+                    }
+
+                    val currentTime = System.currentTimeMillis()
+                    val auctionId = auctionSnapshot.key ?: ""
+
+                    if (auctionId.isEmpty()) {
+                        continue
+                    }
+
+                    // 경매 종료 여부 체크 및 카테고리 업데이트
+                    if (auction.endTime != null && auction.endTime!! <= currentTime) {
+                        // 만약 종료되었으면 카테고리를 "past"로 업데이트
+                        if (auction.category != "past") {
+                            auctionRef.child(auctionId).child("category").setValue("past")
+                            updateTasks.add(auctionRef.child(auctionId)) // 업데이트 목록에 추가
+                        }
+                    } else if (auction.endTime != null && auction.endTime!! > currentTime && auction.category == "home") {
+                        // 종료되지 않은 경매만 목록에 추가
+                        auctionList.add(auction)
+                        auctionIdList.add(auctionId)
+                    }
+                }
+
+                // 모든 업데이트가 끝난 후, 목록을 다시 정렬하고 업데이트
+                if (updateTasks.isEmpty()) {
+                    sortAndRefreshUI()
+                } else {
+                    for (task in updateTasks) {
+                        task.child("category").setValue("past").addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                sortAndRefreshUI()
+                            }
                         }
                     }
                 }
-                // 역순으로 정렬 (가장 최근 경매가 맨 위로 오게)
-                // 현재 선택된 정렬 기준에 따라 정렬
-                sortAuctionListBy(currentSortType)
-                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
-                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
+                swipeRefreshLayout.isRefreshing = false
             }
         })
     }
+
+    private fun sortAndRefreshUI() {
+        sortAuctionListBy(currentSortType)
+        auctionAdapter.notifyDataSetChanged()
+        swipeRefreshLayout.isRefreshing = false
+    }
+
+
+
 
 }

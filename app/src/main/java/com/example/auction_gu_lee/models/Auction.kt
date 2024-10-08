@@ -6,9 +6,9 @@ data class Auction(
     val username: String? = null,
     val quantity: String? = null,
     val detail: String? = null,
-    val startingPrice: Long? = null,
+    var startingPrice: Long? = 0L,  // 기본값 0L로 설정
     val remainingTime: String? = null,
-    var highestPrice: Long? = null,
+    var highestPrice: Long? = 0L,  // 기본값 0L로 설정
     val photoUrl: String? = null,
     val timestamp: Long? = null,
     val endTime: Long? = null,
@@ -16,7 +16,8 @@ data class Auction(
     var highestBidderUid: String? = null,
     val uid: String? = null,
     val chats: Map<String, ChatItem>? = null,
-    var favoritesCount: Int? = 0,    // 찜 수
-    var biddersCount: Int? = 0 ,      // 입찰자 수
-    var participants: MutableMap<String, Long> = mutableMapOf()  // UID와 입찰가를 저장할 수 있도록 변경
+    var favoritesCount: Int? = 0,    // 기본값 0으로 설정
+    var biddersCount: Int? = 0,      // 기본값 0으로 설정
+    var participants: MutableMap<String, Long> = mutableMapOf(),
+    var category: String? = null  // 카테고리 필드 추가
 )

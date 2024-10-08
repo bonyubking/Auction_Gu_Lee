@@ -1,12 +1,11 @@
 package com.example.auction_gu_lee.Tapbar
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.Toast
-import android.content.Intent
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,11 +24,12 @@ class PastFragment : Fragment() {
     private lateinit var auctionList: MutableList<Auction>
     private lateinit var auctionIdList: MutableList<String>
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var sortSpinner: Spinner
+    private var currentSortType: String = "time"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 뒤로가기 버튼 비활성화
         requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // 뒤로가기 버튼 동작을 무효화
@@ -47,7 +47,6 @@ class PastFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // SwipeRefreshLayout 설정
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
         swipeRefreshLayout.setOnRefreshListener {
             fetchLatestAuctions()
@@ -57,22 +56,24 @@ class PastFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // DividerItemDecoration 추가 (구분선 추가)
+        // DividerItemDecoration 추가
         val dividerItemDecoration = DividerItemDecoration(recyclerView.context, LinearLayoutManager.VERTICAL)
         recyclerView.addItemDecoration(dividerItemDecoration)
 
-        // fragment_home.xml의 ImageView를 가져와서 클릭 리스너 설정
+        // ImageView 클릭 이벤트 설정
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
             val intent = Intent(requireContext(), SearchRoomActivity::class.java)
             startActivity(intent)
         }
 
+        // Spinner 초기화
+        setupSortSpinner(view)
+
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
         auctionIdList = mutableListOf()
         auctionAdapter = AuctionAdapter(auctionList) { auction ->
-            // 경매 항목 클릭 시 AuctionRoomActivity로 이동
             val position = auctionList.indexOf(auction)
             val auctionId = auctionIdList[position]
 
@@ -89,14 +90,65 @@ class PastFragment : Fragment() {
         }
         recyclerView.adapter = auctionAdapter
 
-        // 최신 데이터를 자동으로 로드하지 않음
-        // 사용자가 다른 화면에서 돌아오거나, 수동으로 새로고침을 할 때만 데이터 로드
+        // **화면이 생성될 때 즉시 데이터 로드**
+        fetchLatestAuctions()
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 화면이 다시 보일 때 최신 데이터를 가져옴
-        fetchLatestAuctions()
+    // Spinner 설정 메서드 추가
+    private fun setupSortSpinner(view: View) {
+        sortSpinner = view.findViewById(R.id.sortSpinner)
+
+        val sortOptions = arrayOf("등록시간", "입찰자", "관심", "입찰가(높은 순)", "입찰가(낮은 순)", "시작가(높은 순)", "시작가(낮은 순)")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        sortSpinner.adapter = adapter
+
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                currentSortType = when (position) {
+                    0 -> "time"
+                    1 -> "participants"
+                    2 -> "favorites"
+                    3 -> "highestPriceDesc"
+                    4 -> "highestPriceAsc"
+                    5 -> "startingPriceDesc"
+                    6 -> "startingPriceAsc"
+                    else -> "time"
+                }
+                sortAuctionListBy(currentSortType)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+    }
+
+    // 정렬 로직 추가
+    private fun sortAuctionListBy(sortType: String) {
+        val auctionPairs = auctionList.zip(auctionIdList).toMutableList()
+
+        when (sortType) {
+            "time" -> auctionPairs.sortByDescending { it.first.timestamp ?: 0L }
+            "participants" -> auctionPairs.sortWith(
+                compareByDescending<Pair<Auction, String>> { it.first.biddersCount ?: 0 }
+                    .thenByDescending { it.first.timestamp ?: 0L }
+            )
+            "favorites" -> auctionPairs.sortWith(
+                compareByDescending<Pair<Auction, String>> { it.first.favoritesCount ?: 0 }
+                    .thenByDescending { it.first.timestamp ?: 0L }
+            )
+            "highestPriceDesc" -> auctionPairs.sortByDescending { it.first.highestPrice ?: 0L }
+            "highestPriceAsc" -> auctionPairs.sortBy { it.first.highestPrice ?: 0L }
+            "startingPriceDesc" -> auctionPairs.sortByDescending { it.first.startingPrice ?: 0L }
+            "startingPriceAsc" -> auctionPairs.sortBy { it.first.startingPrice ?: 0L }
+        }
+
+        val (sortedAuctions, sortedIds) = auctionPairs.unzip()
+        auctionList.clear()
+        auctionList.addAll(sortedAuctions)
+        auctionIdList.clear()
+        auctionIdList.addAll(sortedIds)
+
+        auctionAdapter.notifyDataSetChanged()
     }
 
     private fun fetchLatestAuctions() {
@@ -111,24 +163,20 @@ class PastFragment : Fragment() {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
                         val currentTime = System.currentTimeMillis()
-                        if (auction.endTime is Long && auction.endTime <= currentTime) {
-                            // 남은 시간이 0이거나 경매가 종료된 경우에만 목록에 추가
+                        // category가 "past"인 경우만 필터링
+                        if (auction.endTime is Long && auction.endTime <= currentTime && auction.category == "past") {
                             auctionList.add(it)
                             auctionIdList.add(auctionSnapshot.key ?: "")
                         }
                     }
                 }
-                // 역순으로 정렬 (가장 최근 경매가 맨 위로 오게)
-                auctionList.reverse()
-                auctionIdList.reverse()
-
-                auctionAdapter.notifyDataSetChanged()
-                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
+                sortAuctionListBy(currentSortType)
+                swipeRefreshLayout.isRefreshing = false
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
-                swipeRefreshLayout.isRefreshing = false  // 새로고침 UI 종료
+                swipeRefreshLayout.isRefreshing = false
             }
         })
     }

@@ -419,7 +419,8 @@ class CreateRoomActivity : AppCompatActivity() {
                     "remainingTime" to resultTextView.text.toString(),
                     "creatorUid" to Uid,
                     "biddersCount" to 0,  // 참가자 수를 0으로 초기화
-                    "favoritesCount" to 0  // 찜 수를 0으로 초기화
+                    "favoritesCount" to 0,  // 찜 수를 0으로 초기화
+                    "category" to "home"
                 )
 
 
