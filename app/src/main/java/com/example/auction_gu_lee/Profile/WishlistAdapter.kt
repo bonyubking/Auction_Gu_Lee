@@ -46,20 +46,24 @@ class WishlistAdapter(
         holder.auctionId = auctionItem.id
 
         // 데이터 설정
-        holder.binding.textViewItem.text = auctionItem.item ?: "항목 없음"
-        holder.binding.textViewStartingPrice.text = "${auctionItem.startingPrice ?: 0}₩"
+        holder.binding.textViewItem.text = auctionItem.item ?: "항목 없음"  // 방 이름 설정
+        holder.binding.textViewStartingPrice.text = "${auctionItem.startingPrice ?: 0}₩"  // 시작가 설정
 
+        // 새로운 리스너 설정
         // 새로운 리스너 설정
         auctionItem.id?.let { auctionId ->
             val listener = object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val highestPrice = snapshot.getValue(Long::class.java) ?: auctionItem.startingPrice ?: 0L
-                    holder.binding.textViewHighestPrice.text = "$highestPrice ₩"
+                    val highestPrice = snapshot.getValue(Long::class.java)
 
-                    if (highestPrice > (auctionItem.startingPrice ?: 0L)) {
-                        holder.binding.textViewHighestPrice.setTextColor(android.graphics.Color.RED)
-                    } else {
+                    // 입찰이 없는 경우 "입찰 없음"을 표시
+                    if (highestPrice == null || highestPrice == 0L) {
+                        holder.binding.textViewHighestPrice.text = "입찰 없음"
                         holder.binding.textViewHighestPrice.setTextColor(android.graphics.Color.BLACK)
+                    } else {
+                        // 입찰가가 있는 경우 빨간색으로 입찰가 표시
+                        holder.binding.textViewHighestPrice.text = "$highestPrice ₩"
+                        holder.binding.textViewHighestPrice.setTextColor(android.graphics.Color.RED)
                     }
                 }
 

@@ -28,6 +28,16 @@ class RecentlyViewedAdapter(
         holder.binding.textViewStartingPrice.text = "${auctionItem.startingPrice ?: 0}₩"
         holder.binding.textViewHighestPrice.text = "${auctionItem.highestPrice ?: 0}₩"
 
+        // 입찰이 없는 경우 "입찰 없음" 표시 및 색상 설정
+        if (auctionItem.highestPrice == null || auctionItem.highestPrice == 0L) {
+            holder.binding.textViewHighestPrice.text = "입찰 없음"
+            holder.binding.textViewHighestPrice.setTextColor(holder.binding.root.context.getColor(R.color.black))
+        } else {
+            holder.binding.textViewHighestPrice.text = "${auctionItem.highestPrice}₩"
+            holder.binding.textViewHighestPrice.setTextColor(holder.binding.root.context.getColor(R.color.red)) // 기본 색상 설정
+        }
+
+
         // 남은 시간 설정
         val endTime = auctionItem.endTime
         if (endTime != null) {
