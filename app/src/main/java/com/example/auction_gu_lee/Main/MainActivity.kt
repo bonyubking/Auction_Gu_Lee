@@ -12,10 +12,14 @@ import com.example.auction_gu_lee.Tapbar.PastFragment
 import com.example.auction_gu_lee.Tapbar.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth  // FirebaseAuth 인스턴스 변수 선언
+    private lateinit var database: DatabaseReference  // Firebase Database Reference
+    private var userUid: String? = null  // 현재 사용자 UID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,15 +28,24 @@ class MainActivity : AppCompatActivity() {
 
         // FirebaseAuth 인스턴스 초기화
         auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance().getReference("users")
 
         // 로그인 상태 확인
-        if (auth.currentUser == null) {
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
             // 로그인이 되어 있지 않은 경우 LobbyActivity로 이동
             val intent = Intent(this, LobbyActivity::class.java)
             startActivity(intent)
             finish()
             return
         }
+
+        userUid = currentUser.uid
+        val userEmail = currentUser.email ?: ""
+
+        // 사용자의 loggedin 상태를 true로 설정하고, 연결이 끊어지면 false로 설정
+        setUserOnlineStatus(true)
+
         // BottomNavigationView 설정
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
@@ -83,5 +96,40 @@ class MainActivity : AppCompatActivity() {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.frame_layout, fragment)
         transaction.commit()
+    }
+
+    private fun setUserOnlineStatus(isOnline: Boolean) {
+        if (userUid == null) return
+
+        val userStatusRef = database.child(userUid!!).child("loggedin")
+
+        if (isOnline) {
+            // 온라인 상태 설정
+            userStatusRef.setValue(true)
+
+            // 연결이 끊어지면 자동으로 loggedin을 false로 설정
+            userStatusRef.onDisconnect().setValue(false)
+        } else {
+            // 오프라인 상태 설정
+            userStatusRef.setValue(false)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 앱이 정상적으로 종료될 때 loggedin 상태를 false로 설정
+        setUserOnlineStatus(false)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 앱이 백그라운드로 이동할 때도 loggedin 상태를 false로 설정
+        setUserOnlineStatus(false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 앱이 포그라운드로 돌아올 때 loggedin 상태를 true로 설정
+        setUserOnlineStatus(true)
     }
 }

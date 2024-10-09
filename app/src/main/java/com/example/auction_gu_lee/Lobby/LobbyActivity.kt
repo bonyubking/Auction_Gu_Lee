@@ -37,7 +37,6 @@ class LobbyActivity : AppCompatActivity() {
         passwordEditText = findViewById(R.id.et_password)
         loginButton = findViewById(R.id.btn_login)
         signUpButton = findViewById(R.id.btn_signup)
-        autoLoginCheckBox = findViewById(R.id.checkbox_auto_login)
 
         // 공백 필터 설정
         val noWhiteSpaceFilter = InputFilter { source, _, _, _, _, _ ->
@@ -46,24 +45,15 @@ class LobbyActivity : AppCompatActivity() {
 
         passwordEditText.filters = arrayOf(noWhiteSpaceFilter)
 
-        val sharedPreferences = getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-        // **자동 로그인 설정 확인**
-        val autoLoginEnabled = sharedPreferences.getBoolean("autoLogin", false)
-        Log.d("LobbyActivity", "Auto-login enabled: $autoLoginEnabled")
-        if (autoLoginEnabled) {
-            val savedEmail = sharedPreferences.getString("email", "")
-            val savedPassword = sharedPreferences.getString("password", "")
-            Log.d("LobbyActivity", "Attempting auto-login with email: $savedEmail")
-            if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
-                loginWithEmail(savedEmail, savedPassword, editor)
-            } else {
-                Log.d("LobbyActivity", "Saved email or password is empty.")
-            }
-        } else {
-            Log.d("LobbyActivity", "Auto-login is not enabled.")
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            Log.d("LobbyActivity", "User already logged in: ${currentUser.email}")
+            // 이미 로그인된 경우 MainActivity로 이동
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
+
 
         // **회원가입 버튼 클릭 리스너 설정**
         signUpButton.setOnClickListener {
@@ -84,9 +74,12 @@ class LobbyActivity : AppCompatActivity() {
                         if (task.isSuccessful) {
                             Log.d("LobbyActivity", "Login successful.")
                             val userUid = auth.currentUser?.uid
-                            if (userUid != null) {
-                                // **로그인 상태를 Firebase에 업데이트하고 메인 화면으로 이동**
-                                updateLoginStatusAndNavigate(userUid, email, password, editor)
+                            val userEmail = auth.currentUser?.email
+                            if (userUid != null && userEmail != null) {
+                                // **MainActivity로 이동**
+                                val intent = Intent(this, MainActivity::class.java)
+                                startActivity(intent)
+                                finish()
                             }
                         } else {
                             Log.e("LobbyActivity", "Login failed: ${task.exception?.message}")
@@ -94,16 +87,6 @@ class LobbyActivity : AppCompatActivity() {
                         }
                     }
 
-                // **자동 로그인 체크박스가 체크되어 있으면 자동 로그인 정보 저장**
-                if (autoLoginCheckBox.isChecked) {
-                    Log.d("LobbyActivity", "Auto-login checkbox is checked.")
-                    editor.putBoolean("autoLogin", true)
-                    editor.putString("email", email)
-                    editor.putString("password", password)
-                    editor.apply()
-                } else {
-                    Log.d("LobbyActivity", "Auto-login checkbox is not checked.")
-                }
             } else {
                 Log.d("LobbyActivity", "Email or password is empty.")
                 Toast.makeText(this, "이메일과 비밀번호를 입력하세요.", Toast.LENGTH_SHORT).show()
@@ -122,14 +105,6 @@ class LobbyActivity : AppCompatActivity() {
         database.child(userUid).child("loggedin").setValue(true).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("LobbyActivity", "loggedin set to true successfully.")
-                // 자동 로그인 체크박스가 체크되어 있으면 자동 로그인 정보 SharedPreferences에 저장
-                if (autoLoginCheckBox.isChecked) {
-                    Log.d("LobbyActivity", "Saving auto-login preferences.")
-                    editor.putBoolean("autoLogin", true)
-                    editor.putString("email", email)
-                    editor.putString("password", password)
-                    editor.apply()
-                }
 
                 // 로그인 성공 시 메인 화면으로 이동
                 val intent = Intent(this, MainActivity::class.java)
@@ -140,27 +115,6 @@ class LobbyActivity : AppCompatActivity() {
                 Toast.makeText(this, "로그인 상태 업데이트 실패", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun loginWithEmail(email: String, password: String, editor: SharedPreferences.Editor) {
-        Log.d("LobbyActivity", "Attempting to auto-login with email: $email")
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d("LobbyActivity", "Auto-login successful.")
-                    val userUid = auth.currentUser?.uid
-                    if (userUid != null) {
-                        updateLoginStatusAndNavigate(userUid, email, password, editor)
-                    }
-                } else {
-                    Log.e("LobbyActivity", "Auto-login failed: ${task.exception?.message}")
-                    Toast.makeText(
-                        this,
-                        "자동 로그인 실패: ${task.exception?.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
     }
 
 
