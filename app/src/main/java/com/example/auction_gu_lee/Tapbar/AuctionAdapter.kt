@@ -42,15 +42,22 @@ class AuctionAdapter(
         holder.itemTextView.text = auction.item
         holder.priceTextView.text = "${auction.startingPrice}₩"
 
-        // 최고 가격 표시 및 색상 변경
-        val highestPrice = auction.highestPrice ?: auction.startingPrice ?: 0L
-        holder.highestPriceTextView.text = "$highestPrice ₩"
-
-        // 최고 가격이 시작 가격보다 높을 경우 빨간색으로 표시
-        if (highestPrice > (auction.startingPrice ?: 0L)) {
-            holder.highestPriceTextView.setTextColor(android.graphics.Color.RED)
+        // 입찰자 수에 따라 최고 가격 또는 '입찰 없음' 표시
+        if (auction.biddersCount == null || auction.biddersCount == 0) {
+            // 입찰자가 없을 때
+            holder.highestPriceTextView.text = "입찰 없음"
+            holder.highestPriceTextView.setTextColor(android.graphics.Color.BLACK) // 기본 색상 설정
         } else {
-            holder.highestPriceTextView.setTextColor(android.graphics.Color.BLACK)
+            // 입찰자가 있을 때 최고 가격 표시
+            val highestPrice = auction.highestPrice ?: auction.startingPrice ?: 0L
+            holder.highestPriceTextView.text = "$highestPrice ₩"
+
+            // 최고 가격이 시작 가격보다 높을 경우 빨간색으로 표시
+            if (highestPrice > (auction.startingPrice ?: 0L)) {
+                holder.highestPriceTextView.setTextColor(android.graphics.Color.RED)
+            } else {
+                holder.highestPriceTextView.setTextColor(android.graphics.Color.BLACK)
+            }
         }
 
         // CountDownTimer가 이미 있으면 취소
