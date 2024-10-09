@@ -45,15 +45,20 @@ class RecentlyViewedActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
                 if (snapshot.exists()) {
-                    val auctionIds = mutableListOf<String>()
+                    val auctionInfoList = mutableListOf<Pair<String, Long>>()
                     for (auctionSnapshot in snapshot.children) {
                         val auctionId = auctionSnapshot.key
-                        if (auctionId != null) {
-                            auctionIds.add(auctionId)
+                        val timestamp = auctionSnapshot.child("timestamp").getValue(Long::class.java)
+                        if (auctionId != null && timestamp != null) {
+                            auctionInfoList.add(Pair(auctionId, timestamp))
                         }
                     }
-                    // 가져온 auctionIds를 사용하여 해당 경매 정보를 불러옴
-                    loadAuctionsDetails(auctionIds)
+
+                    // 타임스탬프를 기준으로 정렬
+                    auctionInfoList.sortByDescending { it.second }
+
+                    // 정렬된 ID로 경매 정보 로드
+                    loadAuctionsDetails(auctionInfoList.map { it.first })
                 } else {
                     adapter.notifyDataSetChanged()
                     Toast.makeText(this@RecentlyViewedActivity, "최근 본 내역이 없습니다.", Toast.LENGTH_SHORT).show()
@@ -68,8 +73,6 @@ class RecentlyViewedActivity : AppCompatActivity() {
 
     private fun loadAuctionsDetails(auctionIds: List<String>) {
         auctionList.clear()
-        var auctionsLoaded = 0
-
         for (auctionId in auctionIds) {
             val auctionRef = databaseReference.child("auctions").child(auctionId)
             auctionRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -78,14 +81,7 @@ class RecentlyViewedActivity : AppCompatActivity() {
                     if (auction != null) {
                         auction.id = auctionId
                         auctionList.add(auction)
-                    }
-
-                    // 모든 경매 데이터를 불러왔을 때만 정렬
-                    auctionsLoaded++
-                    if (auctionsLoaded == auctionIds.size) {
-                        // 최신순으로 정렬
-                        auctionList.sortByDescending { it.timestamp ?: 0L }
-                        adapter.notifyDataSetChanged()  // 어댑터에 데이터 변경 알림
+                        adapter.notifyDataSetChanged()  // 데이터 변경 후 어댑터 업데이트
                     }
                 }
 

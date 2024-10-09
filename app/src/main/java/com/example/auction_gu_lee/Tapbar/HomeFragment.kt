@@ -268,12 +268,14 @@ class HomeFragment : Fragment() {
     private fun addToRecentlyViewed(auctionId: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val userId = currentUser.uid
+        val currentTime = System.currentTimeMillis()  // 현재 시각의 타임스탬프
 
         val databaseReference = FirebaseDatabase.getInstance().reference
         val recentlyViewedRef = databaseReference.child("users").child(userId).child("recentlyviewed").child(auctionId)
 
-        // 최근 본 경매 ID를 true 값으로 저장 (중복되지 않게)
-        recentlyViewedRef.setValue(true)
+        // auctionId와 함께 현재 타임스탬프를 저장
+        val data = mapOf("timestamp" to currentTime)
+        recentlyViewedRef.setValue(data)  // 중복 클릭 시 타임스탬프 업데이트
     }
 
 
