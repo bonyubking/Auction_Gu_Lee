@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- 상품 이미지 -->
+    <ImageView
+        android:id="@+id/imageView_photo"
+        android:layout_width="92dp"
+        android:layout_height="91dp"
+        android:layout_marginStart="8dp"
+        android:scaleType="centerCrop"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <LinearLayout
+        android:layout_width="134dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Item Name"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="상품명" />
+
+        <TextView
+            android:id="@+id/textView_startingPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Starting Price"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="₩100,000" />
+
+        <TextView
+            android:id="@+id/textView_remainingTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="남은시간" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="134dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView_recent_view_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text=""
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="최근 본 항목" />
+
+        <TextView
+            android:id="@+id/textView_highestPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Highest Price"
+            android:textColor="#FF0000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="₩200,000" />
+
+        <TextView
+            android:id="@+id/textView_detail_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

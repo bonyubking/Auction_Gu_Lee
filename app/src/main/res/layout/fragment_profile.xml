@@ -57,7 +57,7 @@
             <!-- 판매 내역  -->
 
             <TextView
-                android:id="@+id/btn_recent_view"
+                android:id="@+id/btn_recently_viewed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"

@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback
 import com.example.auction_gu_lee.Lobby.LobbyActivity
 import com.example.auction_gu_lee.Profile.BiddingHistoryActivity
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
+import com.example.auction_gu_lee.Profile.RecentlyViewedActivity
 import com.example.auction_gu_lee.Profile.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.WishlistActivity
 import com.example.auction_gu_lee.R
@@ -84,9 +85,10 @@ class ProfileFragment : Fragment() {
 
     private fun setUpButtonListeners(view: View) {
         // 최근 본 내역 버튼 클릭 리스너 설정
-        val recentViewButton = view.findViewById<TextView>(R.id.btn_recent_view)
+        val recentViewButton = view.findViewById<TextView>(R.id.btn_recently_viewed)
         recentViewButton.setOnClickListener {
-            Toast.makeText(requireContext(), "최근 본 내역 버튼 클릭됨", Toast.LENGTH_SHORT).show()
+            val intent = Intent(requireContext(), RecentlyViewedActivity::class.java)
+            startActivity(intent)
         }
 
         // 판매 내역 버튼 클릭 리스너 설정

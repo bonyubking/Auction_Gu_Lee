@@ -63,6 +63,10 @@ class AuctionAdapter(
         // CountDownTimer가 이미 있으면 취소
         holder.countDownTimer?.cancel()
 
+        holder.itemView.setOnClickListener{
+            itemClickListener(auction)
+        }
+
         // 경매 종료 시간을 Long으로 처리 (endTime이 null일 수 있으므로 처리)
         val endTime = auction.endTime
         if (endTime != null) {

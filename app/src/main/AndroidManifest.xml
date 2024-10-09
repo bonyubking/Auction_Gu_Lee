@@ -72,6 +72,8 @@
 
         <activity android:name=".Profile.BiddingHistoryActivity" />
 
+        <activity android:name=".Profile.RecentlyViewedActivity" />
+
         <activity android:name=".Profile.DeleteDataActivity"></activity>
 
     </application>

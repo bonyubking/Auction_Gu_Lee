@@ -23,6 +23,7 @@ import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.auth.FirebaseAuth
 
 class HomeFragment : Fragment() {
 
@@ -98,10 +99,12 @@ class HomeFragment : Fragment() {
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
         auctionIdList = mutableListOf()
-        auctionAdapter = AuctionAdapter(auctionList) { auction ->
-            // 경매 항목 클릭 시 AuctionRoomActivity로 이동
+        auctionAdapter = AuctionAdapter(auctionList, { auction ->
             val position = auctionList.indexOf(auction)
             val auctionId = auctionIdList[position]
+
+            // Recently Viewed에 경매 ID 추가
+            addToRecentlyViewed(auctionId)
 
             val intent = Intent(requireContext(), AuctionRoomActivity::class.java).apply {
                 putExtra("auction_id", auctionId)
@@ -113,7 +116,7 @@ class HomeFragment : Fragment() {
                 putExtra("remaining_time", remainingTime)
             }
             startActivity(intent)
-        }
+        })
         recyclerView.adapter = auctionAdapter
 
         // 최신 데이터를 자동으로 로드하지 않음
@@ -260,6 +263,17 @@ class HomeFragment : Fragment() {
         sortAuctionListBy(currentSortType)
         auctionAdapter.notifyDataSetChanged()
         swipeRefreshLayout.isRefreshing = false
+    }
+
+    private fun addToRecentlyViewed(auctionId: String) {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val userId = currentUser.uid
+
+        val databaseReference = FirebaseDatabase.getInstance().reference
+        val recentlyViewedRef = databaseReference.child("users").child(userId).child("recentlyviewed").child(auctionId)
+
+        // 최근 본 경매 ID를 true 값으로 저장 (중복되지 않게)
+        recentlyViewedRef.setValue(true)
     }
 
 
