@@ -28,7 +28,27 @@ class BiddingHistoryActivity : AppCompatActivity() {
         binding = ActivityBiddingHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = BiddingHistoryAdapter(filteredList) { auctionId ->
+        // 초기 경고 팝업 상태를 체크박스와 동기화
+        val isRebidWarningEnabled = binding.checkboxRebidWarning.isChecked
+
+        // Adapter 초기화 시 체크박스의 초기 상태를 전달
+        adapter = BiddingHistoryAdapter(filteredList, isRebidWarningEnabled) { auctionId ->
+            val intent = Intent(this, AuctionRoomActivity::class.java)
+            intent.putExtra("auction_id", auctionId)
+            startActivity(intent)
+        }
+
+        binding.biddingHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.biddingHistoryRecyclerView.adapter = adapter
+
+        // 체크박스 상태 변경 시 Adapter에 상태 업데이트
+        binding.checkboxRebidWarning.setOnCheckedChangeListener { _, isChecked ->
+            adapter.setRebidWarningEnabled(isChecked)  // Adapter에 상태 변경 알림
+        }
+
+        loadBiddingHistory()
+
+        adapter = BiddingHistoryAdapter(filteredList, isRebidWarningEnabled) { auctionId ->
             val intent = Intent(this, AuctionRoomActivity::class.java)
             intent.putExtra("auction_id", auctionId)
             startActivity(intent)

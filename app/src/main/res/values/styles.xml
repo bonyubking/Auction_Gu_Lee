@@ -1,0 +1,7 @@
+<resources>
+    <style name="CustomButtonTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">#FF9800</item>
+        <item name="colorPrimaryDark">#F57C00</item>
+        <item name="colorAccent">#FF9800</item>
+    </style>
+</resources>

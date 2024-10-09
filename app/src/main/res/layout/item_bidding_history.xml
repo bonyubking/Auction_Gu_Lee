@@ -16,15 +16,17 @@
         android:scaleType="centerCrop"
         tools:srcCompat="@tools:sample/avatars" />
 
+    <!-- 상품 정보 레이아웃 -->
     <LinearLayout
         android:layout_width="134dp"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- 상품명 -->
         <TextView
             android:id="@+id/textView_item"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:text="Item Name"
@@ -32,10 +34,11 @@
             android:textStyle="bold"
             tools:text="대게" />
 
+        <!-- 시작 가격 -->
         <TextView
             android:id="@+id/textView_startingPrice"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:text="Starting Price"
@@ -43,10 +46,11 @@
             android:textStyle="bold"
             tools:text="$100" />
 
+        <!-- 남은 시간 -->
         <TextView
             android:id="@+id/textView_remainingTime"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:textSize="14sp"
@@ -55,26 +59,29 @@
 
     </LinearLayout>
 
+    <!-- 입찰 정보 레이아웃 -->
     <LinearLayout
         android:layout_width="134dp"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- 입찰 상태 (높이와 너비 조정) -->
         <TextView
             android:id="@+id/textView_bid_status"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text=""
+            android:text="진행 중"
             android:textSize="14sp"
             android:textStyle="bold"
             tools:text="진행 중" />
 
+        <!-- 현재 최고가 (높이와 너비 조정) -->
         <TextView
             android:id="@+id/textView_highestPrice"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:text="Highest Price"
@@ -83,14 +90,25 @@
             android:textStyle="bold"
             tools:text="$200" />
 
-        <TextView
-            android:id="@+id/textView_detailempty"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
+        <!-- 재입찰 버튼 (높이와 너비 조정) -->
+        <Button
+            android:id="@+id/btn_rebid"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
             android:layout_weight="1"
+            android:background="@drawable/button_rounded"
+            android:backgroundTint="#FF5722"
             android:gravity="center"
-            android:textSize="14sp" />
-
+            android:padding="4dp"
+            android:text="재입찰"
+            android:textColor="#FFFFFF"
+            android:textColorLink="#FF5722"
+            android:textSize="12sp"
+            android:theme="@style/CustomButtonTheme"
+            tools:text="재입찰" />
     </LinearLayout>
+
+
 
 </LinearLayout>

@@ -36,6 +36,8 @@
             android:contentDescription="검색"
             android:scaleType="centerInside"
             android:src="@drawable/icon_magnifier" />
+
+        <!-- 재입찰 경고 팝업 체크박스 -->
     </LinearLayout>
 
     <!-- 검색창 레이아웃 (처음엔 숨김) -->
@@ -79,11 +81,26 @@
         android:textSize="18sp"
         android:visibility="gone" />
 
-    <!-- 입찰 내역 RecyclerView -->
+    <!-- 입찰 내역 RecyclerView (높이 조정) -->
+
+    <CheckBox
+        android:id="@+id/checkbox_rebid_warning"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:checked="true"
+        android:padding="4dp"
+        android:text="재입찰 시 경고 팝업 활성화"
+        android:textColor="#A0A0A0"
+        android:textSize="14sp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/bidding_history_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_weight="1"
         tools:listitem="@layout/item_bidding_history" />
 
 </LinearLayout>

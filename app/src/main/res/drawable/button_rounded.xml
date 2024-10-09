@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 둥근 모서리 설정 -->
+    <corners android:radius="12dp" />
+
+    <!-- 배경색 주황색 설정 -->
+    <solid android:color="#FF9800" />
+
+    <!-- 패딩 설정 (내부 여백) -->
+    <padding
+        android:left="4dp"
+        android:top="4dp"
+        android:right="4dp"
+        android:bottom="4dp" />
+
+    <!-- 버튼의 외곽선 (선택 사항, 필요 없으면 삭제) -->
+    <stroke
+        android:width="1dp"
+        android:color="#FFFFFF" />
+</shape>
