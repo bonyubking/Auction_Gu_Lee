@@ -25,7 +25,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         // FirebaseAuth 인스턴스 초기화
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("users")
@@ -41,7 +40,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         userUid = currentUser.uid
-        val userEmail = currentUser.email ?: ""
 
         // 사용자의 loggedin 상태를 true로 설정하고, 연결이 끊어지면 false로 설정
         setUserOnlineStatus(true)
