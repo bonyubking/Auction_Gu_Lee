@@ -24,6 +24,7 @@
         android:layout_marginTop="148dp"
         android:layout_marginEnd="51dp"
         android:alpha="1"
+        android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@."
         android:backgroundTint="#DCDCDC"
         android:gravity="center"
         android:inputType="text"

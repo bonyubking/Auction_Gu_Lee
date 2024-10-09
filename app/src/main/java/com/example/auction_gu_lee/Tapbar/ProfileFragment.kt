@@ -3,6 +3,7 @@ package com.example.auction_gu_lee.Tapbar
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import com.example.auction_gu_lee.Lobby.LobbyActivity
 import com.example.auction_gu_lee.Profile.BiddingHistoryActivity
 import com.example.auction_gu_lee.Profile.DeleteDataActivity
 import com.example.auction_gu_lee.Profile.SalesHistoryActivity
@@ -173,6 +175,7 @@ class ProfileFragment : Fragment() {
             builder.setPositiveButton("예") { _, _ ->
                 val user = FirebaseAuth.getInstance().currentUser
                 if (user != null) {
+                    Log.d("ProfileFragment", "Logging out user: ${user.uid}")
                     // Realtime Database에서 loggedin을 false로 업데이트
                     val databaseReference = FirebaseDatabase.getInstance().getReference("users").child(user.uid)
                     val updates = mapOf<String, Any>("loggedin" to false)
@@ -180,14 +183,29 @@ class ProfileFragment : Fragment() {
                     // 로그아웃 전에 데이터베이스 업데이트 수행
                     databaseReference.updateChildren(updates).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            // 데이터베이스 업데이트가 완료되면 로그아웃 수행
+                            Log.d("ProfileFragment", "loggedin set to false successfully.")
+                            // FirebaseAuth에서 로그아웃
                             FirebaseAuth.getInstance().signOut()
+                            Log.d("ProfileFragment", "FirebaseAuth signOut completed.")
+
+                            // SharedPreferences 초기화 및 autoLogin을 false로 설정
+                            val sharedPreferences = requireContext().getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
+                            val editor = sharedPreferences.edit()
+                            editor.putBoolean("autoLogin", false)
+                            editor.remove("email")
+                            editor.remove("password")
+                            editor.apply()
+                            Log.d("ProfileFragment", "autoLogin set to false and credentials removed.")
+
+                            // LobbyActivity로 이동
                             moveToLobbyActivity()
                         } else {
+                            Log.e("ProfileFragment", "Failed to update loggedin: ${task.exception?.message}")
                             Toast.makeText(currentActivity, "로그아웃 상태 업데이트 실패", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
+                    Log.e("ProfileFragment", "No current user found during logout.")
                     Toast.makeText(currentActivity, "사용자 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -198,13 +216,13 @@ class ProfileFragment : Fragment() {
         }
     }
 
-
     private fun moveToLobbyActivity() {
         val currentActivity = activity
         if (currentActivity != null) {
-            val intent = Intent(currentActivity, com.example.auction_gu_lee.Lobby.LobbyActivity::class.java)
+            val intent = Intent(currentActivity, LobbyActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
+            Log.d("ProfileFragment", "Navigated to LobbyActivity.")
         }
     }
 }

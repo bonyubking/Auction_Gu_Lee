@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import android.os.Handler
 import android.os.Looper
+import android.text.InputFilter
 import android.view.View
 
 class SignUpActivity : AppCompatActivity() {
@@ -54,6 +55,25 @@ class SignUpActivity : AppCompatActivity() {
 
         // 회원가입 버튼 초기에는 비활성화
         signUpButton.isEnabled = false
+
+        // 한글과 영어만 허용하는 필터 생성
+        val nameFilter = InputFilter { source, _, _, _, _, _ ->
+            // 한글, 영문 대소문자 외의 문자가 포함되어 있다면 필터링
+            if (source.matches(Regex("^[a-zA-Z가-힣]*$"))) null else ""
+        }
+
+        // 이름 EditText에 필터 적용
+        nameEditText.filters = arrayOf(nameFilter)
+
+        // 공백 입력 방지 필터 생성
+        val noWhiteSpaceFilter = InputFilter { source, _, _, _, _, _ ->
+            // 공백이 포함되면 필터링
+            if (source.contains(" ")) "" else null
+        }
+
+        // 비밀번호와 비밀번호 확인 필드에 공백 필터 적용
+        passwordEditText.filters = arrayOf(noWhiteSpaceFilter)
+        passwordConfirmEditText.filters = arrayOf(noWhiteSpaceFilter)
 
         // "이메일 인증" 버튼 클릭 리스너
         sendVerificationButton.setOnClickListener {

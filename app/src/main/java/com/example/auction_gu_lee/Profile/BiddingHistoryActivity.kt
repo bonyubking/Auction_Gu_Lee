@@ -3,8 +3,10 @@ package com.example.auction_gu_lee.Profile
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
 import com.example.auction_gu_lee.R
@@ -17,6 +19,7 @@ class BiddingHistoryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityBiddingHistoryBinding
     private val auctionList = mutableListOf<Auction>()
+    private val filteredList = mutableListOf<Auction>()
     private lateinit var adapter: BiddingHistoryAdapter
     private val databaseReference = FirebaseDatabase.getInstance().reference
 
@@ -25,8 +28,7 @@ class BiddingHistoryActivity : AppCompatActivity() {
         binding = ActivityBiddingHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = BiddingHistoryAdapter(auctionList) { auctionId ->
-            // AuctionRoomActivity로 이동
+        adapter = BiddingHistoryAdapter(filteredList) { auctionId ->
             val intent = Intent(this, AuctionRoomActivity::class.java)
             intent.putExtra("auction_id", auctionId)
             startActivity(intent)
@@ -35,14 +37,44 @@ class BiddingHistoryActivity : AppCompatActivity() {
         binding.biddingHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.biddingHistoryRecyclerView.adapter = adapter
 
+        // 검색 버튼 클릭 시 제목 숨기고 검색창 표시
+        binding.btnSearch.setOnClickListener {
+            binding.headerLayout.visibility = View.GONE
+            binding.searchLayout.visibility = View.VISIBLE
+            binding.searchEditText.requestFocus()
+        }
+
+        // 검색창 닫기 버튼 클릭 시 제목 표시 및 검색창 숨김
+        binding.btnCloseSearch.setOnClickListener {
+            binding.searchEditText.setText("")
+            binding.headerLayout.visibility = View.VISIBLE
+            binding.searchLayout.visibility = View.GONE
+            binding.noResultsText.visibility = View.GONE
+            filteredList.clear()
+            filteredList.addAll(auctionList)  // 전체 목록 다시 표시
+            adapter.notifyDataSetChanged()
+        }
+
         loadBiddingHistory()
+
+        // 검색어 입력 시마다 필터링 수행
+        binding.searchEditText.addTextChangedListener { text ->
+            val query = text.toString().trim()
+            if (query.isNotEmpty()) {
+                filterBiddingHistory(query)
+            } else {
+                filteredList.clear()
+                filteredList.addAll(auctionList)
+                adapter.notifyDataSetChanged()
+                binding.noResultsText.visibility = View.GONE
+            }
+        }
     }
 
     private fun loadBiddingHistory() {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val userId = currentUser.uid
 
-        // 모든 경매 데이터를 가져옴
         databaseReference.child("auctions").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
@@ -51,29 +83,42 @@ class BiddingHistoryActivity : AppCompatActivity() {
                         val auction = auctionSnapshot.getValue(Auction::class.java)
                         val auctionId = auctionSnapshot.key
 
-                        // auction이 null이 아니고 auctionId가 null이 아닐 때만 처리
                         if (auction != null && auctionId != null) {
                             auction.id = auctionId
-
-                            // 해당 경매의 participants에 사용자의 UID가 있는지 확인
                             val participantsSnapshot = auctionSnapshot.child("participants")
                             if (participantsSnapshot.hasChild(userId)) {
                                 auctionList.add(auction)
                             }
                         }
                     }
-                    // 입찰 내역 리스트를 최신 순으로 정렬하고 UI 갱신
-                    auctionList.sortByDescending { it.timestamp }
-                    adapter.notifyDataSetChanged()
-                } else {
-                    adapter.notifyDataSetChanged()  // 입찰 내역이 비었을 때 UI 갱신
+                    filteredList.clear()
+                    filteredList.addAll(auctionList)  // 전체 데이터를 filteredList에 저장
+                    filterBiddingHistory(binding.searchEditText.text.toString()) // 검색된 상태 유지
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(this@BiddingHistoryActivity, "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
-                Log.e("FirebaseError", "데이터 읽기 실패: ${error.message}")
             }
         })
+    }
+
+    private fun filterBiddingHistory(query: String) {
+        filteredList.clear()
+        val lowerCaseQuery = query.lowercase()
+
+        for (auction in auctionList) {
+            if (auction.item?.lowercase()?.contains(lowerCaseQuery) == true) {
+                filteredList.add(auction)
+            }
+        }
+
+        if (filteredList.isEmpty()) {
+            binding.noResultsText.visibility = View.VISIBLE
+        } else {
+            binding.noResultsText.visibility = View.GONE
+        }
+
+        adapter.notifyDataSetChanged()
     }
 }

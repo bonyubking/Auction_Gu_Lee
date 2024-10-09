@@ -1,21 +1,38 @@
 package com.example.auction_gu_lee.Main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.auction_gu_lee.Lobby.LobbyActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.ChatFragment
 import com.example.auction_gu_lee.Tapbar.HomeFragment
 import com.example.auction_gu_lee.Tapbar.PastFragment
 import com.example.auction_gu_lee.Tapbar.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var auth: FirebaseAuth  // FirebaseAuth 인스턴스 변수 선언
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
+        // FirebaseAuth 인스턴스 초기화
+        auth = FirebaseAuth.getInstance()
+
+        // 로그인 상태 확인
+        if (auth.currentUser == null) {
+            // 로그인이 되어 있지 않은 경우 LobbyActivity로 이동
+            val intent = Intent(this, LobbyActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
         // BottomNavigationView 설정
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
