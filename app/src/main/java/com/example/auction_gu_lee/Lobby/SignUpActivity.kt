@@ -14,7 +14,6 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.messaging.FirebaseMessaging
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -69,7 +68,6 @@ class SignUpActivity : AppCompatActivity() {
 
         // 한글과 영어만 허용하는 필터 생성
         val nameFilter = InputFilter { source, _, _, _, _, _ ->
-            // 한글, 영문 대소문자 외의 문자가 포함되어 있다면 필터링
             if (source.matches(Regex("^[a-zA-Z가-힣]*$"))) null else ""
         }
 
@@ -78,7 +76,6 @@ class SignUpActivity : AppCompatActivity() {
 
         // 공백 입력 방지 필터 생성
         val noWhiteSpaceFilter = InputFilter { source, _, _, _, _, _ ->
-            // 공백이 포함되면 필터링
             if (source.contains(" ")) "" else null
         }
 
@@ -128,7 +125,6 @@ class SignUpActivity : AppCompatActivity() {
                             Toast.makeText(this, "인증 이메일을 보냈습니다. 이메일을 확인하세요.", Toast.LENGTH_LONG).show()
                             isVerificationEmailSent = true // 이메일 인증 플래그 업데이트
                             auth.signOut()
-                            // 이메일 인증 확인 시작
                             checkEmailVerified(email, password)
                         } else {
                             Toast.makeText(this, "이메일 인증 발송 실패: ${emailTask.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -154,7 +150,6 @@ class SignUpActivity : AppCompatActivity() {
                         if (emailTask.isSuccessful) {
                             Toast.makeText(this, "인증 이메일을 다시 보냈습니다. 이메일을 확인하세요.", Toast.LENGTH_LONG).show()
                             auth.signOut()
-                            // 이메일 인증 확인 다시 시작
                             checkEmailVerified(email, password)
                         } else {
                             Toast.makeText(this, "이메일 재발송 실패: ${emailTask.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -169,25 +164,21 @@ class SignUpActivity : AppCompatActivity() {
     private fun checkEmailVerified(email: String, password: String) {
         emailCheckRunnable = object : Runnable {
             override fun run() {
-                // 이메일 인증 여부 확인을 위해 로그인 시도
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val user = auth.currentUser
                             if (user != null && user.isEmailVerified) {
-                                // 이메일 인증 완료
                                 auth.signOut()
                                 signUpButton.isEnabled = true
                                 Toast.makeText(this@SignUpActivity, "이메일 인증이 완료되었습니다. 회원가입 버튼을 눌러 진행하세요.", Toast.LENGTH_SHORT).show()
-                                handler.removeCallbacks(this) // 이메일 인증 확인 중지
+                                handler.removeCallbacks(this)
                             } else {
-                                // 이메일 인증 미완료
                                 auth.signOut()
-                                handler.postDelayed(this, 3000) // 3초 후 다시 확인
+                                handler.postDelayed(this, 3000)
                             }
                         } else {
-                            // 로그인 실패 (아직 계정 활성화 안됨)
-                            handler.postDelayed(this, 3000) // 3초 후 다시 확인
+                            handler.postDelayed(this, 3000)
                         }
                     }
             }
@@ -202,22 +193,12 @@ class SignUpActivity : AppCompatActivity() {
         val name = nameEditText.text.toString().trim()
         val phone = phoneEditText.text.toString().trim()
 
-        // 로그인하여 이메일 인증 여부 최종 확인
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null && user.isEmailVerified) {
-                        // FCM 토큰을 가져와서 사용자 정보와 함께 저장
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
-                            if (tokenTask.isSuccessful) {
-                                val token = tokenTask.result
-                                saveUserToFirebaseDatabase(user.uid, username, name, email, phone, token)
-                            } else {
-                                Toast.makeText(this, "FCM 토큰 가져오기 실패: ${tokenTask.exception?.message}", Toast.LENGTH_SHORT).show()
-                                Log.e("SignUpActivity", "FCM Token retrieval failed", tokenTask.exception)
-                            }
-                        }
+                        saveUserToFirebaseDatabase(user.uid, username, name, email, phone)
                     } else {
                         Toast.makeText(this, "이메일 인증이 완료되지 않았습니다.", Toast.LENGTH_SHORT).show()
                         auth.signOut()
@@ -228,14 +209,13 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-    private fun saveUserToFirebaseDatabase(uid: String?, username: String, name: String, email: String, phone: String, token: String) {
+    private fun saveUserToFirebaseDatabase(uid: String?, username: String, name: String, email: String, phone: String) {
         val user = User(
             uid = uid,
             username = username,
             name = name,
             email = email,
-            phone = phone,
-            FCMToken = token
+            phone = phone
         )
         val database = FirebaseDatabase.getInstance().getReference("users")
         database.child(uid ?: "").setValue(user)
@@ -251,10 +231,8 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
-        // 액티비티가 종료될 때 핸들러 제거
         emailCheckRunnable?.let { handler.removeCallbacks(it) }
     }
 }
