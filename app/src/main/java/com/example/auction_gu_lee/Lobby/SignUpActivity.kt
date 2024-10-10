@@ -2,6 +2,10 @@ package com.example.auction_gu_lee.Lobby
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.InputFilter
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -10,10 +14,7 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import android.os.Handler
-import android.os.Looper
-import android.text.InputFilter
-import android.view.View
+import com.google.firebase.messaging.FirebaseMessaging
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -44,6 +45,19 @@ class SignUpActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         // 뷰 초기화
+        initializeViews()
+
+        // 회원가입 버튼 초기에는 비활성화
+        signUpButton.isEnabled = false
+
+        // "이메일 인증" 버튼 클릭 리스너
+        sendVerificationButton.setOnClickListener { sendVerificationEmail() }
+
+        // "회원가입" 버튼 클릭 리스너
+        signUpButton.setOnClickListener { completeSignUp() }
+    }
+
+    private fun initializeViews() {
         usernameEditText = findViewById(R.id.et_username)
         nameEditText = findViewById(R.id.et_name)
         emailEditText = findViewById(R.id.et_email)
@@ -52,9 +66,6 @@ class SignUpActivity : AppCompatActivity() {
         phoneEditText = findViewById(R.id.et_phone)
         sendVerificationButton = findViewById(R.id.btn_send_verification)
         signUpButton = findViewById(R.id.btn_signup)
-
-        // 회원가입 버튼 초기에는 비활성화
-        signUpButton.isEnabled = false
 
         // 한글과 영어만 허용하는 필터 생성
         val nameFilter = InputFilter { source, _, _, _, _, _ ->
@@ -74,44 +85,39 @@ class SignUpActivity : AppCompatActivity() {
         // 비밀번호와 비밀번호 확인 필드에 공백 필터 적용
         passwordEditText.filters = arrayOf(noWhiteSpaceFilter)
         passwordConfirmEditText.filters = arrayOf(noWhiteSpaceFilter)
+    }
 
-        // "이메일 인증" 버튼 클릭 리스너
-        sendVerificationButton.setOnClickListener {
-            val username = usernameEditText.text.toString().trim()
-            val name = nameEditText.text.toString().trim()
-            val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString().trim()
-            val passwordConfirm = passwordConfirmEditText.text.toString().trim()
-            val phone = phoneEditText.text.toString().trim()
+    private fun sendVerificationEmail() {
+        val username = usernameEditText.text.toString().trim()
+        val name = nameEditText.text.toString().trim()
+        val email = emailEditText.text.toString().trim()
+        val password = passwordEditText.text.toString().trim()
+        val passwordConfirm = passwordConfirmEditText.text.toString().trim()
+        val phone = phoneEditText.text.toString().trim()
 
-            if (username.isEmpty() || name.isEmpty() || email.isEmpty() ||
-                password.isEmpty() || phone.isEmpty() || passwordConfirm.isEmpty()) {
-                Toast.makeText(this, "모든 필드를 입력하세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (password != passwordConfirm) {
-                Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (!isVerificationEmailSent) {
-                // 처음으로 이메일 인증 이메일 보내기
-                sendVerificationEmail(email, password)
-                sendVerificationButton.text = "메일 재발송"
-            } else {
-                // 이미 이메일 인증 이메일이 발송된 경우 -> 다시 이메일 발송
-                resendVerificationEmail(email, password)
-            }
+        // 입력된 정보 유효성 확인
+        if (username.isEmpty() || name.isEmpty() || email.isEmpty() ||
+            password.isEmpty() || phone.isEmpty() || passwordConfirm.isEmpty()) {
+            Toast.makeText(this, "모든 필드를 입력하세요.", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        // "회원가입" 버튼 클릭 리스너
-        signUpButton.setOnClickListener {
-            completeSignUp()
+        if (password != passwordConfirm) {
+            Toast.makeText(this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!isVerificationEmailSent) {
+            // 처음으로 이메일 인증 이메일 보내기
+            createAccountAndSendVerification(email, password, username, name, phone)
+            sendVerificationButton.text = "메일 재발송"
+        } else {
+            // 이미 이메일 인증 이메일이 발송된 경우 -> 다시 이메일 발송
+            resendVerificationEmail(email, password)
         }
     }
 
-    private fun sendVerificationEmail(email: String, password: String) {
+    private fun createAccountAndSendVerification(email: String, password: String, username: String, name: String, phone: String) {
         // 계정 생성 및 이메일 인증 발송
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
@@ -123,7 +129,7 @@ class SignUpActivity : AppCompatActivity() {
                             isVerificationEmailSent = true // 이메일 인증 플래그 업데이트
                             auth.signOut()
                             // 이메일 인증 확인 시작
-                            checkEmailVerified()
+                            checkEmailVerified(email, password)
                         } else {
                             Toast.makeText(this, "이메일 인증 발송 실패: ${emailTask.exception?.message}", Toast.LENGTH_SHORT).show()
                         }
@@ -149,7 +155,7 @@ class SignUpActivity : AppCompatActivity() {
                             Toast.makeText(this, "인증 이메일을 다시 보냈습니다. 이메일을 확인하세요.", Toast.LENGTH_LONG).show()
                             auth.signOut()
                             // 이메일 인증 확인 다시 시작
-                            checkEmailVerified()
+                            checkEmailVerified(email, password)
                         } else {
                             Toast.makeText(this, "이메일 재발송 실패: ${emailTask.exception?.message}", Toast.LENGTH_SHORT).show()
                         }
@@ -160,13 +166,10 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-    private fun checkEmailVerified() {
+    private fun checkEmailVerified(email: String, password: String) {
         emailCheckRunnable = object : Runnable {
             override fun run() {
                 // 이메일 인증 여부 확인을 위해 로그인 시도
-                val email = emailEditText.text.toString().trim()
-                val password = passwordEditText.text.toString().trim()
-
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -205,14 +208,16 @@ class SignUpActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null && user.isEmailVerified) {
-                        // 사용자 정보 저장
-                        saveUserToFirebaseDatabase(user.uid, username, name, email, phone)
-
-                        // 로그인 화면으로 이동
-                        Toast.makeText(this, "회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, LobbyActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        // FCM 토큰을 가져와서 사용자 정보와 함께 저장
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
+                            if (tokenTask.isSuccessful) {
+                                val token = tokenTask.result
+                                saveUserToFirebaseDatabase(user.uid, username, name, email, phone, token)
+                            } else {
+                                Toast.makeText(this, "FCM 토큰 가져오기 실패: ${tokenTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                                Log.e("SignUpActivity", "FCM Token retrieval failed", tokenTask.exception)
+                            }
+                        }
                     } else {
                         Toast.makeText(this, "이메일 인증이 완료되지 않았습니다.", Toast.LENGTH_SHORT).show()
                         auth.signOut()
@@ -223,18 +228,29 @@ class SignUpActivity : AppCompatActivity() {
             }
     }
 
-    private fun saveUserToFirebaseDatabase(uid: String?, username: String, name: String, email: String, phone: String) {
+    private fun saveUserToFirebaseDatabase(uid: String?, username: String, name: String, email: String, phone: String, token: String) {
+        val user = User(
+            uid = uid,
+            username = username,
+            name = name,
+            email = email,
+            phone = phone,
+            FCMToken = token
+        )
         val database = FirebaseDatabase.getInstance().getReference("users")
-        val user = User(uid, username, name, email, phone)
-
         database.child(uid ?: "").setValue(user)
             .addOnSuccessListener {
-                Toast.makeText(this, "사용자 정보 저장 성공", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, LobbyActivity::class.java)
+                startActivity(intent)
+                finish()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "사용자 정보 저장 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e("SignUpActivity", "Error saving user data", e)
             }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()

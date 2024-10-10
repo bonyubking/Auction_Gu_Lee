@@ -52,6 +52,8 @@ android {
 
 dependencies {
 
+    implementation("com.google.firebase:firebase-messaging:23.1.2") // 최신 버전 확인 후 적용
+
     implementation("com.github.bumptech.glide:glide:4.14.2")
     implementation(libs.androidx.swiperefreshlayout)
     kapt("com.github.bumptech.glide:compiler:4.14.2")

@@ -2,6 +2,7 @@ package com.example.auction_gu_lee.Main
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.auction_gu_lee.Lobby.LobbyActivity
@@ -14,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +30,19 @@ class MainActivity : AppCompatActivity() {
         // FirebaseAuth 인스턴스 초기화
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("users")
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "FCM 토큰 가져오기 실패", task.exception)
+                return@addOnCompleteListener
+            }
+            // 새 FCM 토큰 가져오기 성공 시
+            val token = task.result
+            Log.d("FCM", "FCM 토큰: $token")
+
+            // 만약 서버에 사용자 FCM 토큰을 저장하고 싶다면, 여기에 Firebase 데이터베이스 저장 코드를 추가합니다.
+            // 예: saveTokenToDatabase(token)
+        }
 
         // 로그인 상태 확인
         val currentUser = auth.currentUser

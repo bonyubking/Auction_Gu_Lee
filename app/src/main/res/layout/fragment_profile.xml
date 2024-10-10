@@ -136,22 +136,6 @@
                 android:text="알림 설정"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/btn_chat"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="채팅"
-                android:textSize="16sp" />
-
-
-            <TextView
-                android:id="@+id/btn_keyword_notifications"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="키워드 알림"
-                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/btn_user_setting"
@@ -159,15 +143,6 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:text="사용자 설정"
-                android:textSize="16sp" />
-
-
-            <TextView
-                android:id="@+id/btn_language_setting"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="언어 설정"
                 android:textSize="16sp" />
 
 
@@ -191,14 +166,6 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:text="기타"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/btn_delete_data"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="캐시 데이터 삭제하기"
                 android:textSize="16sp" />
 
             <TextView

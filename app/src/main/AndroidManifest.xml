@@ -25,12 +25,22 @@
 
 
     <application
+
+
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Auction_Gu_Lee">
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -66,15 +76,15 @@
 
         <activity android:name=".Chat.ChatActivity"/>
 
-        <activity android:name=".Profile.WishlistActivity" />
+        <activity android:name=".Profile.MyAuction.WishlistActivity" />
 
-        <activity android:name=".Profile.SalesHistoryActivity" />
+        <activity android:name=".Profile.MyAuction.SalesHistoryActivity" />
 
-        <activity android:name=".Profile.BiddingHistoryActivity" />
+        <activity android:name=".Profile.MyAuction.BiddingHistoryActivity" />
 
-        <activity android:name=".Profile.RecentlyViewedActivity" />
+        <activity android:name=".Profile.MyAuction.RecentlyViewedActivity" />
 
-        <activity android:name=".Profile.DeleteDataActivity"></activity>
+        <activity android:name=".Profile.Settings.NotificationSettingActivity"></activity>
 
     </application>
 </manifest>

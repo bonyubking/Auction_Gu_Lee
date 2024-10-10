@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee.Profile
+package com.example.auction_gu_lee.Profile.MyAuction
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
