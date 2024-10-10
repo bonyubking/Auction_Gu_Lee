@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "112969053103",
+    "firebase_url": "https://auction-gu-lee-default-rtdb.firebaseio.com",
     "project_id": "auction-gu-lee",
     "storage_bucket": "auction-gu-lee.appspot.com"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.auction_gu_lee"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "112969053103-ldo7d033c6pegiamtgldjgg9v9ifgqb1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.auction_gu_lee",
+            "certificate_hash": "2f38e2f9524433541d953e33ffc45caf4bd1a0cb"
+          }
+        },
+        {
+          "client_id": "112969053103-na6p51sp8etegg8aico5ca3nqkm9gu8h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBvFcRV9XLmfhrOCRqPTUlfd9GafdCkp78"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "112969053103-na6p51sp8etegg8aico5ca3nqkm9gu8h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -19,6 +19,8 @@ import com.example.auction_gu_lee.Profile.RecentlyViewedActivity
 import com.example.auction_gu_lee.Profile.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.WishlistActivity
 import com.example.auction_gu_lee.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -190,17 +192,21 @@ class ProfileFragment : Fragment() {
                             FirebaseAuth.getInstance().signOut()
                             Log.d("ProfileFragment", "FirebaseAuth signOut completed.")
 
-                            // SharedPreferences 초기화 및 autoLogin을 false로 설정
-                            val sharedPreferences = requireContext().getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
-                            val editor = sharedPreferences.edit()
-                            editor.putBoolean("autoLogin", false)
-                            editor.remove("email")
-                            editor.remove("password")
-                            editor.apply()
-                            Log.d("ProfileFragment", "autoLogin set to false and credentials removed.")
-
-                            // LobbyActivity로 이동
-                            moveToLobbyActivity()
+                            // Google 로그아웃 처리
+                            val googleSignInClient = GoogleSignIn.getClient(requireContext(), GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            googleSignInClient.signOut().addOnCompleteListener {
+                                Log.d("ProfileFragment", "Google sign out completed.")
+                                // SharedPreferences 초기화 및 autoLogin을 false로 설정
+                                val sharedPreferences = requireContext().getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putBoolean("autoLogin", false)
+                                editor.remove("email")
+                                editor.remove("password")
+                                editor.apply()
+                                Log.d("ProfileFragment", "autoLogin set to false and credentials removed.")
+                                // LobbyActivity로 이동
+                                moveToLobbyActivity()
+                            }
                         } else {
                             Log.e("ProfileFragment", "Failed to update loggedin: ${task.exception?.message}")
                             Toast.makeText(currentActivity, "로그아웃 상태 업데이트 실패", Toast.LENGTH_SHORT).show()

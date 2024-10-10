@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Auction Gu Lee</string>
-
-    <!-- Spinner 항목 옵션 배열 -->
+    <string name="google_web_client_id">112969053103-na6p51sp8etegg8aico5ca3nqkm9gu8h.apps.googleusercontent.com</string>    <!-- Spinner 항목 옵션 배열 -->
     <string-array name="sort_options">
         <item>등록시간</item>
         <item>입찰자</item>
