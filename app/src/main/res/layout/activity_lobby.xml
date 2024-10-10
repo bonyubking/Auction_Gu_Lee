@@ -118,7 +118,7 @@
 
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/btn_kakao_login"
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_marginStart="105dp"
@@ -132,6 +132,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
+        android:id="@+id/btn_naver_login"
         android:layout_width="185dp"
         android:layout_height="50dp"
         android:layout_marginStart="110dp"
@@ -145,6 +146,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
+        android:id="@+id/btn_google_login"
         android:layout_width="184dp"
         android:layout_height="50dp"
         android:layout_marginStart="105dp"

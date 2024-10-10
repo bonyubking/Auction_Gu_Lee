@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     id("kotlin-kapt")
 }
@@ -55,15 +56,21 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging:23.1.2") // 최신 버전 확인 후 적용
 
     implementation("com.github.bumptech.glide:glide:4.14.2")
+    implementation("androidx.core:core-ktx:1.12.0")
+
     implementation(libs.androidx.swiperefreshlayout)
     kapt("com.github.bumptech.glide:compiler:4.14.2")
     // Room dependencies 추가
-    implementation(platform("com.google.firebase:firebase-bom:32.0.0")) // 최신 버전으로 변경
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0")) // 최신 버전으로 변경
 
     // Firebase 관련 라이브러리 추가 (필요한 기능에 따라 추가)
     implementation("com.google.firebase:firebase-database-ktx")  // Firebase Realtime Database
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
+    implementation("com.google.firebase:firebase-auth:23.0.0") // 최신 버전 확인
+    implementation("com.google.android.gms:play-services-auth:21.2.0") // 최신 버전 확인
+
+
     implementation("androidx.room:room-runtime:2.6.1")
     implementation(libs.firebase.storage.ktx)
     implementation(libs.firebase.firestore.ktx)
@@ -72,9 +79,10 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     // For control over item selection of both touch and mouse driven selection
     implementation("androidx.recyclerview:recyclerview-selection:1.1.0")
+    implementation("com.kakao.sdk:v2-user:2.20.6")
 
     // 코루틴 사용 시 필요한 의존성
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -85,3 +93,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+
+apply(plugin = "com.google.gms.google-services")
