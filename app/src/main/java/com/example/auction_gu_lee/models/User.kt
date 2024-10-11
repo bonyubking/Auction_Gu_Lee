@@ -7,4 +7,4 @@ data class User(
     val email: String = "",
     val phone: String = "",
     var loggedin: Boolean = false,  // 기본 값 false로 설정,
-)
+    )
