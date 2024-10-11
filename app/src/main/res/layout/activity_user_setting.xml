@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:id="@+id/linearLayout_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 제목: 내 정보 -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="내 정보"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="24dp" />
+
+        <!-- 이름 -->
+        <LinearLayout
+            android:id="@+id/linearLayout_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_label_name"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="이름"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_value_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="홍길동"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- 닉네임 -->
+        <LinearLayout
+            android:id="@+id/linearLayout_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_label_username"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="닉네임"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_value_username"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="gildong123"
+                android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/btn_change_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_edit_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="닉네임 변경"
+                android:padding="8dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- 이메일 -->
+        <LinearLayout
+            android:id="@+id/linearLayout_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_label_email"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="이메일"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_value_email"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="gildong@example.com"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- 휴대폰 번호 -->
+        <LinearLayout
+            android:id="@+id/linearLayout_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_label_phone"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="휴대폰 번호"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_value_phone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="010-1234-5678"
+                android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/btn_change_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_edit_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="휴대폰 번호 변경"
+                android:padding="8dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- 비밀번호 -->
+        <LinearLayout
+            android:id="@+id/linearLayout_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_label_password"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="비밀번호"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_value_password"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="************"
+                android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/btn_change_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_edit_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="비밀번호 변경"
+                android:padding="8dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

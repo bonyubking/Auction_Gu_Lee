@@ -18,7 +18,9 @@ import com.example.auction_gu_lee.Profile.MyAuction.RecentlyViewedActivity
 import com.example.auction_gu_lee.Profile.MyAuction.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.MyAuction.WishlistActivity
 import com.example.auction_gu_lee.Profile.Settings.NotificationSettingActivity
+import com.example.auction_gu_lee.Profile.Settings.PasswordConfirmationDialogFragment
 import com.example.auction_gu_lee.R
+import com.example.auction_gu_lee.Profile.Settings.UserSettingActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
@@ -124,7 +126,12 @@ class ProfileFragment : Fragment() {
         // 사용자 설정 버튼 클릭 리스너 설정
         val userSettingButton = view.findViewById<TextView>(R.id.btn_user_setting)
         userSettingButton.setOnClickListener {
-            Toast.makeText(requireContext(), "사용자 설정 버튼 클릭됨", Toast.LENGTH_SHORT).show()
+            val dialog = PasswordConfirmationDialogFragment {
+                val intent = Intent(requireContext(), UserSettingActivity::class.java)
+                startActivity(intent)
+            }
+            // supportFragmentManager 대신 parentFragmentManager 사용 및 중복된 show 제거
+            dialog.show(parentFragmentManager, "PasswordConfirmationDialog")
         }
 
 

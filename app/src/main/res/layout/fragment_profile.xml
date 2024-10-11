@@ -142,7 +142,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
-                android:text="사용자 설정"
+                android:text="내 정보 변경"
                 android:textSize="16sp" />
 
 
