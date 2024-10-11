@@ -38,14 +38,6 @@
             android:name="com.kakao.sdk.AppKey"
             android:value="73062d9c979d7cd22d10ff5e6c18eb04"/>
 
-        <service
-            android:name=".MyFirebaseMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
