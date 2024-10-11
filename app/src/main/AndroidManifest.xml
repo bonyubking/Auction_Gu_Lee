@@ -80,7 +80,9 @@
 
         <activity android:name=".Profile.MyAuction.RecentlyViewedActivity" />
 
-        <activity android:name=".Profile.Settings.NotificationSettingActivity"></activity>
+        <activity android:name=".Profile.Settings.NotificationSettingActivity">
+
+        </activity>
 
     </application>
 </manifest>
