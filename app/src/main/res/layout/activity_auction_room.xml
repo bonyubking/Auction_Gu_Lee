@@ -138,7 +138,8 @@
             android:contentDescription="Bid Button"
             app:srcCompat="@drawable/icon_bid"
             app:layout_constraintBottom_toTopOf="@id/fab_chat"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:backgroundTint="#71bf5f"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_chat"
@@ -148,6 +149,7 @@
             android:contentDescription="Chat Button"
             app:srcCompat="@drawable/icon_chat"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:backgroundTint="#71bf5f"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

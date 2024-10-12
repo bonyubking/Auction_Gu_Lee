@@ -79,6 +79,7 @@
         android:layout_marginBottom="16dp"
         app:srcCompat="@drawable/baseline_add_box_24"
         android:scaleType="center"
+        android:backgroundTint="#b6d86a"
         android:contentDescription="경매 생성 아이콘" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

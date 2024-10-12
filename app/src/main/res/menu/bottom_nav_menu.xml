@@ -3,8 +3,8 @@
 
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/icon_home"
-        android:title="경매 홈" />
+        android:icon="@drawable/baseline_home_24"
+        android:title="경매 홈"/>
 
     <item
         android:id="@+id/nav_auction"
