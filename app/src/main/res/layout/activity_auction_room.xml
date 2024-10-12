@@ -1,154 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <!-- Username and Remaining Time with Wishlist -->
-        <LinearLayout
-            android:id="@+id/username_remainingTime_layout"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:paddingStart="16dp"
+            app:layout_constraintBottom_toTopOf="@id/item_photo"
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="Username"
+            android:textSize="14dp"
+            android:textColor="#000000"/>
 
-            <TextView
-                android:id="@+id/username"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Username"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/remaining_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/item_photo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            android:text="Remaining Time"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#000000"/>
 
-            <TextView
-                android:id="@+id/remaining_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remaining Time"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:layout_marginEnd="8dp" />
+        <ImageButton
+            android:id="@+id/btn_add_to_wishlist"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:scaleType="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Add to Wishlist"
+            android:padding="8dp"
+            app:srcCompat="@drawable/baseline_star_24" />
 
-            <ImageButton
-                android:id="@+id/btn_add_to_wishlist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Add to Wishlist"
-                android:padding="8dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/baseline_star_24" />
-
-            <TextView
-                android:id="@+id/favoritesCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="찜 수: 0"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/highestPrice"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/favoritesCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/item_photo"
+            app:layout_constraintEnd_toStartOf="@+id/btn_add_to_wishlist"
+            android:text="찜 수: 0"
+            android:textSize="14sp"/>
 
         <!-- Auction Item Photo -->
         <ImageView
             android:id="@+id/item_photo"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerInside"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_add_to_wishlist"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/username_remainingTime_layout" />
+            app:layout_constraintEnd_toEndOf="parent"
+            android:scaleType="centerInside"/>
 
         <!-- Item Name -->
         <TextView
             android:id="@+id/item_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/item_photo"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="30dp"
             android:text="Item"
             android:textSize="24sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.046"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/item_photo" />
+            android:textColor="#000000"/>
 
-        <!-- Starting Price and Highest Price -->
         <LinearLayout
             android:id="@+id/price_layout"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="23dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="23dp"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:orientation="vertical"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/item_name">
+            app:layout_constraintTop_toBottomOf="@id/item_name"
+            android:layout_marginTop="20dp"
+            android:gravity="center">
 
-            <TextView
-                android:id="@+id/starting_price"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Starting Price"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/starting_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Starting Price"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"/>
 
-            <TextView
-                android:id="@+id/highest_price"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Highest Price"
-                android:textColor="#000000"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/highest_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Highest Price"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
         </LinearLayout>
 
-        <!-- Current Participants Count -->
         <TextView
             android:id="@+id/participantsCount"
-            android:layout_width="149dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Participants: 0"
+            android:text="Participants : 0"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/price_layout" />
+            app:layout_constraintTop_toBottomOf="@id/price_layout"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="@id/price_layout"/>
 
-        <!-- Detail Description -->
         <TextView
             android:id="@+id/item_detail"
-            android:layout_width="342dp"
-            android:layout_height="233dp"
-            android:layout_marginTop="16dp"
-            android:text="Item Detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, "
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.491"
+            app:layout_constraintTop_toBottomOf="@id/participantsCount"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/participantsCount" />
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="20dp"/>
 
-        <!-- Floating Action Buttons -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_bid"
             android:layout_width="wrap_content"
@@ -167,8 +148,6 @@
             android:contentDescription="Chat Button"
             app:srcCompat="@drawable/icon_chat"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

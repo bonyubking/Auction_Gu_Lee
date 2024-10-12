@@ -74,7 +74,7 @@ class AuctionRoomActivity : AppCompatActivity() {
                             binding.itemDetail.text = itemDetail
                             binding.startingPrice.text = "시작 가격: $startingPrice ₩"
                             binding.highestPrice.text = "최고 가격: $highestPrice ₩"
-                            binding.favoritesCount.text = "찜 수: $favoritesCount"
+                            binding.favoritesCount.text = "찜 $favoritesCount"
                             binding.participantsCount.text = "참가자 수: $biddersCount 명"  // biddersCount를 participantsCount에 반영
                             updateHighestPriceColor()
 
