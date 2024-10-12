@@ -12,17 +12,12 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <!-- Android 9 이하에서만 WRITE_EXTERNAL_STORAGE 권한이 필요함 -->
 
-    <!-- queries 요소 추가 -->
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
     </queries>
-
-
-
 
     <application
         android:name=".MyApplication"
