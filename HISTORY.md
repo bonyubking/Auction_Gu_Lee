@@ -160,7 +160,7 @@
 
 < 한 일 >
 
-1. UI 업그레이드 및 xml파일 대수술 : activity_splash.xml, activity_lobby.xml, activity_main.xml, item_auction.xml, fragment_home.xml, fragment_past.xml
+1. UI 업그레이드 및 xml파일 대수술 : activity_splash.xml, activity_lobby.xml, activity_main.xml, item_auction.xml, fragment_home.xml, fragment_past.xml, fragment_profile.xml
 
 < 버 그 >
 
