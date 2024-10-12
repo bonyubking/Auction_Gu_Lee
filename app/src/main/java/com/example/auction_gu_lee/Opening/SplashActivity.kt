@@ -19,7 +19,7 @@ class SplashActivity : AppCompatActivity() {
 
         // 오프닝 이미지 설정
         val splashImage: ImageView = findViewById(R.id.splash_image)
-        splashImage.setImageResource(R.drawable.opening_imang) // 이미지 파일 이름을 바꿔주세요
+        splashImage.setImageResource(R.drawable.img_splash_activity) // 이미지 파일 이름을 바꿔주세요
 
         // 자동 로그인 여부 확인
         val sharedPreferences = getSharedPreferences("autoLoginPrefs", Context.MODE_PRIVATE)

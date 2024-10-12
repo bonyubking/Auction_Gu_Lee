@@ -5,20 +5,22 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:paddingVertical="10dp"
+    android:paddingHorizontal="20dp">
 
     <!-- 이름 -->
     <ImageView
         android:id="@+id/imageView_photo"
-        android:layout_width="92dp"
-        android:layout_height="91dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:scaleType="centerCrop"
         tools:srcCompat="@tools:sample/avatars" />
 
     <LinearLayout
-        android:layout_width="134dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="match_parent"
+        android:layout_marginStart="20dp"
         android:orientation="vertical">
 
         <TextView
@@ -52,18 +54,17 @@
             android:textSize="14sp"
             android:textStyle="bold"
             tools:text="남은시간" />
-
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="134dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView_itemempty"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:textSize="14sp"
@@ -72,7 +73,7 @@
         <TextView
             android:id="@+id/textView_highestPrice"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:text="Highest Price"
@@ -82,9 +83,8 @@
             tools:text="$200" />
 
         <TextView
-            android:id="@+id/textView_detailempty"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:textSize="14sp" />
