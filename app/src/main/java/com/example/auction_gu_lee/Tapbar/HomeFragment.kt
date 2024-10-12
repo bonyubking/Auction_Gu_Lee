@@ -134,7 +134,7 @@ class HomeFragment : Fragment() {
         sortSpinner = view.findViewById(R.id.sortSpinner)
 
         // Spinner 항목을 두 개로 나눔: 등록시간, 입찰자, 관심, 입찰가(높은 순), 입찰가(낮은 순), 시작가(높은 순), 시작가(낮은 순), 남은시간
-        val sortOptions = arrayOf("등록 시간 순", "입찰자별", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "남은 시간")
+        val sortOptions = arrayOf("등록 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "남은 시간")
 
         // Adapter에 커스텀 레이아웃 적용 (필요시 적용)
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
