@@ -160,7 +160,7 @@
 
 < 한 일 >
 
-1. Activity_Lobby.xml Linearlayout으로 새로 제작
+1. UI 업그레이드 : activity_lobby.xml, activity_main.xml, item_auction.xml, fragment_home.xml
 
 < 버 그 >
 
