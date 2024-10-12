@@ -1,5 +1,6 @@
 package com.example.auction_gu_lee.Tapbar
 
+import android.icu.text.NumberFormat
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Auction
+import java.util.Locale
 
 class AuctionAdapter(
     private var auctionList: MutableList<Auction>,
@@ -25,12 +27,6 @@ class AuctionAdapter(
         var countDownTimer: CountDownTimer? = null  // CountDownTimer를 추가
     }
 
-    fun updateList(newList: List<Auction>) {
-        auctionList.clear()  // 기존 리스트 초기화
-        auctionList.addAll(newList)  // 새로운 리스트 추가
-        notifyDataSetChanged()  // 어댑터에 데이터가 변경되었음을 알림
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AuctionViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_auction, parent, false)
@@ -40,7 +36,10 @@ class AuctionAdapter(
     override fun onBindViewHolder(holder: AuctionViewHolder, position: Int) {
         val auction = auctionList[position]
         holder.itemTextView.text = auction.item
-        holder.priceTextView.text = "${auction.startingPrice}₩"
+
+        // 숫자 형식으로 3자리마다 콤마를 추가하여 입찰가 표시
+        val startingPriceFormatted = NumberFormat.getNumberInstance(Locale.KOREA).format(auction.startingPrice ?: 0)
+        holder.priceTextView.text = "$startingPriceFormatted ₩"
 
         // 입찰자 수에 따라 최고 가격 또는 '입찰 없음' 표시
         if (auction.biddersCount == null || auction.biddersCount == 0) {
@@ -50,7 +49,8 @@ class AuctionAdapter(
         } else {
             // 입찰자가 있을 때 최고 가격 표시
             val highestPrice = auction.highestPrice ?: auction.startingPrice ?: 0L
-            holder.highestPriceTextView.text = "$highestPrice ₩"
+            val highestPriceFormatted = NumberFormat.getNumberInstance(Locale.KOREA).format(highestPrice)
+            holder.highestPriceTextView.text = "$highestPriceFormatted ₩"
 
             // 최고 가격이 시작 가격보다 높을 경우 빨간색으로 표시
             if (highestPrice > (auction.startingPrice ?: 0L)) {
@@ -63,7 +63,7 @@ class AuctionAdapter(
         // CountDownTimer가 이미 있으면 취소
         holder.countDownTimer?.cancel()
 
-        holder.itemView.setOnClickListener{
+        holder.itemView.setOnClickListener {
             itemClickListener(auction)
         }
 
