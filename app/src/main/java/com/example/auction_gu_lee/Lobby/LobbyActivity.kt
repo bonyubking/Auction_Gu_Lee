@@ -20,7 +20,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
-import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -61,7 +60,7 @@ class LobbyActivity : AppCompatActivity() {
 
         database = FirebaseDatabase.getInstance().getReference("users")
 
-        emailEditText = findViewById(R.id.et_username)
+        emailEditText = findViewById(R.id.et_email)
         passwordEditText = findViewById(R.id.et_password)
         loginButton = findViewById(R.id.btn_login)
         signUpButton = findViewById(R.id.btn_signup)
@@ -87,12 +86,12 @@ class LobbyActivity : AppCompatActivity() {
             kakaoLogin()
         }
 
-        // 공백 필터 설정
+        // 비밀번호 입력칸에 공백 입력 방지 및 최대 길이 15자
         val noWhiteSpaceFilter = InputFilter { source, _, _, _, _, _ ->
             if (source.contains(" ")) "" else null
         }
-
-        passwordEditText.filters = arrayOf(noWhiteSpaceFilter)
+        val maxLengthFilter = InputFilter.LengthFilter(15)
+        passwordEditText.filters = arrayOf(noWhiteSpaceFilter, maxLengthFilter)
 
         // **이미 로그인된 사용자가 있을 경우 처리**
         val currentUser = auth.currentUser

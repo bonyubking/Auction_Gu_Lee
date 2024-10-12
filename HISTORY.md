@@ -160,6 +160,8 @@
 
 < 한 일 >
 
+1. Activity_Lobby.xml Linearlayout으로 새로 제작
+
 < 버 그 >
 
 1. hyeonlee717@gmail.com 로그아웃 -> 로비에서 회원가입 -> 회원가입에서 다른 이메일로 인증 후 회원가입 버튼 활성화 후 누름 -> 로비로 가지더니 바로 이전 hyeonlee717@gmail.com으로 다시 로그인됨 -> 다시 로그아웃하고 새로운 아이디 로그인 하니까 되긴 됨
