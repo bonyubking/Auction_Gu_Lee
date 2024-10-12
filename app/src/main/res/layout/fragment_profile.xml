@@ -14,7 +14,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@android:color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,73 +23,64 @@
             android:background="#8A4F4F"
             android:backgroundTint="#FFFFFF"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingVertical="20dp"
+            android:paddingHorizontal="20dp">
 
             <TextView
                 android:id="@+id/tv_user_Id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Username"
                 android:textSize="16sp"
-                android:padding="8dp" />
+                android:paddingVertical="8dp"/>
 
-            <!-- 나의 거래 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider"
+                android:backgroundTint="#000000"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="나의 거래"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_wishlist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="관심 목록"
-                android:textSize="16sp" />
-
-            <!-- 관심 목록 -->
-
-            <!-- 최근 본 내역 -->
-
-            <!-- 판매 내역  -->
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_recently_viewed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="최근 본 내역"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_sales_history"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="판매 내역"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
-            <!-- 판매 중 -->
-
-            <!-- 판매 완료 -->
-
-            <!-- 입찰 내역 -->
             <TextView
                 android:id="@+id/btn_bid_history"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="입찰 내역"
-                android:textSize="16sp" />
-
-            <!-- 점선 구분선 -->
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <View
-                android:id="@+id/divider"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider"
@@ -97,24 +89,20 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="광고"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_business_ad"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="내 비지니스 광고하기"
-                android:textSize="16sp" />
-
-
-            <!-- 점선 구분선 -->
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <View
-                android:id="@+id/divider4"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider"
@@ -123,39 +111,38 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="설정"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_notification_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="알림 설정"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
 
             <TextView
                 android:id="@+id/btn_user_setting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="내 정보 변경"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
 
             <TextView
                 android:id="@+id/btn_other_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="기타 설정"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <View
-                android:id="@+id/divider3"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider"
@@ -164,26 +151,26 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="기타"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="최신 버전 업데이트"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingVertical="8dp"/>
 
             <TextView
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:text="로그아웃"
                 android:textSize="16sp"
-                android:textColor="#FF0000" /> <!-- 텍스트 색깔을 빨간색으로 설정 (원하는 색으로 변경 가능) -->
+                android:textColor="#FF0000"
+                android:paddingVertical="8dp"/> <!-- 텍스트 색깔을 빨간색으로 설정 (원하는 색으로 변경 가능) -->
 
 
         </LinearLayout>
