@@ -8,7 +8,6 @@
     android:paddingVertical="10dp"
     android:paddingHorizontal="20dp">
 
-    <!-- 이름 -->
     <ImageView
         android:id="@+id/imageView_photo"
         android:layout_width="80dp"

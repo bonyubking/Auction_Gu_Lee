@@ -4,93 +4,106 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
-
-    <!-- 이름 -->
-    <ImageView
-        android:id="@+id/imageView_photo"
-        android:layout_width="92dp"
-        android:layout_height="91dp"
-        android:layout_marginStart="8dp"
-        android:scaleType="centerCrop"
-        tools:srcCompat="@tools:sample/avatars" />
+    android:orientation="vertical"
+    android:paddingTop="5dp"
+    android:paddingHorizontal="20dp">
 
     <LinearLayout
-        android:layout_width="134dp"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/textView_item"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Item Name"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="대게" />
+        <ImageView
+            android:id="@+id/imageView_photo"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/avatars" />
 
-        <TextView
-            android:id="@+id/textView_startingPrice"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_weight="1"
-            android:gravity="center"
-            android:text="Starting Price"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="$100" />
+            android:layout_height="match_parent"
+            android:layout_marginStart="20dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView_remainingTime"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
+            <TextView
+                android:id="@+id/textView_item"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Item Name"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="대게" />
+
+            <TextView
+                android:id="@+id/textView_startingPrice"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Starting Price"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="$100" />
+
+            <TextView
+                android:id="@+id/textView_remainingTime"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="남은시간" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_weight="1"
-            android:gravity="center"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="남은시간" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView_highestPrice"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Highest Price"
+                android:textColor="#FF0000"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="$200" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textSize="14sp" />
+        </LinearLayout>
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="134dp"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:background="@android:color/white"/>
 
-        <TextView
-            android:id="@+id/textView_itemempty"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView_highestPrice"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Highest Price"
-            android:textColor="#FF0000"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="$200" />
-
-
-
-        <TextView
-            android:id="@+id/textView_detailempty"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textSize="14sp" />
-
-    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginVertical="4dp"/>
 
 </LinearLayout>

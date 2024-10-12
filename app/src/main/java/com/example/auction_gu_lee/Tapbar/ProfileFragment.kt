@@ -65,7 +65,7 @@ class ProfileFragment : Fragment() {
                     val userName =
                         snapshot.child("username").getValue(String::class.java) ?: "사용자 없음"
                     val userIdTextView = view.findViewById<TextView>(R.id.tv_user_Id)
-                    userIdTextView.text = "반갑습니다, $userName 님"
+                    userIdTextView.text = "$userName 님의 프로필"
                 } else {
                     view.findViewById<TextView>(R.id.tv_user_Id).text = "사용자 정보를 불러올 수 없습니다."
                 }
