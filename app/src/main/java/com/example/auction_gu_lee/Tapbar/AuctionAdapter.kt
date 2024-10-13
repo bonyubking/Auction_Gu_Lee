@@ -82,17 +82,22 @@ class AuctionAdapter(
                         val minutes = (millisUntilFinished / (1000 * 60)) % 60
                         val seconds = (millisUntilFinished / 1000) % 60
 
-                        // 남은 시간을 실시간으로 업데이트
-                        holder.remainingTimeTextView.text = String.format(
-                            "%02d:%02d:%02d:%02d",
-                            days, hours, minutes, seconds
-                        )
-
-                        // 남은 시간이 24시간 이내인 경우 빨간색으로 표시
-                        if (millisUntilFinished <= 24 * 60 * 60 * 1000) {
-                            holder.remainingTimeTextView.setTextColor(android.graphics.Color.RED)
-                        } else {
-                            holder.remainingTimeTextView.setTextColor(android.graphics.Color.BLACK)
+                        when {
+                            // 남은 시간이 24시간 이상일 때 'xx일 남음' 표시
+                            millisUntilFinished > 24 * 60 * 60 * 1000 -> {
+                                holder.remainingTimeTextView.text = String.format("%d일 남음", days)
+                                holder.remainingTimeTextView.setTextColor(android.graphics.Color.BLACK)
+                            }
+                            // 남은 시간이 1시간 이상 24시간 미만일 때 'xx시간 남음' 표시
+                            millisUntilFinished in 60 * 60 * 1000..24 * 60 * 60 * 1000 -> {
+                                holder.remainingTimeTextView.text = String.format("%d시간 남음", hours)
+                                holder.remainingTimeTextView.setTextColor(android.graphics.Color.RED)
+                            }
+                            // 남은 시간이 1시간 미만일 때 'mm:ss 남음' 표시
+                            else -> {
+                                holder.remainingTimeTextView.text = String.format("%02d:%02d", minutes, seconds)
+                                holder.remainingTimeTextView.setTextColor(android.graphics.Color.RED)
+                            }
                         }
                     }
 
@@ -108,7 +113,7 @@ class AuctionAdapter(
         // Glide로 사진 URL을 ImageView에 로드
         Glide.with(holder.photoImageView.context)
             .load(auction.photoUrl)
-            .placeholder(R.drawable.placehoder_image) // 이미지 로딩 중일 때 표시할 기본 이미지
+            .placeholder(R.drawable.placeholder_image) // 이미지 로딩 중일 때 표시할 기본 이미지
             .error(R.drawable.error_image) // 오류 시 표시할 이미지
             .into(holder.photoImageView)
 
