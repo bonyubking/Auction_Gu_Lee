@@ -162,9 +162,21 @@
 
 1. UI 업그레이드 및 xml파일 대수술 : activity_splash.xml, activity_lobby.xml, activity_main.xml, item_auction.xml, 
 
-   fragment_home.xml, fragment_past.xml, fragment_profile.xml, activity_wishlist.xml, item_wishlist.xml, 
+   
 
-   activity_create_auction.xml, bottom_nav_menu.xml, activity_auction_room.xml
+
+----------------------------------------------------------------------------------------------------
+
+
+2024-10-13
+
+< 한 일 >
+
+1. UI 업그레이드 및 xml파일 대수술
+
+- fragment_home.xml, fragment_past.xml, fragment_profile.xml, activity_wishlist.xml, item_wishlist.xml,
+
+  activity_create_auction.xml, bottom_nav_menu.xml, activity_auction_room.xml
 
 < 버 그 >
 
