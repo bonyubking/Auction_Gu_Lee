@@ -178,7 +178,7 @@
 
   activity_notificaion_setting.xml, activity_recently_viewed.xml, item_bidding_history.xml,
 
-  item_recently_viewed.xml, item_sales_history.xml
+  item_recently_viewed.xml, item_sales_history.xml, activity_recently_viewed.xml, activity_sales_history.xml
 
 < 버 그 >
 
