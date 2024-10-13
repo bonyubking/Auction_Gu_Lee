@@ -144,7 +144,7 @@ class BiddingHistoryAdapter(
         val context = holder.itemView.context
         android.app.AlertDialog.Builder(context)
             .setTitle("재입찰 확인")
-            .setMessage("정말로 ${auctionItem.item}에 재입찰하시겠습니까?")
+            .setMessage("정말 ${auctionItem.item}에 재입찰하시겠습니까?")
             .setPositiveButton("예") { _, _ ->
                 placeBid(auctionItem, holder)
             }

@@ -56,10 +56,6 @@ class PastFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // DividerItemDecoration 추가
-        val dividerItemDecoration = DividerItemDecoration(recyclerView.context, LinearLayoutManager.VERTICAL)
-        recyclerView.addItemDecoration(dividerItemDecoration)
-
         // ImageView 클릭 이벤트 설정
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {

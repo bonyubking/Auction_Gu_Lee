@@ -75,10 +75,6 @@ class HomeFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // DividerItemDecoration 추가 (구분선 추가)
-        val dividerItemDecoration = DividerItemDecoration(recyclerView.context, LinearLayoutManager.VERTICAL)
-        recyclerView.addItemDecoration(dividerItemDecoration)
-
         // fragment_home.xml의 ImageView를 가져와서 클릭 리스너 설정
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
