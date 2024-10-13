@@ -228,7 +228,7 @@ class HomeFragment : Fragment() {
                     }
                 }
 
-                sortAuctionListBy("remainingTime")
+                sortAuctionListBy(currentSortType)
                 auctionAdapter.notifyDataSetChanged()
                 swipeRefreshLayout.isRefreshing = false
             }
