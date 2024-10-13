@@ -3,8 +3,8 @@
 
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/baseline_home_24"
-        android:title="경매 홈"/>
+        android:icon="@drawable/free_icon_home_1659112"
+        android:title="경매"/>
 
     <item
         android:id="@+id/nav_auction"
@@ -12,8 +12,13 @@
         android:title="지난 경매" />
 
     <item
+        android:id="@+id/nav_auction2"
+        android:icon="@drawable/free_icon_document_5336286"
+        android:title="구매 희망" />
+
+    <item
         android:id="@+id/nav_chat"
-        android:icon="@drawable/icon_chat"
+        android:icon="@drawable/free_icon_chat_5962500"
         android:title="채팅" />
 
     <item
