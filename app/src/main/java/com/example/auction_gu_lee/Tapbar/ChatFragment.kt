@@ -152,8 +152,12 @@ class ChatFragment : Fragment() {
 
                         // 최신 메시지를 가져옴
                         val lastMessageSnapshot = chatRoomSnapshot.children.lastOrNull()
-                        val messageData =
-                            lastMessageSnapshot?.getValue(ChatItem::class.java) ?: continue
+                        if (lastMessageSnapshot?.getValue() is String) {
+                            Log.e("ChatFragment", "Invalid data type at message snapshot, expected ChatItem but found String.")
+                            continue
+                        }
+
+                        val messageData = lastMessageSnapshot?.getValue(ChatItem::class.java) ?: continue
                         Log.d("ChatFragment", "최신 메시지 데이터: $messageData")
 
 
