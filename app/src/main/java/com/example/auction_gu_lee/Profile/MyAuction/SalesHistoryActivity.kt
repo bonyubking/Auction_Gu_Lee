@@ -87,6 +87,9 @@ class SalesHistoryActivity : AppCompatActivity() {
                             }
                         }
                     }
+                    // 데이터가 모두 추가된 후 정렬 수행
+                    auctionList.sortByDescending { it.timestamp }
+
                     filteredList.clear()
                     filteredList.addAll(auctionList)  // 초기 목록을 filteredList에 설정
                     filterSalesHistory(binding.searchEditText.text.toString()) // 검색된 상태 유지

@@ -109,6 +109,10 @@ class BiddingHistoryActivity : AppCompatActivity() {
                             }
                         }
                     }
+
+                    // 타임스탬프 기준으로 내림차순 정렬
+                    auctionList.sortByDescending { it.timestamp }
+
                     filteredList.clear()
                     filteredList.addAll(auctionList)  // 전체 데이터를 filteredList에 저장
                     filterBiddingHistory(binding.searchEditText.text.toString()) // 검색된 상태 유지
