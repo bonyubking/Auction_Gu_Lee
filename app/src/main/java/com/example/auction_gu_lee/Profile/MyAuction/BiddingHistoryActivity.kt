@@ -26,6 +26,10 @@ class BiddingHistoryActivity : AppCompatActivity() {
         binding = ActivityBiddingHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 초기 상태에서 검색창과 닫기 버튼은 숨김
+        binding.searchEditText.visibility = View.GONE
+        binding.btnCloseSearch.visibility = View.GONE
+
         // 초기 경고 팝업 상태를 체크박스와 동기화
         val isRebidWarningEnabled = binding.checkboxRebidWarning.isChecked
 
@@ -46,34 +50,27 @@ class BiddingHistoryActivity : AppCompatActivity() {
 
         loadBiddingHistory()
 
-        adapter = BiddingHistoryAdapter(filteredList, isRebidWarningEnabled) { auctionId ->
-            val intent = Intent(this, AuctionRoomActivity::class.java)
-            intent.putExtra("auction_id", auctionId)
-            startActivity(intent)
-        }
-
-        binding.biddingHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
-        binding.biddingHistoryRecyclerView.adapter = adapter
-
-        // 검색 버튼 클릭 시 제목 숨기고 검색창 표시
+        // 검색 버튼 클릭 시 입찰 내역 제목 숨기고 검색창 표시
         binding.btnSearch.setOnClickListener {
-            binding.headerLayout.visibility = View.GONE
-            binding.searchLayout.visibility = View.VISIBLE
+            binding.biddingHistoryTitle.visibility = View.GONE
+            binding.btnSearch.visibility = View.GONE
+            binding.searchEditText.visibility = View.VISIBLE
+            binding.btnCloseSearch.visibility = View.VISIBLE
             binding.searchEditText.requestFocus()
         }
 
         // 검색창 닫기 버튼 클릭 시 제목 표시 및 검색창 숨김
         binding.btnCloseSearch.setOnClickListener {
             binding.searchEditText.setText("")
-            binding.headerLayout.visibility = View.VISIBLE
-            binding.searchLayout.visibility = View.GONE
+            binding.biddingHistoryTitle.visibility = View.VISIBLE
+            binding.btnSearch.visibility = View.VISIBLE
+            binding.searchEditText.visibility = View.GONE
+            binding.btnCloseSearch.visibility = View.GONE
             binding.noResultsText.visibility = View.GONE
             filteredList.clear()
             filteredList.addAll(auctionList)  // 전체 목록 다시 표시
             adapter.notifyDataSetChanged()
         }
-
-        loadBiddingHistory()
 
         // 검색어 입력 시마다 필터링 수행
         binding.searchEditText.addTextChangedListener { text ->
