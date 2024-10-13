@@ -174,7 +174,11 @@
 
 - fragment_home.xml, fragment_past.xml, fragment_profile.xml, activity_wishlist.xml, item_wishlist.xml,
 
-  activity_create_auction.xml, bottom_nav_menu.xml, activity_auction_room.xml
+  activity_create_auction.xml, bottom_nav_menu.xml, activity_auction_room.xml, activity_bidding_history.xml,
+
+  activity_notificaion_setting.xml, activity_recently_viewed.xml, item_bidding_history.xml,
+
+  item_recently_viewed.xml, item_sales_history.xml
 
 < 버 그 >
 

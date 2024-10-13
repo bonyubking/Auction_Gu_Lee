@@ -1,9 +1,15 @@
 package com.example.auction_gu_lee.Profile.MyAuction
 
+import android.graphics.Rect
+import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
+import android.view.TouchDelegate
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil.setContentView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.R
@@ -34,6 +40,25 @@ class BiddingHistoryAdapter(
     override fun onBindViewHolder(holder: BiddingHistoryViewHolder, position: Int) {
         val auctionItem = auctionList[position]
 
+        // btnRebid의 클릭 영역 확장
+        holder.binding.btnRebid.post {
+            val parent = holder.binding.btnRebid.parent as View // 버튼의 부모 레이아웃 가져오기
+            parent.post {
+                val rect = Rect()
+                holder.binding.btnRebid.getHitRect(rect) // 버튼의 터치 영역 가져오기
+
+                // 터치 영역을 20dp 확장 (위, 아래, 왼쪽, 오른쪽)
+                val additionalPadding = 15
+                rect.top -= additionalPadding
+                rect.bottom += additionalPadding
+                rect.left -= additionalPadding
+                rect.right += additionalPadding
+
+                // 부모 레이아웃에 TouchDelegate 설정
+                parent.touchDelegate = TouchDelegate(rect, holder.binding.btnRebid)
+            }
+        }
+
         holder.binding.btnRebid.setOnClickListener {
             if (isRebidWarningEnabled) {
                 // 경고 팝업 표시
@@ -55,10 +80,10 @@ class BiddingHistoryAdapter(
         // 사용자의 최종 입찰 금액과 최고가를 비교하여 상태 업데이트
         if (userBidAmount != null) {
             if (userBidAmount < (auctionItem.highestPrice ?: 0L)) {
-                holder.binding.textViewBidStatus.text = "최고가 갱신"
+                holder.binding.textViewBidStatus.text = "최고가 갱신됨"
                 holder.binding.textViewBidStatus.setTextColor(android.graphics.Color.RED)
             } else {
-                holder.binding.textViewBidStatus.text = "최고가 유지"
+                holder.binding.textViewBidStatus.text = "내가 최고 가격"
                 holder.binding.textViewBidStatus.setTextColor(android.graphics.Color.GREEN)
             }
         } else {

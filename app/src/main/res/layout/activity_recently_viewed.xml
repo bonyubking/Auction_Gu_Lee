@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:background="@android:color/white">
 
     <!-- 최근 본 내역 헤더 레이아웃 -->
     <LinearLayout
