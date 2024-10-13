@@ -94,7 +94,7 @@ class PastFragment : Fragment() {
     private fun setupSortSpinner(view: View) {
         sortSpinner = view.findViewById(R.id.sortSpinner)
 
-        val sortOptions = arrayOf("등록시간", "입찰자", "관심", "입찰가(높은 순)", "입찰가(낮은 순)", "시작가(높은 순)", "시작가(낮은 순)")
+        val sortOptions = arrayOf("등록 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "남은 시간")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         sortSpinner.adapter = adapter
