@@ -26,6 +26,10 @@ class SalesHistoryActivity : AppCompatActivity() {
         binding = ActivitySalesHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 초기 상태에서 검색창과 닫기 버튼은 숨김
+        binding.searchEditText.visibility = View.GONE
+        binding.btnCloseSearch.visibility = View.GONE
+
         adapter = SalesHistoryAdapter(filteredList) { auctionId ->
             val intent = Intent(this, AuctionRoomActivity::class.java)
             intent.putExtra("auction_id", auctionId)
@@ -35,18 +39,22 @@ class SalesHistoryActivity : AppCompatActivity() {
         binding.salesHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.salesHistoryRecyclerView.adapter = adapter
 
-        // 검색 버튼 클릭 시 제목 숨기고 검색창 표시
+        // 검색 버튼 클릭 시 제목과 검색 버튼 숨기고, 검색창과 닫기 버튼 표시
         binding.btnSearch.setOnClickListener {
-            binding.headerLayout.visibility = View.GONE
-            binding.searchLayout.visibility = View.VISIBLE
+            binding.salesHistoryTitle.visibility = View.GONE
+            binding.btnSearch.visibility = View.GONE
+            binding.searchEditText.visibility = View.VISIBLE
+            binding.btnCloseSearch.visibility = View.VISIBLE
             binding.searchEditText.requestFocus()
         }
 
-        // 검색창 닫기 버튼 클릭 시 제목 표시 및 검색창 숨김
+        // 닫기 버튼 클릭 시 제목과 검색 버튼 다시 표시, 검색창과 닫기 버튼 숨김
         binding.btnCloseSearch.setOnClickListener {
             binding.searchEditText.setText("")
-            binding.headerLayout.visibility = View.VISIBLE
-            binding.searchLayout.visibility = View.GONE
+            binding.salesHistoryTitle.visibility = View.VISIBLE
+            binding.btnSearch.visibility = View.VISIBLE
+            binding.searchEditText.visibility = View.GONE
+            binding.btnCloseSearch.visibility = View.GONE
             binding.noResultsText.visibility = View.GONE
             filteredList.clear()
             filteredList.addAll(auctionList) // 전체 목록 다시 표시
