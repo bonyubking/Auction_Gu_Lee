@@ -11,7 +11,10 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.MediaStore
 import android.text.Editable
+import android.text.InputFilter
+import android.text.Spanned
 import android.text.TextWatcher
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
@@ -145,7 +148,7 @@ class CreateRoomActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 리스너 (서버에 데이터 저장)
         buttonComplete.setOnClickListener {
-            val startingPriceText = editTextStartingPrice.text.toString()
+            val startingPriceText = editTextStartingPrice.text.toString().replace(",", "") // 콤마 제거
             if (startingPriceText.isEmpty()) {
                 Toast.makeText(this, "시작 가격을 입력해주세요", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -420,6 +423,7 @@ class CreateRoomActivity : AppCompatActivity() {
         }
 
     // Firebase에 데이터 업로드
+    // Firebase에 데이터 업로드
     private fun uploadAuctionData() {
         val database = FirebaseDatabase.getInstance().getReference("auctions")
         val storage = FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
@@ -437,12 +441,16 @@ class CreateRoomActivity : AppCompatActivity() {
                 val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 val formattedDateTime = dateTimeFormat.format(selectedDateTime.time)
 
+                // 콤마 제거 후 숫자로 변환
+                val startingPriceText = editTextStartingPrice.text.toString().replace(",", "")
+                val startingPrice = startingPriceText.toLongOrNull() ?: 0L
+
                 // Firebase Realtime Database에 저장할 경매 데이터
                 val auction = hashMapOf(
                     "item" to editTextItem.text.toString(),
                     "quantity" to "${editTextQuantity.text} $unit",
                     "detail" to editTextDetail.text.toString(),
-                    "startingPrice" to editTextStartingPrice.text.toString().toLong(),  // Long 타입으로 저장
+                    "startingPrice" to startingPrice,  // 콤마 제거한 숫자 값을 저장
                     "photoUrl" to uri.toString(),
                     "timestamp" to System.currentTimeMillis(),
                     "endTime" to selectedDateTime.timeInMillis,
@@ -452,7 +460,6 @@ class CreateRoomActivity : AppCompatActivity() {
                     "favoritesCount" to 0,  // 찜 수를 0으로 초기화
                     "category" to "home"
                 )
-
 
                 val auctionRef = database.push() // 새로운 경매 노드 생성
                 auctionRef.setValue(auction).addOnCompleteListener { task ->
