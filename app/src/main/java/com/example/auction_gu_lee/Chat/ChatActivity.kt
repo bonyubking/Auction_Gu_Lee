@@ -34,6 +34,7 @@ import java.util.Locale
 import java.util.UUID
 import android.Manifest
 import android.content.pm.PackageManager
+import android.view.View
 import androidx.core.app.ActivityCompat
 
 class ChatActivity : AppCompatActivity() {
@@ -103,6 +104,11 @@ class ChatActivity : AppCompatActivity() {
                 binding.messageInput.text.clear()
                 selectedImageUris.clear()
                 imagePreviewAdapter.notifyDataSetChanged()
+
+                // 이미지가 모두 삭제되면 RecyclerView를 숨김
+                if (selectedImageUris.isEmpty()) {
+                    binding.selectedImagesRecyclerView.visibility = View.GONE
+                }
             }
         }
 
@@ -254,11 +260,19 @@ class ChatActivity : AppCompatActivity() {
                         selectedImageUris.add(imageUri)
                     }
                     imagePreviewAdapter.notifyDataSetChanged()
+
+                    // 이미지를 선택한 후에 RecyclerView를 표시
+                    if (selectedImageUris.isNotEmpty()) {
+                        binding.selectedImagesRecyclerView.visibility = View.VISIBLE
+                    }
                 }
                 REQUEST_IMAGE_CAPTURE -> {
                     // 카메라 촬영 후 저장된 파일의 URI를 사용합니다.
                     selectedImageUris.add(photoURI)
                     imagePreviewAdapter.notifyDataSetChanged()
+
+                    // 이미지를 촬영한 후에 RecyclerView를 표시
+                    binding.selectedImagesRecyclerView.visibility = View.VISIBLE
                 }
             }
         }
