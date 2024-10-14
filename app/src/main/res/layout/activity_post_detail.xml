@@ -54,8 +54,11 @@
     <Button
         android:id="@+id/button_add_comment"
         android:text="내 판매 내역 첨부하기"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:backgroundTint="#BDD778"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_detail"
         app:layout_constraintEnd_toEndOf="parent"
