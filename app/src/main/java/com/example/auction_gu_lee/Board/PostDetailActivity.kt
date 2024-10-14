@@ -82,6 +82,11 @@ class PostDetailActivity : AppCompatActivity() {
                     // 게시글이 현재 사용자에 의해 등록된 것인지 확인
                     if (post.userId == currentUserUid) {
                         buttonDeletePost.visibility = View.VISIBLE  // 삭제 버튼 노출
+                        buttonAddComment.isEnabled = false  // "내 판매 내역 첨부하기" 버튼 비활성화
+                        buttonAddComment.alpha = 0.5f  // 시각적으로 비활성화 상태 표시 (optional)
+                    } else {
+                        buttonAddComment.isEnabled = true  // "내 판매 내역 첨부하기" 버튼 활성화
+                        buttonAddComment.alpha = 1.0f  // 원래 상태로 복원 (optional)
                     }
                 }
 
