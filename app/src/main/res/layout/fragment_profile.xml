@@ -8,6 +8,16 @@
     android:layout_height="match_parent"
     android:gravity="center">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="프로필"
+        android:background="#BDD778"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        />
+
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -15,6 +25,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="50dp"
         android:background="@android:color/white">
 
         <LinearLayout
@@ -23,7 +34,7 @@
             android:background="#8A4F4F"
             android:backgroundTint="#FFFFFF"
             android:orientation="vertical"
-            android:paddingVertical="20dp"
+            android:paddingVertical="8dp"
             android:paddingHorizontal="20dp">
 
             <TextView
