@@ -72,6 +72,8 @@ class AuctionRoomActivity : AppCompatActivity() {
 
                             quantity = snapshot.child("quantity").getValue(String::class.java) ?: "0개"
 
+                            val bidUnit = calculateBidUnit(startingPrice)
+
 
                             // Set initial values in the UI
                             binding.itemName.text = itemName
@@ -81,6 +83,7 @@ class AuctionRoomActivity : AppCompatActivity() {
                             binding.highestPrice.text = "최고 가격: $highestPrice ₩"
                             binding.favoritesCount.text = "찜 $favoritesCount"
                             binding.participantsCount.text = "참가자 수: $biddersCount 명"
+                            binding.bidUnit.text = "입찰 단위: $bidUnit" // 새로운 TextView 설정
                             updateHighestPriceColor()
 
                             // Load auction item photo using Glide
@@ -314,6 +317,41 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun calculateBidIncrement(startingPrice: Long): Long {
+        return when (startingPrice) {
+            in 100..499 -> 1
+            in 500..999 -> 5
+            in 1000..4999 -> 10
+            in 5000..9999 -> 50
+            in 10000..49999 -> 100
+            in 50000..99999 -> 500
+            in 100000..499999 -> 1000
+            in 500000..999999 -> 5000
+            in 1000000..4999999 -> 10000
+            in 5000000..9999999 -> 50000
+            in 10000000..49999999 -> 100000
+            in 50000000..99999999 -> 500000
+            in 100000000..499999999 -> 1000000
+            in 500000000..999999999 -> 5000000
+            in 1000000000..4999999999 -> 10000000
+            in 5000000000..9999999999 -> 50000000
+            in 10000000000..49999999999 -> 100000000
+            in 50000000000..99999999999 -> 500000000
+            in 100000000000..499999999999 -> 1000000000
+            in 500000000000..999999999999 -> 5000000000
+            in 1000000000000..4999999999999 -> 10000000000
+            in 5000000000000..9999999999999 -> 50000000000
+            in 10000000000000..100000000000000 -> 100000000000
+            else -> startingPrice / 100  // 100억 초과 시 시작 가격의 1%로 증가
+        }
+    }
+
+    private fun calculateBidUnit(startingPrice: Long): String {
+        val increment = calculateBidIncrement(startingPrice)
+        return "${increment} ₩"
+    }
+
 
     // 관심 목록 추가/제거 토글
     private fun toggleWishlist() {

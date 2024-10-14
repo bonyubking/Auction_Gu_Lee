@@ -112,6 +112,7 @@
                             android:layout_marginTop="20dp"
                             android:gravity="center">
 
+
                                 <TextView
                                     android:id="@+id/starting_price"
                                     android:layout_width="wrap_content"
@@ -120,8 +121,9 @@
                                     android:textColor="#000000"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
-                                    android:layout_marginBottom="10dp"/>
+                                    android:layout_marginBottom="16dp"/>
 
+                                <!-- Highest Price -->
                                 <TextView
                                     android:id="@+id/highest_price"
                                     android:layout_width="wrap_content"
@@ -129,9 +131,20 @@
                                     android:text="Highest Price"
                                     android:textColor="#000000"
                                     android:textSize="16sp"
-                                    android:textStyle="bold"/>
-                        </LinearLayout>
+                                    android:textStyle="bold"
+                                    android:layout_marginBottom="16dp"/>
 
+                                <!-- Bid Unit -->
+                                <TextView
+                                    android:id="@+id/bidUnit"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="단위: placebid"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp"
+                                    android:textStyle="italic"
+                                    android:layout_marginBottom="16dp"/>
+                        </LinearLayout>
                         <TextView
                             android:id="@+id/participantsCount"
                             android:layout_width="match_parent"
