@@ -1,4 +1,4 @@
-package com.example.auction_gu_lee.Home
+package com.example.auction_gu_lee.Board
 
 import android.content.Intent
 import android.os.Bundle

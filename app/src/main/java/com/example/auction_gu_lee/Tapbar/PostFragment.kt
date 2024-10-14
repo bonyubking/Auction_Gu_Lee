@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.Board.AddPostActivity
 import com.example.auction_gu_lee.Board.PostAdapter
 import com.example.auction_gu_lee.Board.PostDetailActivity
-import com.example.auction_gu_lee.Home.SearchPostActivity
+import com.example.auction_gu_lee.Board.SearchPostActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Post
 import com.google.android.material.floatingactionbutton.FloatingActionButton

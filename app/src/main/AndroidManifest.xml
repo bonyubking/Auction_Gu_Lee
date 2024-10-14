@@ -83,7 +83,7 @@
 
         <activity android:name=".Board.PostDetailActivity"/>
 
-        <activity android:name=".Home.SearchPostActivity">
+        <activity android:name=".Board.SearchPostActivity">
 
 
         </activity>
