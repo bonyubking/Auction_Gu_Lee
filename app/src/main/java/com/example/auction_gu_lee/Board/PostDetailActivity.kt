@@ -15,21 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
 import com.example.auction_gu_lee.R
-import com.example.auction_gu_lee.Tapbar.AuctionAdapter
 import com.example.auction_gu_lee.models.Auction
 import com.example.auction_gu_lee.models.Post
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.example.auction_gu_lee.models.Comment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 import java.util.UUID
 
-// PostDetailActivity.kt
-// PostDetailActivity.kt
 class PostDetailActivity : AppCompatActivity() {
-
 
     private lateinit var buttonDeletePost: ImageButton
     private val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -39,10 +32,10 @@ class PostDetailActivity : AppCompatActivity() {
     private lateinit var textViewDetail: TextView
     private lateinit var buttonAddComment: Button
     private lateinit var recyclerViewComments: RecyclerView
-    private lateinit var auctionAdapter: AuctionAdapter
+    private lateinit var commentAdapter: CommentAdapter  // AuctionAdapter 대신 CommentAdapter 사용
 
     // 전역 변수로 선언
-    private val auctionList = mutableListOf<Auction>()  // Auction 리스트 전역으로 변경
+    private val commentList = mutableListOf<Comment>()  // Comment 리스트 전역으로 변경
     private val database = FirebaseDatabase.getInstance().getReference()  // Firebase 경로 수정
     private lateinit var postId: String
     private lateinit var post: Post
@@ -124,22 +117,14 @@ class PostDetailActivity : AppCompatActivity() {
     }
 
     private fun setupComments() {
-        auctionAdapter = AuctionAdapter(auctionList) { auction ->
-            if (auction.id.isNullOrEmpty()) {
-                Log.e("PostDetailActivity", "auctionId is empty.")
-                Toast.makeText(this, "유효하지 않은 경매 ID입니다.", Toast.LENGTH_SHORT).show()
-                return@AuctionAdapter
-            }
+        commentAdapter = CommentAdapter(
+            commentList,
+            currentUserUid,
+            { comment -> showDeleteCommentConfirmationDialog(comment) },
+            { auction -> openAuctionDetail(auction) }
+        )
 
-            // 판매 내역 상세보기로 이동
-            val intent = Intent(this, AuctionRoomActivity::class.java)
-            intent.putExtra("auction_id", auction.id)
-
-            Log.d("PostDetailActivity", "Auction ID 전달: ${auction.id}")
-            startActivity(intent)
-        }
-
-        recyclerViewComments.adapter = auctionAdapter
+        recyclerViewComments.adapter = commentAdapter
         recyclerViewComments.layoutManager = LinearLayoutManager(this)
         loadAuctionDataForComments()
     }
@@ -149,59 +134,32 @@ class PostDetailActivity : AppCompatActivity() {
 
         commentsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                auctionList.clear()  // 기존 리스트 초기화
+                commentList.clear()  // 기존 리스트 초기화
 
                 for (commentSnapshot in snapshot.children) {
                     val comment = commentSnapshot.getValue(Comment::class.java)
                     if (comment != null) {
-                        val auctionId = comment.auctionId
-                        if (!auctionId.isNullOrEmpty()) {
-                            // auctionId로 경매 정보 로드
-                            loadAuctionData(auctionId)
-                        } else {
-                            Log.e("PostDetailActivity", "auctionId is null or empty for commentId: ${comment.commentId}")
-                        }
+                        commentList.add(comment)
                     }
                 }
+
+                commentAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@PostDetailActivity, "댓글을 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@PostDetailActivity, "댓글을 불러오는 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
             }
         })
     }
-
-    private fun loadAuctionData(auctionId: String) {
-        val auctionsRef = database.child("auctions").child(auctionId)
-
-        auctionsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val auction = snapshot.getValue(Auction::class.java)
-                if (auction != null) {
-                    auction.id = auctionId // auction.id에 Firebase 키 할당
-                    auctionList.add(auction)  // 리스트에 추가
-                    auctionAdapter.notifyDataSetChanged()  // 어댑터에 변경 사항 알림
-                } else {
-                    Log.e("PostDetailActivity", "Auction data is null for auctionId: $auctionId")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@PostDetailActivity, "경매 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
 
     private fun loadUserAuctions() {
-        val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val dbRef = database.child("auctions")
 
         // 판매 내역을 현재 사용자 ID로 필터링하여 불러옴
         dbRef.orderByChild("creatorUid").equalTo(currentUserUid)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    auctionList.clear()  // 기존 리스트 초기화
+                    val userAuctions = mutableListOf<Auction>()
                     for (auctionSnapshot in snapshot.children) {
                         val auction = auctionSnapshot.getValue(Auction::class.java)
                         if (auction != null) {
@@ -212,11 +170,11 @@ class PostDetailActivity : AppCompatActivity() {
                             }
 
                             auction.id = auctionId
-                            auctionList.add(auction)
+                            userAuctions.add(auction)
                         }
                     }
-                    if (auctionList.isNotEmpty()) {
-                        showAuctionSelectionDialog(auctionList) // 판매 내역이 있을 때 다이얼로그 호출
+                    if (userAuctions.isNotEmpty()) {
+                        showAuctionSelectionDialog(userAuctions) // 판매 내역이 있을 때 다이얼로그 호출
                     } else {
                         Toast.makeText(this@PostDetailActivity, "판매 내역이 없습니다.", Toast.LENGTH_SHORT).show()
                     }
@@ -227,7 +185,6 @@ class PostDetailActivity : AppCompatActivity() {
                 }
             })
     }
-
 
     private fun showAuctionSelectionDialog(auctionList: List<Auction>) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_auction_selection, null)
@@ -287,5 +244,42 @@ class PostDetailActivity : AppCompatActivity() {
             }
         })
     }
-}
 
+    private fun openAuctionDetail(auction: Auction) {
+        val auctionId = auction.id
+        if (!auctionId.isNullOrEmpty()) {
+            val intent = Intent(this, AuctionRoomActivity::class.java)
+            intent.putExtra("auction_id", auctionId)
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "경매 ID가 올바르지 않습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 댓글 삭제 확인 다이얼로그
+    private fun showDeleteCommentConfirmationDialog(comment: Comment) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("댓글 삭제")
+        builder.setMessage("이 댓글을 삭제하시겠습니까?")
+        builder.setPositiveButton("삭제") { dialog, _ ->
+            deleteComment(comment)
+            dialog.dismiss()
+        }
+        builder.setNegativeButton("취소") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.show()
+    }
+
+    // 댓글 삭제 함수
+    private fun deleteComment(comment: Comment) {
+        val commentRef = database.child("purchase_posts").child(postId).child("comments").child(comment.commentId)
+        commentRef.removeValue()
+            .addOnSuccessListener {
+                Toast.makeText(this, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "댓글 삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+}

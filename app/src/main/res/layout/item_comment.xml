@@ -1,26 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- item_comment.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:padding="10dp"
-    android:background="?android:attr/selectableItemBackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="10dp"
+    android:paddingHorizontal="20dp">
 
-    <!-- 판매 내역 이미지 -->
-    <ImageView
-        android:id="@+id/imageView_photo"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:scaleType="centerCrop" />
+    <!-- 삭제 버튼을 상단에 배치 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <!-- 판매 내역 상품명 -->
-    <TextView
-        android:id="@+id/textView_item"
-        android:textSize="16sp"
-        android:layout_marginStart="10dp"
-        android:layout_gravity="center_vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <!-- 오른쪽 상단에 삭제 버튼 -->
+        <ImageButton
+            android:id="@+id/button_delete_comment"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete"
+            android:src="@drawable/baseline_delete_24"
+            android:visibility="gone" /> <!-- 기본적으로 숨김 -->
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/button_delete_comment"
+            android:layout_toLeftOf="@id/button_delete_comment"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageView_photo"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:layout_marginStart="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Item Name"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="대게" />
+
+                <TextView
+                    android:id="@+id/textView_startingPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Starting Price"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="$100" />
+
+                <TextView
+                    android:id="@+id/textView_remainingTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="남은시간" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textView_highestPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Highest Price"
+                    android:textColor="#FF0000"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="$200" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
 </LinearLayout>
