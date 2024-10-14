@@ -81,7 +81,10 @@
 
         <activity android:name=".Board.AddPostActivity"/>
 
-        <activity android:name=".Board.PostDetailActivity">
+        <activity android:name=".Board.PostDetailActivity"/>
+
+        <activity android:name=".Home.SearchPostActivity">
+
 
         </activity>
 

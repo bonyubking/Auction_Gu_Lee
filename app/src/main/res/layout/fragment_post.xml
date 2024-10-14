@@ -44,4 +44,15 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"/>
 
+    <ImageButton
+        android:id="@+id/postmagnifier"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/baseline_search_24"
+        android:scaleType="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
