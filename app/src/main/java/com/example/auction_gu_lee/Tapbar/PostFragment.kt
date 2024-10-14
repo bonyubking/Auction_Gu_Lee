@@ -71,8 +71,9 @@ class PostFragment : Fragment() {
                         postList.add(post)
                     }
                 }
-                postAdapter.notifyDataSetChanged()
-            }
+                // 최신순으로 정렬 (timestamp 내림차순)
+                postList.sortByDescending { it.timestamp }
+                postAdapter.notifyDataSetChanged()            }
 
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(context, "데이터를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
