@@ -77,7 +77,11 @@
 
         <activity android:name=".Profile.Settings.NotificationSettingActivity"/>
 
-        <activity android:name=".Profile.Settings.UserSettingActivity">
+        <activity android:name=".Profile.Settings.UserSettingActivity"/>
+
+        <activity android:name=".Board.AddPostActivity"/>
+
+        <activity android:name=".Board.PostDetailActivity">
 
         </activity>
 

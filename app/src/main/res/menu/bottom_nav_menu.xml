@@ -12,7 +12,7 @@
         android:title="지난 경매" />
 
     <item
-        android:id="@+id/nav_auction2"
+        android:id="@+id/nav_board"
         android:icon="@drawable/free_icon_document_5336286"
         android:title="구매 희망" />
 

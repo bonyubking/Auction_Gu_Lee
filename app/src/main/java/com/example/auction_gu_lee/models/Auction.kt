@@ -1,7 +1,7 @@
 package com.example.auction_gu_lee.models
 
 data class Auction(
-    var id: String? = null,
+    var id: String? = "",
     val item: String? = null,
     val username: String? = null,
     val quantity: String? = null,

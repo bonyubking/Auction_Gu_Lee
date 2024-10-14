@@ -10,6 +10,7 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.ChatFragment
 import com.example.auction_gu_lee.Tapbar.HomeFragment
 import com.example.auction_gu_lee.Tapbar.PastFragment
+import com.example.auction_gu_lee.Tapbar.PostFragment
 import com.example.auction_gu_lee.Tapbar.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -85,6 +86,12 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(ProfileFragment())
                     true
                 }
+
+                R.id.nav_board -> {
+                    replaceFragment(PostFragment())
+                    true
+                }
+
                 else -> false
             }
         }

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/activity_add_post.xml -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/white"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 제목 -->
+        <TextView
+            android:id="@+id/CreatingPost"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#FF9800"
+            android:gravity="center"
+            android:text="구매 요청 작성"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 품목 -->
+        <LinearLayout
+            android:id="@+id/item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/CreatingPost">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="품목" />
+
+            <EditText
+                android:id="@+id/editText_item"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="text" />
+        </LinearLayout>
+
+        <!-- 수량 -->
+        <LinearLayout
+            android:id="@+id/quantity_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/item_layout">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="수량" />
+
+            <EditText
+                android:id="@+id/editText_quantity"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number" />
+
+            <CheckBox
+                android:id="@+id/EA"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:text="개" />
+
+            <CheckBox
+                android:id="@+id/box"
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:text="박스" />
+
+            <CheckBox
+                android:id="@+id/kg"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:text="kg" />
+        </LinearLayout>
+
+        <!-- 상세 설명 -->
+        <LinearLayout
+            android:id="@+id/detail_layout"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@id/quantity_layout">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="상세 설명" />
+
+            <EditText
+                android:id="@+id/editText_detail"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="textMultiLine"
+                android:gravity="top|start"
+                android:maxLines="10"
+                android:minLines="3"
+                android:padding="8dp"
+                android:scrollbars="vertical" />
+        </LinearLayout>
+
+        <!-- 희망 가격 -->
+        <LinearLayout
+            android:id="@+id/desired_price_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/detail_layout">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="희망 가격" />
+
+            <EditText
+                android:id="@+id/editText_desired_price"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:gravity="end" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="원"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- 완료 버튼 -->
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/desired_price_layout"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <Button
+                android:id="@+id/button_complete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="완료" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

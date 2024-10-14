@@ -59,6 +59,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
 
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.foundation.android)
     kapt("com.github.bumptech.glide:compiler:4.14.2")
     // Room dependencies 추가
     implementation(platform("com.google.firebase:firebase-bom:33.4.0")) // 최신 버전으로 변경
