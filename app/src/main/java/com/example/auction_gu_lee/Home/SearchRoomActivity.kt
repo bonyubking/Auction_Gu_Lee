@@ -24,21 +24,20 @@ class SearchRoomActivity : AppCompatActivity() {
     private lateinit var auctionAdapter: AuctionAdapter
     private lateinit var auctionList: MutableList<Auction>
     private lateinit var auctionIdList: MutableList<String>
-    private lateinit var sortSpinner: Spinner
-    private var currentSortType: String = "등록시간"
-    private var auctionCategory: String = "home"  // 기본 카테고리를 "home"으로 설정
+    private lateinit var sortIcon: ImageView
+    private var currentSortType: String = "remainingTime"
+    private var auctionCategory: String = "home"  // 기본 카테고리 설정
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_room)
 
-        // 인텐트에서 전달된 auctionCategory 값을 가져옴
         auctionCategory = intent.getStringExtra("auction_category") ?: "home"
 
         searchEditText = findViewById(R.id.searchEditText)
         searchButton = findViewById(R.id.searchButton)
         recyclerView = findViewById(R.id.recyclerView)
-        sortSpinner = findViewById(R.id.SortSpinner)
+        sortIcon = findViewById(R.id.sortIcon)
 
         recyclerView.visibility = View.GONE
 
@@ -62,7 +61,11 @@ class SearchRoomActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = auctionAdapter
 
-        setupSortSpinner()
+        // 정렬 아이콘 클릭 시 팝업창 띄우기
+        sortIcon.setOnClickListener {
+            showSortDialog()
+        }
+
         fetchAuctionData()
 
         searchButton.setOnClickListener {
@@ -71,34 +74,46 @@ class SearchRoomActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSortSpinner() {
-        val sortOptions = resources.getStringArray(R.array.sort_options)
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sortOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        sortSpinner.adapter = adapter
+    // 정렬 기준 선택 팝업창을 띄우는 함수
+    private fun showSortDialog() {
+        val sortOptions = arrayOf("남은 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "등록 시간 순")
 
-        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                currentSortType = when (position) {
-                    0 -> "time"
-                    1 -> "participants"
-                    2 -> "favorites"
-                    3 -> "highestPriceDesc"
-                    4 -> "highestPriceAsc"
-                    5 -> "startingPriceDesc"
-                    6 -> "startingPriceAsc"
-                    7 -> "remainingTime"
-                    else -> "time"
-                }
-                sortAuctionListBy(currentSortType)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+        // 현재 선택된 정렬 타입에 해당하는 인덱스를 찾음
+        val selectedIndex = when (currentSortType) {
+            "remainingTime" -> 0
+            "participants" -> 1
+            "favorites" -> 2
+            "highestPriceDesc" -> 3
+            "highestPriceAsc" -> 4
+            "startingPriceDesc" -> 5
+            "startingPriceAsc" -> 6
+            "time" -> 7
+            else -> 0
         }
+
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("정렬 기준 선택")
+        builder.setSingleChoiceItems(sortOptions, selectedIndex) { dialog, which ->
+            currentSortType = when (which) {
+                0 -> "remainingTime"
+                1 -> "participants"
+                2 -> "favorites"
+                3 -> "highestPriceDesc"
+                4 -> "highestPriceAsc"
+                5 -> "startingPriceDesc"
+                6 -> "startingPriceAsc"
+                7 -> "time"
+                else -> "remainingTime"
+            }
+            // 항목을 선택하면 즉시 정렬을 적용하고 다이얼로그 닫음
+            sortAuctionListBy(currentSortType)
+            dialog.dismiss()
+        }
+
+        builder.show()
     }
 
     private fun sortAuctionListBy(sortType: String) {
-        // auctionList와 auctionIdList를 Pair로 묶음
         val auctionPairs = auctionList.zip(auctionIdList).toMutableList()
 
         // 정렬 기준에 따라 auctionPairs를 정렬
@@ -121,14 +136,12 @@ class SearchRoomActivity : AppCompatActivity() {
             }
         }
 
-        // 정렬된 Pair를 다시 분리하여 auctionList와 auctionIdList에 적용
         val (sortedAuctions, sortedIds) = auctionPairs.unzip()
         auctionList.clear()
         auctionList.addAll(sortedAuctions)
         auctionIdList.clear()
         auctionIdList.addAll(sortedIds)
 
-        // 어댑터에 데이터 변경 알림
         auctionAdapter.notifyDataSetChanged()
 
         if (auctionList.isNotEmpty()) {
@@ -146,7 +159,6 @@ class SearchRoomActivity : AppCompatActivity() {
             return
         }
 
-        // 검색어로 필터링된 경매 리스트 생성
         val filteredList = auctionList.zip(auctionIdList).filter {
             it.first.item?.contains(query, ignoreCase = true) ?: false
         }.toMutableList()
@@ -178,7 +190,6 @@ class SearchRoomActivity : AppCompatActivity() {
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        // 전달된 카테고리와 일치하는 항목만 추가
                         if (it.category == auctionCategory) {
                             it.biddersCount = it.biddersCount ?: 0
                             it.favoritesCount = it.favoritesCount ?: 0

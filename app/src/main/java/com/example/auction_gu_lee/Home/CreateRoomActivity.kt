@@ -67,8 +67,10 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var Uid: String  // 현재 로그인한 사용자의 UID를 저장할 변수
     private var selectedDateTime: Calendar = Calendar.getInstance()
     private var countDownTimer: CountDownTimer? = null
-
+    private lateinit var auctionId: String  // 경매 ID를 저장할 변수 추가
     private val REQUEST_CAMERA_PERMISSION = 101
+    private lateinit var auctionRef: DatabaseReference
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,11 +90,20 @@ class CreateRoomActivity : AppCompatActivity() {
                         if (currentUser != null) {
                             buttonComplete.isEnabled = true // UID를 가져온 후 버튼 활성화
                         } else {
-                            Toast.makeText(this@CreateRoomActivity, "사용자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@CreateRoomActivity,
+                                "사용자 정보를 불러올 수 없습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
+
                     override fun onCancelled(error: DatabaseError) {
-                        Toast.makeText(this@CreateRoomActivity, "사용자 정보를 가져올 수 없습니다: ${error.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@CreateRoomActivity,
+                            "사용자 정보를 가져올 수 없습니다: ${error.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 })
         } else {
@@ -291,10 +302,28 @@ class CreateRoomActivity : AppCompatActivity() {
 
                 override fun onFinish() {
                     resultTextView.text = "시간이 종료되었습니다!"
+                    Log.d("CreateRoomActivity", "경매 종료됨 - 카테고리 업데이트 시도")
+                    updateAuctionCategoryToPast()  // 카테고리 업데이트 호출
                 }
             }.start()
         } else {
             resultTextView.text = "목표 시간은 현재 시간보다 이후여야 합니다."
+        }
+    }
+
+    private fun updateAuctionCategoryToPast() {
+        if (auctionId.isNotEmpty()) {  // auctionId가 비어있지 않은지 확인
+            val auctionRef =
+                FirebaseDatabase.getInstance().getReference("auctions").child(auctionId)
+            auctionRef.child("category").setValue("past").addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("CreateRoomActivity", "경매 카테고리가 past로 업데이트되었습니다.")
+                } else {
+                    Log.e("CreateRoomActivity", "경매 카테고리 업데이트 실패: ${task.exception?.message}")
+                }
+            }
+        } else {
+            Log.e("CreateRoomActivity", "경매 ID가 비어있습니다. 업데이트할 수 없습니다.")
         }
     }
 
@@ -425,23 +454,24 @@ class CreateRoomActivity : AppCompatActivity() {
     // Firebase에 데이터 업로드
     // Firebase에 데이터 업로드
     private fun uploadAuctionData() {
-        val database = FirebaseDatabase.getInstance().getReference("auctions")
-        val storage = FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
+        val storageRef =
+            FirebaseStorage.getInstance().reference.child("auction_photos/${UUID.randomUUID()}")
 
         // 사진 업로드
-        val uploadTask = storage.putFile(photoUri!!)
-        uploadTask.addOnSuccessListener { taskSnapshot ->
-            storage.downloadUrl.addOnSuccessListener { uri ->
+        val uploadTask = storageRef.putFile(photoUri!!)
+        uploadTask.addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
                 val unit = when {
                     EA.isChecked -> "개"
                     box.isChecked -> "박스"
                     kg.isChecked -> "kg"
                     else -> ""
                 }
-                val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                val formattedDateTime = dateTimeFormat.format(selectedDateTime.time)
 
-                // 콤마 제거 후 숫자로 변환
+                val formattedDateTime =
+                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
+                        selectedDateTime.time
+                    )
                 val startingPriceText = editTextStartingPrice.text.toString().replace(",", "")
                 val startingPrice = startingPriceText.toLongOrNull() ?: 0L
 
@@ -450,39 +480,39 @@ class CreateRoomActivity : AppCompatActivity() {
                     "item" to editTextItem.text.toString(),
                     "quantity" to "${editTextQuantity.text} $unit",
                     "detail" to editTextDetail.text.toString(),
-                    "startingPrice" to startingPrice,  // 콤마 제거한 숫자 값을 저장
+                    "startingPrice" to startingPrice,
                     "photoUrl" to uri.toString(),
                     "timestamp" to System.currentTimeMillis(),
                     "endTime" to selectedDateTime.timeInMillis,
                     "remainingTime" to resultTextView.text.toString(),
                     "creatorUid" to Uid,
-                    "biddersCount" to 0,  // 참가자 수를 0으로 초기화
-                    "favoritesCount" to 0,  // 찜 수를 0으로 초기화
-                    "category" to "home"
+                    "biddersCount" to 0,
+                    "favoritesCount" to 0,
+                    "category" to "home"  // 최초에 home으로 설정
                 )
 
-                val auctionRef = database.push() // 새로운 경매 노드 생성
+                // 새로운 경매 생성 및 경매 ID 저장
+                auctionRef = FirebaseDatabase.getInstance().getReference("auctions").push()
+                auctionId = auctionRef.key ?: ""
+
                 auctionRef.setValue(auction).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "경매가 성공적으로 생성되었습니다", Toast.LENGTH_SHORT).show()
 
-                        // HomeFragment로 이동 (auction의 ID를 전달)
+                        // HomeFragment로 이동
                         val intent = Intent(this, MainActivity::class.java).apply {
                             putExtra("fragment", "home")
-                            putExtra("auction_id", auctionRef.key) // auction의 고유 ID를 전달
+                            putExtra("auction_id", auctionId)  // auction_id 전달
                         }
                         startActivity(intent)
-
                         finish()
                     } else {
                         Toast.makeText(this, "경매 생성에 실패했습니다", Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
         }.addOnFailureListener {
             Toast.makeText(this, "사진 업로드에 실패했습니다", Toast.LENGTH_SHORT).show()
         }
     }
-
 }

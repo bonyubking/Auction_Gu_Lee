@@ -78,6 +78,7 @@ class HomeFragment : Fragment() {
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
             val intent = Intent(requireContext(), SearchRoomActivity::class.java)
+            intent.putExtra("auction_category", "home")  // 경매 종료되지 않은 경매 목록
             startActivity(intent)
         }
 

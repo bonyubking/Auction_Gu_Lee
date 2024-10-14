@@ -309,17 +309,6 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
-
-
-
-
-
-
-
-
-
-
-
     // 관심 목록 추가/제거 토글
     private fun toggleWishlist() {
         val wishlistReference = databaseReference.child("users").child(uid).child("wishlist")
@@ -385,7 +374,6 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun updateWishlistButtonState() {
         val wishlistReference = databaseReference.child("users").child(uid).child("wishlist")
