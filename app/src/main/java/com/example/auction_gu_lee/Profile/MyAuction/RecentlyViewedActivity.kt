@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
+import com.example.auction_gu_lee.Tapbar.AuctionAdapter
 import com.example.auction_gu_lee.databinding.ActivityRecentlyViewedBinding
 import com.example.auction_gu_lee.models.Auction
 import com.google.firebase.auth.FirebaseAuth
@@ -17,17 +18,23 @@ class RecentlyViewedActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecentlyViewedBinding
     private val auctionList = mutableListOf<Auction>()
     private val databaseReference = FirebaseDatabase.getInstance().reference
-    private lateinit var adapter: RecentlyViewedAdapter
+    private lateinit var adapter: AuctionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecentlyViewedBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = RecentlyViewedAdapter(auctionList) { auctionId ->
-            val intent = Intent(this, AuctionRoomActivity::class.java)
-            intent.putExtra("auction_id", auctionId)
-            startActivity(intent)
+        adapter = AuctionAdapter(auctionList) { auction ->
+            // auction 객체에서 auctionId를 추출
+            val auctionId = auction.id
+            if (auctionId != null) {
+                val intent = Intent(this, AuctionRoomActivity::class.java)
+                intent.putExtra("auction_id", auctionId) // auctionId 전달
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "경매 ID를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.recentlyViewedRecyclerView.layoutManager = LinearLayoutManager(this)

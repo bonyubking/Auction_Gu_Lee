@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
+import com.example.auction_gu_lee.Tapbar.AuctionAdapter
 import com.example.auction_gu_lee.databinding.ActivitySalesHistoryBinding
 import com.example.auction_gu_lee.models.Auction
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +19,7 @@ class SalesHistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySalesHistoryBinding
     private val auctionList = mutableListOf<Auction>()
     private val filteredList = mutableListOf<Auction>()
-    private lateinit var adapter: SalesHistoryAdapter
+    private lateinit var adapter: AuctionAdapter
     private val databaseReference = FirebaseDatabase.getInstance().reference
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,10 +31,17 @@ class SalesHistoryActivity : AppCompatActivity() {
         binding.searchEditText.visibility = View.GONE
         binding.btnCloseSearch.visibility = View.GONE
 
-        adapter = SalesHistoryAdapter(filteredList) { auctionId ->
-            val intent = Intent(this, AuctionRoomActivity::class.java)
-            intent.putExtra("auction_id", auctionId)
-            startActivity(intent)
+        // AuctionAdapter 사용
+        adapter = AuctionAdapter(filteredList) { auction ->
+            // Auction 객체로부터 auctionId 추출
+            val auctionId = auction.id
+            if (auctionId != null) {
+                val intent = Intent(this, AuctionRoomActivity::class.java)
+                intent.putExtra("auction_id", auctionId) // auctionId가 null이 아닐 경우에만 전달
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "경매 ID를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.salesHistoryRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -95,9 +103,7 @@ class SalesHistoryActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    // 데이터가 모두 추가된 후 정렬 수행
                     auctionList.sortByDescending { it.timestamp }
-
                     filteredList.clear()
                     filteredList.addAll(auctionList)  // 초기 목록을 filteredList에 설정
                     filterSalesHistory(binding.searchEditText.text.toString()) // 검색된 상태 유지

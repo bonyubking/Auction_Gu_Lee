@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
+import com.example.auction_gu_lee.Tapbar.AuctionAdapter
 import com.example.auction_gu_lee.databinding.ActivityWishlistBinding
 import com.example.auction_gu_lee.models.Auction
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +20,7 @@ class WishlistActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWishlistBinding
     private val auctionList = mutableListOf<Auction>()
     private lateinit var originalAuctionList: MutableList<Auction>  // 검색 전 원본 리스트
-    private lateinit var adapter: WishlistAdapter
+    private lateinit var adapter: AuctionAdapter
     private val databaseReference = FirebaseDatabase.getInstance().reference
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,11 +29,17 @@ class WishlistActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         originalAuctionList = mutableListOf()
-        adapter = WishlistAdapter(auctionList) { auctionId ->
-            // 항목을 클릭하면 AuctionRoomActivity로 이동
-            val intent = Intent(this, AuctionRoomActivity::class.java)
-            intent.putExtra("auction_id", auctionId)
-            startActivity(intent)
+        // AuctionAdapter에서 Auction 객체 전체를 전달받음
+        adapter = AuctionAdapter(auctionList) { auction ->
+            // auction 객체에서 auctionId를 추출
+            val auctionId = auction.id
+            if (auctionId != null) {
+                val intent = Intent(this, AuctionRoomActivity::class.java)
+                intent.putExtra("auction_id", auctionId)  // auctionId 전달
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "경매 ID를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.wishlistRecyclerView.layoutManager = LinearLayoutManager(this)
