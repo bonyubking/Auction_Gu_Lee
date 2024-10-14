@@ -1,11 +1,13 @@
 package com.example.auction_gu_lee.Tapbar
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +17,6 @@ import com.example.auction_gu_lee.Home.SearchRoomActivity
 import com.example.auction_gu_lee.models.Auction
 import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class PastFragment : Fragment() {
@@ -24,8 +25,8 @@ class PastFragment : Fragment() {
     private lateinit var auctionList: MutableList<Auction>
     private lateinit var auctionIdList: MutableList<String>
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private lateinit var sortSpinner: Spinner
-    private var currentSortType: String = "time"
+    private lateinit var sortIcon: ImageView
+    private var currentSortType: String = "remainingTime"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,8 +64,8 @@ class PastFragment : Fragment() {
             startActivity(intent)
         }
 
-        // Spinner 초기화
-        setupSortSpinner(view)
+        // Sort Icon 설정
+        setupSortIcon(view)
 
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
@@ -90,32 +91,53 @@ class PastFragment : Fragment() {
         fetchLatestAuctions()
     }
 
-    // Spinner 설정 메서드 추가
-    private fun setupSortSpinner(view: View) {
-        sortSpinner = view.findViewById(R.id.sortSpinner)
+    // Sort Icon 설정 메서드
+    private fun setupSortIcon(view: View) {
+        sortIcon = view.findViewById(R.id.sortIcon)
 
-        val sortOptions = arrayOf("등록 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "남은 시간")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        sortSpinner.adapter = adapter
-
-        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                currentSortType = when (position) {
-                    0 -> "time"
-                    1 -> "participants"
-                    2 -> "favorites"
-                    3 -> "highestPriceDesc"
-                    4 -> "highestPriceAsc"
-                    5 -> "startingPriceDesc"
-                    6 -> "startingPriceAsc"
-                    else -> "time"
-                }
-                sortAuctionListBy(currentSortType)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+        // 클릭 시 다이얼로그 띄우기
+        sortIcon.setOnClickListener {
+            showSortDialog()
         }
+    }
+
+    // Sort Dialog 표시
+    private fun showSortDialog() {
+        val sortOptions = arrayOf("남은 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "등록 시간 순")
+
+        // 현재 선택된 정렬 타입에 해당하는 인덱스를 찾음
+        val selectedIndex = when (currentSortType) {
+            "remainingTime" -> 0
+            "participants" -> 1
+            "favorites" -> 2
+            "highestPriceDesc" -> 3
+            "highestPriceAsc" -> 4
+            "startingPriceDesc" -> 5
+            "startingPriceAsc" -> 6
+            "time" -> 7
+            else -> 0
+        }
+
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("정렬 기준 선택")
+        builder.setSingleChoiceItems(sortOptions, selectedIndex) { dialog, which ->
+            currentSortType = when (which) {
+                0 -> "remainingTime"
+                1 -> "participants"
+                2 -> "favorites"
+                3 -> "highestPriceDesc"
+                4 -> "highestPriceAsc"
+                5 -> "startingPriceDesc"
+                6 -> "startingPriceAsc"
+                7 -> "time"
+                else -> "remainingTime"
+            }
+            // 항목을 선택하면 즉시 정렬을 적용하고 다이얼로그 닫음
+            sortAuctionListBy(currentSortType)
+            dialog.dismiss()
+        }
+
+        builder.show()
     }
 
     // 정렬 로직 추가
@@ -136,6 +158,9 @@ class PastFragment : Fragment() {
             "highestPriceAsc" -> auctionPairs.sortBy { it.first.highestPrice ?: 0L }
             "startingPriceDesc" -> auctionPairs.sortByDescending { it.first.startingPrice ?: 0L }
             "startingPriceAsc" -> auctionPairs.sortBy { it.first.startingPrice ?: 0L }
+            "remainingTime" -> auctionPairs.sortBy {
+                it.first.endTime?.minus(System.currentTimeMillis()) ?: Long.MAX_VALUE
+            }
         }
 
         val (sortedAuctions, sortedIds) = auctionPairs.unzip()
@@ -176,5 +201,4 @@ class PastFragment : Fragment() {
             }
         })
     }
-
 }

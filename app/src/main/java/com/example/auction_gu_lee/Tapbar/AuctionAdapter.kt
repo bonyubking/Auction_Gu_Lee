@@ -103,10 +103,14 @@ class AuctionAdapter(
 
                     override fun onFinish() {
                         holder.remainingTimeTextView.text = "경매 종료"
+                        holder.remainingTimeTextView.setTextColor(android.graphics.Color.BLUE)  // 경매 종료 시 파란색으로 변경
+
                     }
                 }.start()
             } else {
                 holder.remainingTimeTextView.text = "경매 종료"
+                holder.remainingTimeTextView.setTextColor(android.graphics.Color.BLUE)  // 경매 종료 시 파란색으로 변경
+
             }
         }
 
