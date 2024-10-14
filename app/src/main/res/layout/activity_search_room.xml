@@ -26,8 +26,9 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@id/sortIcon"
             app:layout_constraintEnd_toStartOf="@id/searchButton"
-            android:hint="검색"
+            android:hint="검색어를 입력하세요"
             android:imeOptions="actionNext"
+            android:gravity="center"
             android:inputType="text" />
 
         <!-- 검색 버튼 -->

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/white"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
             android:layout_height="50dp"
             android:background="#FF9800"
             android:gravity="center"
-            android:text="구매 요청 작성"
+            android:text="구매 희망 작성"
             android:textColor="@android:color/white"
             android:textSize="24sp"
             android:textStyle="bold"
