@@ -1,6 +1,7 @@
 package com.example.auction_gu_lee.Board
 
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -63,7 +64,7 @@ class CommentAdapter(
                 onDeleteClickListener(comment)
             }
         } else {
-            holder.buttonDeleteComment.visibility = View.GONE
+            holder.buttonDeleteComment.visibility = View.INVISIBLE  // gone에서 invisible로 변경
         }
     }
 
@@ -77,6 +78,7 @@ class CommentAdapter(
                 val auction = snapshot.getValue(Auction::class.java)
                 if (auction != null) {
                     auction.id = auctionId  // auction.id 설정
+                    Log.d("CommentAdapter", "Loaded Auction: ID=$auctionId, Item=${auction.item}")
 
                     // 경매 항목 및 이미지 표시
                     holder.textViewAuctionItem.text = auction.item
@@ -105,6 +107,7 @@ class CommentAdapter(
                     holder.textViewStartingPrice.text = ""
                     holder.textViewHighestPrice.text = ""
                     holder.textViewRemainingTime.text = ""
+                    Log.e("CommentAdapter", "Auction 데이터가 null입니다. auctionId=$auctionId")
                 }
             }
 
@@ -114,6 +117,7 @@ class CommentAdapter(
                 holder.textViewStartingPrice.text = ""
                 holder.textViewHighestPrice.text = ""
                 holder.textViewRemainingTime.text = ""
+                Log.e("CommentAdapter", "Auction 데이터 로드 취소됨: ${error.message}")
             }
         })
     }
@@ -126,18 +130,43 @@ class CommentAdapter(
         if (remainingTime > 0) {
             holder.countDownTimer = object : CountDownTimer(remainingTime, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
+                    val days = millisUntilFinished / (1000 * 60 * 60 * 24)
                     val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
                     val minutes = (millisUntilFinished / (1000 * 60)) % 60
                     val seconds = (millisUntilFinished / 1000) % 60
-                    holder.textViewRemainingTime.text = String.format("%02d:%02d:%02d 남음", hours, minutes, seconds)
+
+                    when {
+                        // 남은 시간이 24시간 이상일 때 'xx일 남음' 표시
+                        millisUntilFinished > 24 * 60 * 60 * 1000 -> {
+                            holder.textViewRemainingTime.text = String.format("%d일 남음", days)
+                            holder.textViewRemainingTime.setTextColor(android.graphics.Color.BLACK)
+                        }
+                        // 남은 시간이 1시간 이상 24시간 미만일 때 'xx시간 남음' 표시
+                        millisUntilFinished in 60 * 60 * 1000..24 * 60 * 60 * 1000 -> {
+                            holder.textViewRemainingTime.text = String.format("%d시간 남음", hours)
+                            holder.textViewRemainingTime.setTextColor(android.graphics.Color.RED)
+                        }
+                        // 남은 시간이 1시간 미만일 때 'mm:ss 남음' 표시
+                        else -> {
+                            holder.textViewRemainingTime.text = String.format("%02d:%02d 남음", minutes, seconds)
+                            holder.textViewRemainingTime.setTextColor(android.graphics.Color.RED)
+                        }
+                    }
                 }
 
                 override fun onFinish() {
                     holder.textViewRemainingTime.text = "경매 종료"
+                    holder.textViewRemainingTime.setTextColor(android.graphics.Color.BLUE)  // 경매 종료 시 파란색으로 변경
                 }
             }.start()
         } else {
             holder.textViewRemainingTime.text = "경매 종료"
+            holder.textViewRemainingTime.setTextColor(android.graphics.Color.BLUE)  // 경매 종료 시 파란색으로 변경
         }
+    }
+
+    override fun onViewRecycled(holder: CommentViewHolder) {
+        super.onViewRecycled(holder)
+        holder.countDownTimer?.cancel()
     }
 }
