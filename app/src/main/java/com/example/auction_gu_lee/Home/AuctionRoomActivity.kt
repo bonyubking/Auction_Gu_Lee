@@ -30,8 +30,9 @@ class AuctionRoomActivity : AppCompatActivity() {
     private lateinit var uid: String
     private lateinit var auctionId: String
     private val databaseReference = FirebaseDatabase.getInstance().reference
-    private var favoritesCount: Int = 0  // favoritesCount 변수 추가
-    private var biddersCount: Int = 0  // biddersCount 변수 추가
+    private var favoritesCount: Int = 0
+    private var biddersCount: Int = 0
+    private var quantity: String = "" // 갯수 변수 수정
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,13 +70,17 @@ class AuctionRoomActivity : AppCompatActivity() {
                             // biddersCount 초기화
                             biddersCount = snapshot.child("biddersCount").getValue(Int::class.java) ?: 0
 
+                            quantity = snapshot.child("quantity").getValue(String::class.java) ?: "0개"
+
+
                             // Set initial values in the UI
                             binding.itemName.text = itemName
+                            binding.itemQuantity.text = "$quantity" // 갯수 표시
                             binding.itemDetail.text = itemDetail
                             binding.startingPrice.text = "시작 가격: $startingPrice ₩"
                             binding.highestPrice.text = "최고 가격: $highestPrice ₩"
                             binding.favoritesCount.text = "찜 $favoritesCount"
-                            binding.participantsCount.text = "참가자 수: $biddersCount 명"  // biddersCount를 participantsCount에 반영
+                            binding.participantsCount.text = "참가자 수: $biddersCount 명"
                             updateHighestPriceColor()
 
                             // Load auction item photo using Glide
@@ -94,7 +99,7 @@ class AuctionRoomActivity : AppCompatActivity() {
                             if (snapshot.hasChild("participants")) {
                                 participantUids = snapshot.child("participants").children.mapNotNull { it.key }.toMutableSet()
                             }
-                            binding.participantsCount.text = "참가자 수: $biddersCount 명"  // biddersCount로 업데이트
+                            binding.participantsCount.text = "참가자 수: $biddersCount 명"
 
                             // Update UI for Bid and Chat Button visibility
                             binding.fabBid.visibility = View.VISIBLE
@@ -309,6 +314,7 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
+
     // 관심 목록 추가/제거 토글
     private fun toggleWishlist() {
         val wishlistReference = databaseReference.child("users").child(uid).child("wishlist")
