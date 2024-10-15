@@ -180,7 +180,7 @@
             app:srcCompat="@drawable/icon_bid"
             app:layout_constraintBottom_toTopOf="@id/fab_chat"
             app:layout_constraintEnd_toEndOf="parent"
-            android:backgroundTint="#71bf5f"/>
+            android:backgroundTint="#4da98d"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_chat"
@@ -191,6 +191,6 @@
             app:srcCompat="@drawable/icon_chat"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:backgroundTint="#71bf5f"/>
+            android:backgroundTint="#4da98d"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

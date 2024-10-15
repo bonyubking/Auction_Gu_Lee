@@ -98,7 +98,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:layout_gravity="center"
-                android:backgroundTint="#71bf5f"
+                android:backgroundTint="#df6b2b"
                 android:text="재입찰"
                 android:textSize="12dp"
                 android:padding="0dp"/>

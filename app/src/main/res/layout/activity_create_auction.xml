@@ -15,7 +15,7 @@
             android:id="@+id/CreatingAuction"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="#FF9800"
+            android:background="#df6b2b"
             android:gravity="center"
             android:text="경매 생성"
             android:textColor="@android:color/white"
@@ -186,7 +186,7 @@
                 android:id="@+id/dateTimeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FF9800"
+                android:backgroundTint="#df6b2b"
                 android:text="날짜 및 시간 선택"/>
         </LinearLayout>
 
@@ -212,7 +212,7 @@
                 android:id="@+id/button_attach_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FF9800"
+                android:backgroundTint="#df6b2b"
                 android:layout_marginTop="30dp"
                 android:layout_marginEnd="30dp"
                 android:text="사진 첨부" />
@@ -235,7 +235,7 @@
                 android:id="@+id/button_complete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FF9800"
+                android:backgroundTint="#df6b2b"
                 android:text="완료" />
         </LinearLayout>
 

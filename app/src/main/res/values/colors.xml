@@ -4,5 +4,4 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red">#FF0000</color> <!-- 빨간색 정의 -->
     <color name="status_bar_color">#ffffff</color>
-
 </resources>

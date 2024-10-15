@@ -10,7 +10,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#BDD778"
+        android:background="#86e16d"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -31,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="경매"
+        android:textColor="@android:color/black"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -80,7 +81,7 @@
         android:layout_marginBottom="16dp"
         app:srcCompat="@drawable/baseline_add_box_24"
         android:scaleType="center"
-        android:backgroundTint="#b6d86a"
+        android:backgroundTint="#4da98d"
         android:contentDescription="경매 생성 아이콘" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

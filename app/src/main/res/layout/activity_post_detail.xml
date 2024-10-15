@@ -59,7 +59,7 @@
         android:textColor="@android:color/white"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="#BDD778"
+        android:backgroundTint="#df6b2b"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_detail"
         app:layout_constraintEnd_toEndOf="parent"

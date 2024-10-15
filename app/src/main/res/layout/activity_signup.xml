@@ -234,7 +234,7 @@
             android:id="@+id/btn_send_verification"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#D76645"
+            android:backgroundTint="#df6b2b"
             android:text="이메일 인증"
             android:textSize="18sp" />
 
@@ -248,7 +248,7 @@
             android:id="@+id/btn_signup"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#D76645"
+            android:backgroundTint="#df6b2b"
             android:text="회원가입"
             android:textSize="18dp" />
 

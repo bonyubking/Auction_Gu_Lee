@@ -15,7 +15,7 @@
             android:id="@+id/CreatingPost"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="#FF9800"
+            android:background="#df6b2b"
             android:gravity="center"
             android:text="구매 희망 작성"
             android:textColor="@android:color/white"
@@ -166,7 +166,7 @@
                 android:id="@+id/button_complete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#FF9800"
+                android:backgroundTint="#df6b2b"
                 android:text="완료" />
         </LinearLayout>
 

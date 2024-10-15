@@ -109,6 +109,7 @@
                     android:id="@+id/btnAddKeyword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="#df6b2b"
                     android:text="등록"
                     android:textSize="14sp" />
             </LinearLayout>

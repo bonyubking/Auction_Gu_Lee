@@ -111,7 +111,7 @@ class BiddingHistoryAdapter(
                 holder.binding.textViewBidStatus.setTextColor(android.graphics.Color.RED)
             } else {
                 holder.binding.textViewBidStatus.text = "내가 최고 가격"
-                holder.binding.textViewBidStatus.setTextColor(android.graphics.Color.GREEN)
+                holder.binding.textViewBidStatus.setTextColor(android.graphics.Color.parseColor("#4da98d"))  // 여기서 색상을 #4da98d로 설정
             }
         } else {
             holder.binding.textViewBidStatus.text = "입찰 없음"
