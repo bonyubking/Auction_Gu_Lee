@@ -137,7 +137,7 @@ class ChatAdapter(
             }
 
             if (currentUserId == chatItem.creatorUid) {
-                intent.putExtra("seller_uid", chatItem.creatorUid)
+                intent.putExtra("seller_uid", currentUserId)
                 intent.putExtra("bidder_uid", chatItem.bidderUid)
             } else {
                 intent.putExtra("seller_uid", chatItem.creatorUid)

@@ -174,11 +174,13 @@ class ChatActivity : AppCompatActivity() {
      * 새로운 채팅방 ID를 생성하는 메서드
      */
     private fun createChatRoomId() {
-        // Ensure that sellerUid and bidderUid are initialized
+        // sellerUid와 bidderUid가 제대로 초기화되었는지 확인
         if (!::sellerUid.isInitialized || !::bidderUid.isInitialized) {
             Log.e("ChatActivity", "sellerUid 또는 bidderUid가 초기화되지 않았습니다.")
+            Toast.makeText(this, "채팅방을 생성할 수 없습니다. 판매자 또는 구매자 정보가 없습니다.", Toast.LENGTH_SHORT).show()
             return
         }
+
         // chatRoomId를 auctionId|bidderUid|sellerUid 형식으로 생성
         chatRoomId = "${auctionId}|${bidderUid}|${sellerUid}"
         Log.d("ChatActivity", "Created new chatRoomId: $chatRoomId")
