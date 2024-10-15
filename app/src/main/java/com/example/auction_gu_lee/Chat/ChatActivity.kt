@@ -20,10 +20,7 @@ import com.example.auction_gu_lee.models.ChatItem
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -43,6 +40,8 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var auctionId: String
     private lateinit var chatRoomId: String
+    private lateinit var bidderUid: String // 구매자 UID
+    private lateinit var sellerUid: String // 판매자 UID
     private val database = FirebaseDatabase.getInstance().reference
     private val storage = FirebaseStorage.getInstance().reference
 
@@ -61,27 +60,18 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Intent로부터 경매 ID와 판매자 UID 가져오기
+        // Intent로부터 경매 ID와 구매자 UID 가져오기
         auctionId = intent.getStringExtra("auction_id") ?: run {
             Toast.makeText(this, "경매 ID를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        val sellerUid = intent.getStringExtra("seller_uid") ?: run {
-            Toast.makeText(this, "판매자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+        bidderUid = intent.getStringExtra("bidder_uid") ?: run {
+            Toast.makeText(this, "구매자 UID를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
-
-        val bidderUid = intent.getStringExtra("bidder_uid") ?: run {
-            Toast.makeText(this, "구매자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-
-        val uidList = listOf(sellerUid, bidderUid).sorted()
-        chatRoomId = "${auctionId}|${uidList.joinToString("|")}"
 
         // 상단에 경매의 사진 및 정보를 표시
         loadAuctionDetails()
@@ -99,7 +89,7 @@ class ChatActivity : AppCompatActivity() {
         binding.sendButton.setOnClickListener {
             val message = binding.messageInput.text.toString()
             if (message.isNotEmpty() || selectedImageUris.isNotEmpty()) {
-                uploadSelectedImagesAndSendMessage(bidderUid, message)
+                uploadSelectedImagesAndSendMessage(message)
                 binding.messageInput.text.clear()
                 selectedImageUris.clear()
                 imagePreviewAdapter.notifyDataSetChanged()
@@ -111,7 +101,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-        // **나가기 버튼 클릭 리스너 수정**
+        // 나가기 버튼 클릭 리스너 설정
         binding.exitChatButton.setOnClickListener {
             showExitConfirmationDialog()
         }
@@ -120,14 +110,244 @@ class ChatActivity : AppCompatActivity() {
         binding.buttonAttach.setOnClickListener {
             showImageSourceDialog()
         }
-
-        // 채팅 메시지 가져오기
-        loadChatMessages(bidderUid)
     }
 
     /**
-     * 채팅방 나가기 확인 다이얼로그를 표시하는 메서드
+     * 경매의 상세 정보를 로드하여 UI에 표시하는 메서드
      */
+    private fun loadAuctionDetails() {
+        // 경매 정보 가져오기
+        database.child("auctions").child(auctionId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val photoUrl = snapshot.child("photoUrl").getValue(String::class.java)
+                    val itemName = snapshot.child("item").getValue(String::class.java)
+                    val creatorUidValue = snapshot.child("creatorUid").getValue(String::class.java)
+
+                    photoUrl?.let {
+                        Glide.with(this@ChatActivity)
+                            .load(it)
+                            .placeholder(R.drawable.placeholder_image)
+                            .into(binding.chatItemImage)
+                    }
+
+                    binding.chatItemTitle.text = itemName ?: "품목명 없음"
+
+                    if (creatorUidValue != null) {
+                        sellerUid = creatorUidValue // set sellerUid
+                        database.child("users").child(sellerUid)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(userSnapshot: DataSnapshot) {
+                                    val username = userSnapshot.child("username").getValue(String::class.java)
+                                    binding.chatCreatorUsername.text = username ?: "판매자 정보 없음"
+
+                                    // After fetching seller's username, create chatRoomId
+                                    createChatRoomId()
+
+                                    // 채팅 메시지 가져오기
+                                    loadChatMessages()
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    binding.chatCreatorUsername.text = "판매자 정보 없음"
+                                    createChatRoomId() // proceed even if username is not fetched
+                                    loadChatMessages()
+                                }
+                            })
+                    } else {
+                        binding.chatCreatorUsername.text = "판매자 정보 없음"
+                        // if creatorUid is null, cannot create chatRoomId properly
+                        Toast.makeText(this@ChatActivity, "판매자 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ChatActivity, "경매 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            })
+    }
+
+
+    /**
+     * 새로운 채팅방 ID를 생성하는 메서드
+     */
+    private fun createChatRoomId() {
+        // Ensure that sellerUid and bidderUid are initialized
+        if (!::sellerUid.isInitialized || !::bidderUid.isInitialized) {
+            Log.e("ChatActivity", "sellerUid 또는 bidderUid가 초기화되지 않았습니다.")
+            return
+        }
+        // chatRoomId를 auctionId|bidderUid|sellerUid 형식으로 생성
+        chatRoomId = "${auctionId}|${bidderUid}|${sellerUid}"
+        Log.d("ChatActivity", "Created new chatRoomId: $chatRoomId")
+    }
+
+
+    /**
+     * 채팅 메시지를 로드하는 메서드
+     */
+    private fun loadChatMessages() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        // messagesListener 초기화 및 할당
+        messagesListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val chatList = mutableListOf<ChatItem>()
+                val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
+
+                for (messageSnapshot in snapshot.children) {
+                    try {
+                        // 메시지 데이터가 ChatItem 객체인지 확인
+                        val chatItem = messageSnapshot.getValue(ChatItem::class.java)
+                        if (chatItem != null) {
+                            chatList.add(chatItem)
+                            Log.d("ChatActivity", "Loaded chat item: $chatItem")
+
+                            val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
+
+                            // 액티비티가 가시적인 경우에만 읽음 처리
+                            if (isActivityVisible) {
+                                // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
+                                if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
+                                    // isRead 값을 true로 설정
+                                    updates["$messageKey/isRead"] = true
+                                }
+                            }
+                        } else {
+                            // 메시지 데이터가 ChatItem 객체가 아닌 경우 로그 출력
+                            val rawValue = messageSnapshot.getValue(String::class.java)
+                            Log.w("ChatActivity", "Invalid message format for messageId: ${messageSnapshot.key}, value: $rawValue")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ChatActivity", "Error parsing messageId: ${messageSnapshot.key}, error: ${e.message}")
+                    }
+                }
+
+                // 채팅 UI 업데이트
+                updateChatUI(chatList)
+
+                // 읽음 상태 업데이트
+                if (updates.isNotEmpty()) {
+                    // 메시지 노드에 직접 접근하여 업데이트
+                    snapshot.ref.updateChildren(updates)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatActivity", "Failed to load chat messages: ${error.message}")
+            }
+        }
+
+        // 리스너 등록
+        database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages")
+            .addValueEventListener(messagesListener)
+    }
+
+    private fun updateChatUI(chatList: List<ChatItem>) {
+        val layoutManager = LinearLayoutManager(this)
+        layoutManager.stackFromEnd = true
+        binding.chatMessagesRecyclerView.layoutManager = layoutManager
+
+        val adapter = ChatMessageAdapter(this, chatList)
+        binding.chatMessagesRecyclerView.adapter = adapter
+
+        binding.chatMessagesRecyclerView.scrollToPosition(chatList.size - 1)
+    }
+
+    /**
+     * 메시지를 전송하는 메서드
+     */
+// ChatActivity.kt 내의 sendMessage() 메서드 수정
+
+    private fun sendMessage(message: String, imageUrls: List<String> = emptyList()) {
+        if (!::chatRoomId.isInitialized) {
+            Log.e("ChatActivity", "chatRoomId가 초기화되지 않았습니다. 메시지를 전송할 수 없습니다.")
+            Toast.makeText(this, "채팅방이 초기화되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val senderUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val timestamp = System.currentTimeMillis()
+
+        val messageData = mutableMapOf<String, Any>(
+            "senderUid" to senderUid,
+            "message" to message,
+            "timestamp" to timestamp,
+            "imageUrls" to imageUrls,  // 이미지 URL 리스트 추가 (빈 리스트라도 포함)
+            "isRead" to false  // 기본적으로 읽지 않은 상태로 설정
+        )
+
+        Log.d("ChatActivity", "Sending message with image URLs: $messageData")
+
+        // 메시지 참조를 먼저 생성하여 메시지 ID를 가져옵니다.
+        val messageRef = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages").push()
+        val messageId = messageRef.key ?: "unknown"
+
+        // 메시지를 전송합니다.
+        messageRef.setValue(messageData)
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.e("ChatActivity", "Message send failed: ${task.exception?.message}")
+                    Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
+
+                    // **메시지를 전송했으므로 metadata/exitedUsers에서 현재 사용자 제거**
+                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+                        .child("metadata").child("exitedUsers").child(senderUid).removeValue()
+                        .addOnSuccessListener {
+                            Log.d("ChatActivity", "Exited status removed for user: $senderUid")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("ChatActivity", "Failed to remove exited status: ${error.message}")
+                        }
+                }
+            }
+    }
+
+
+    /**
+     * 선택된 이미지를 업로드하고 메시지를 전송하는 메서드
+     */
+    private fun uploadSelectedImagesAndSendMessage(message: String) {
+        val imageUrls = mutableListOf<String>()
+        val uploadTasks = mutableListOf<Task<Uri>>()
+
+        if (selectedImageUris.isNotEmpty()) {
+            for (uri in selectedImageUris) {
+                val uniqueFileName = UUID.randomUUID().toString()
+                val ref = storage.child("chat_images/$uniqueFileName")
+
+                val uploadTask = ref.putFile(uri)
+                    .continueWithTask { task ->
+                        if (!task.isSuccessful) {
+                            task.exception?.let { throw it }
+                        }
+                        ref.downloadUrl
+                    }
+                uploadTasks.add(uploadTask)
+            }
+
+            Tasks.whenAllSuccess<Uri>(uploadTasks)
+                .addOnSuccessListener { uris ->
+                    for (uri in uris) {
+                        imageUrls.add(uri.toString())
+                    }
+                    // 모든 이미지 업로드가 완료되었으므로 메시지를 전송합니다.
+                    sendMessage(message, imageUrls)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            // 업로드할 이미지가 없으므로 메시지를 바로 전송합니다.
+            sendMessage(message, imageUrls)
+        }
+    }
+
+
     private fun showExitConfirmationDialog() {
         // AlertDialog.Builder를 사용하여 다이얼로그 생성
         val builder = android.app.AlertDialog.Builder(this)
@@ -149,7 +369,6 @@ class ChatActivity : AppCompatActivity() {
         // 다이얼로그 표시
         builder.create().show()
     }
-
     /**
      * 채팅방을 나가고 이전 화면으로 돌아가는 메서드
      */
@@ -161,12 +380,12 @@ class ChatActivity : AppCompatActivity() {
 
         val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
 
-        // Firebase에 현재 사용자의 나가기 상태와 타임스탬프 저장
+        // Firebase에 현재 사용자의 나가기 상태와 타임스탬프 저장 (isRead 필드 제외)
         val exitData = mapOf(
             "exited" to true,
             "timestamp" to System.currentTimeMillis()
         )
-        chatReference.child("exitedUsers").child(currentUserId).setValue(exitData)
+        chatReference.child("metadata").child("exitedUsers").child(currentUserId).setValue(exitData)
             .addOnSuccessListener {
                 Toast.makeText(this, "채팅방을 나갔습니다.", Toast.LENGTH_SHORT).show()
                 // ChatFragment로 돌아가기
@@ -182,14 +401,18 @@ class ChatActivity : AppCompatActivity() {
         super.onDestroy()
         // 메시지 리스너 제거
         if (::messagesListener.isInitialized) {
-            database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+            database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages")
                 .removeEventListener(messagesListener)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        updateMessagesAsRead()
+        if (::chatRoomId.isInitialized) {
+            updateMessagesAsRead()
+        } else {
+            Log.w("ChatActivity", "chatRoomId가 초기화되지 않았습니다. updateMessagesAsRead()를 호출하지 않습니다.")
+        }
         isActivityVisible = true  // 액티비티가 가시적으로 변경됨
     }
 
@@ -203,18 +426,31 @@ class ChatActivity : AppCompatActivity() {
      */
     private fun updateMessagesAsRead() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages")
 
         chatReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                val updates = mutableMapOf<String, Any>()
                 for (messageSnapshot in snapshot.children) {
                     val messageSenderUid = messageSnapshot.child("senderUid").getValue(String::class.java) ?: continue
                     val isRead = messageSnapshot.child("isRead").getValue(Boolean::class.java) ?: false
 
                     if (!isRead && messageSenderUid != currentUserId) {
                         // 메시지를 읽음 처리
-                        messageSnapshot.ref.child("isRead").setValue(true)
+                        updates["${messageSnapshot.key}/isRead"] = true
+                        Log.d("ChatActivity", "Updating message as read for messageId: ${messageSnapshot.key}")
                     }
+                }
+
+                if (updates.isNotEmpty()) {
+                    // 메시지 노드에 직접 접근하여 업데이트
+                    chatReference.updateChildren(updates)
+                        .addOnSuccessListener {
+                            Log.d("ChatActivity", "Messages marked as read successfully.")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("ChatActivity", "Failed to update messages as read: ${error.message}")
+                        }
                 }
             }
 
@@ -224,8 +460,9 @@ class ChatActivity : AppCompatActivity() {
         })
     }
 
-    // 이하 기존 코드 유지
-
+    /**
+     * 이미지 소스 선택 다이얼로그를 표시하는 메서드
+     */
     private fun showImageSourceDialog() {
         val options = arrayOf("갤러리에서 선택", "카메라로 촬영")
         val builder = android.app.AlertDialog.Builder(this)
@@ -342,187 +579,5 @@ class ChatActivity : AppCompatActivity() {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
         val path = MediaStore.Images.Media.insertImage(contentResolver, bitmap, "Title", null)
         return Uri.parse(path)
-    }
-
-    private fun uploadSelectedImagesAndSendMessage(bidderUid: String, message: String) {
-        val imageUrls = mutableListOf<String>()
-        val uploadTasks = mutableListOf<Task<Uri>>()
-
-        if (selectedImageUris.isNotEmpty()) {
-            for (uri in selectedImageUris) {
-                val uniqueFileName = UUID.randomUUID().toString()
-                val ref = storage.child("chat_images/$uniqueFileName")
-
-                val uploadTask = ref.putFile(uri)
-                    .continueWithTask { task ->
-                        if (!task.isSuccessful) {
-                            task.exception?.let { throw it }
-                        }
-                        ref.downloadUrl
-                    }
-                uploadTasks.add(uploadTask)
-            }
-
-            Tasks.whenAllSuccess<Uri>(uploadTasks)
-                .addOnSuccessListener { uris ->
-                    for (uri in uris) {
-                        imageUrls.add(uri.toString())
-                    }
-                    // 모든 이미지 업로드가 완료되었으므로 메시지를 전송합니다.
-                    sendMessage(bidderUid, message, imageUrls)
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
-                }
-        } else {
-            // 업로드할 이미지가 없으므로 메시지를 바로 전송합니다.
-            sendMessage(bidderUid, message, imageUrls)
-        }
-    }
-
-    private fun loadAuctionDetails() {
-        // 경매 정보 가져오기
-        database.child("auctions").child(auctionId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val photoUrl = snapshot.child("photoUrl").getValue(String::class.java)
-                    val itemName = snapshot.child("item").getValue(String::class.java)
-                    val creatorUid = snapshot.child("creatorUid").getValue(String::class.java)
-
-                    photoUrl?.let {
-                        Glide.with(this@ChatActivity)
-                            .load(it)
-                            .placeholder(R.drawable.placeholder_image)
-                            .into(binding.chatItemImage)
-                    }
-
-                    binding.chatItemTitle.text = itemName ?: "품목명 없음"
-
-                    if (creatorUid != null) {
-                        database.child("users").child(creatorUid)
-                            .addListenerForSingleValueEvent(object : ValueEventListener {
-                                override fun onDataChange(userSnapshot: DataSnapshot) {
-                                    val username = userSnapshot.child("username").getValue(String::class.java)
-                                    binding.chatCreatorUsername.text = username ?: "판매자 정보 없음"
-                                }
-
-                                override fun onCancelled(error: DatabaseError) {
-                                    binding.chatCreatorUsername.text = "판매자 정보 없음"
-                                }
-                            })
-                    } else {
-                        binding.chatCreatorUsername.text = "판매자 정보 없음"
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@ChatActivity, "경매 정보를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
-                }
-            })
-    }
-
-    private fun sendMessage(bidderUid: String, message: String, imageUrls: List<String> = emptyList()) {
-        val messageId = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).push().key ?: return
-        val senderUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val timestamp = System.currentTimeMillis()
-
-        val messageData = mutableMapOf<String, Any>(
-            "senderUid" to senderUid,
-            "message" to message,
-            "timestamp" to timestamp,
-            "imageUrls" to imageUrls,  // 이미지 URL 리스트 추가 (빈 리스트라도 포함)
-            "isRead" to false  // 기본적으로 읽지 않은 상태로 설정
-        )
-
-        Log.d("ChatActivity", "Sending message with image URLs: $messageData")
-
-        database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child(messageId).setValue(messageData)
-            .addOnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.e("ChatActivity", "Message send failed: ${task.exception?.message}")
-                    Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
-                } else {
-                    Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
-
-                    // **메시지를 전송했으므로 exitedUsers에서 현재 사용자 제거**
-                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-                        .child("exitedUsers").child(senderUid).removeValue()
-                        .addOnSuccessListener {
-                            Log.d("ChatActivity", "Exited status removed for user: $senderUid")
-                        }
-                        .addOnFailureListener { error ->
-                            Log.e("ChatActivity", "Failed to remove exited status: ${error.message}")
-                        }
-                }
-            }
-    }
-
-    private fun loadChatMessages(bidderUid: String) {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        // messagesListener 초기화 및 할당
-        messagesListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val chatList = mutableListOf<ChatItem>()
-                val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
-
-                for (messageSnapshot in snapshot.children) {
-                    try {
-                        // 메시지 데이터가 ChatItem 객체인지 확인
-                        val chatItem = messageSnapshot.getValue(ChatItem::class.java)
-                        if (chatItem != null) {
-                            chatList.add(chatItem)
-                            Log.d("ChatActivity", "Loaded chat item: $chatItem")
-
-                            val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
-
-                            // 액티비티가 가시적인 경우에만 읽음 처리
-                            if (isActivityVisible) {
-                                // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
-                                if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
-                                    // isRead 값을 true로 설정
-                                    updates["$messageKey/isRead"] = true
-                                }
-                            }
-                        } else {
-                            // 메시지 데이터가 ChatItem 객체가 아닌 경우 로그 출력
-                            val rawValue = messageSnapshot.getValue(String::class.java)
-                            Log.w("ChatActivity", "Invalid message format for messageId: ${messageSnapshot.key}, value: $rawValue")
-                        }
-                    } catch (e: Exception) {
-                        Log.e("ChatActivity", "Error parsing messageId: ${messageSnapshot.key}, error: ${e.message}")
-                    }
-                }
-
-                // 채팅 UI 업데이트
-                updateChatUI(chatList)
-
-                // 읽음 상태 업데이트
-                if (updates.isNotEmpty()) {
-                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-                        .updateChildren(updates)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("ChatActivity", "Failed to load chat messages: ${error.message}")
-            }
-        }
-
-        // 리스너 등록
-        database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-            .addValueEventListener(messagesListener)
-    }
-
-
-    private fun updateChatUI(chatList: List<ChatItem>) {
-        val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true
-        binding.chatMessagesRecyclerView.layoutManager = layoutManager
-
-        val adapter = ChatMessageAdapter(this, chatList)
-        binding.chatMessagesRecyclerView.adapter = adapter
-
-        binding.chatMessagesRecyclerView.scrollToPosition(chatList.size - 1)
     }
 }

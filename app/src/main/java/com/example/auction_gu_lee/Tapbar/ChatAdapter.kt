@@ -17,10 +17,7 @@ import com.example.auction_gu_lee.Chat.ChatActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.ChatItem
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -103,7 +100,6 @@ class ChatAdapter(
             }
         })
 
-
         // 마지막 메시지 설정
         holder.lastMessage.text = when {
             chatItem.message.isNotEmpty() -> chatItem.message
@@ -121,7 +117,6 @@ class ChatAdapter(
             holder.lastMessage.setTypeface(null, Typeface.BOLD)
         }
 
-
         // 항목 클릭 리스너 추가 - 채팅 액티비티로 이동
         holder.itemView.setOnClickListener {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -133,10 +128,13 @@ class ChatAdapter(
             // 메시지 읽음 처리 콜백 호출
             onMessageRead(chatItem.auctionId, chatItem.chatRoomId)
 
-            val intent = Intent(context, ChatActivity::class.java)
-            intent.putExtra("auction_id", chatItem.auctionId)
-            intent.putExtra("bidder_uid", chatItem.bidderUid)  // 일관된 bidderUid 전달
-            intent.putExtra("seller_uid", chatItem.creatorUid)  // 항상 sellerUid 전달
+
+            // Intent에 auction_id와 bidder_uid를 전달
+            val intent = Intent(context, ChatActivity::class.java).apply {
+                putExtra("auction_id", chatItem.auctionId)
+                putExtra("bidder_uid", chatItem.bidderUid)
+                // chat_room_id는 ChatActivity에서 생성하므로 전달하지 않음
+            }
 
             if (currentUserId == chatItem.creatorUid) {
                 intent.putExtra("seller_uid", chatItem.creatorUid)
@@ -148,10 +146,7 @@ class ChatAdapter(
 
             context.startActivity(intent)
         }
-
-
     }
-
 
     override fun getItemCount(): Int = chatItems.size
 
@@ -175,5 +170,4 @@ class ChatAdapter(
             }
         }
     }
-
 }
