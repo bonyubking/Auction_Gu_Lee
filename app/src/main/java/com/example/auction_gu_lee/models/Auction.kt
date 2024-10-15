@@ -9,7 +9,7 @@ data class Auction(
     var startingPrice: Long? = 0L,  // 기본값 0L로 설정
     val remainingTime: String? = null,
     var highestPrice: Long? = 0L,  // 기본값 0L로 설정
-    val photoUrl: String? = null,
+    var photoUrl: String? = null,
     val timestamp: Long? = null,
     val endTime: Long? = null,
     val creatorUid: String? = null,

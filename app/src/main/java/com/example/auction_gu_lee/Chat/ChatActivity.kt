@@ -112,6 +112,11 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
+        // **나가기 버튼 클릭 리스너 수정**
+        binding.exitChatButton.setOnClickListener {
+            showExitConfirmationDialog()
+        }
+
         // 이미지 첨부 버튼 클릭 리스너 설정
         binding.buttonAttach.setOnClickListener {
             showImageSourceDialog()
@@ -121,15 +126,68 @@ class ChatActivity : AppCompatActivity() {
         loadChatMessages(bidderUid)
     }
 
+    /**
+     * 채팅방 나가기 확인 다이얼로그를 표시하는 메서드
+     */
+    private fun showExitConfirmationDialog() {
+        // AlertDialog.Builder를 사용하여 다이얼로그 생성
+        val builder = android.app.AlertDialog.Builder(this)
+        builder.setTitle("채팅방 나가기")
+        builder.setMessage("채팅방을 나가시겠습니까?")
+
+        // "예" 버튼 설정
+        builder.setPositiveButton("예") { dialog, which ->
+            // "예"를 선택했을 때 채팅방 나가기 처리
+            leaveChatRoomAndReturn()
+        }
+
+        // "아니오" 버튼 설정
+        builder.setNegativeButton("아니오") { dialog, which ->
+            // "아니오"를 선택했을 때 다이얼로그 닫기
+            dialog.dismiss()
+        }
+
+        // 다이얼로그 표시
+        builder.create().show()
+    }
+
+    /**
+     * 채팅방을 나가고 이전 화면으로 돌아가는 메서드
+     */
+    private fun leaveChatRoomAndReturn() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+
+        // Firebase에 현재 사용자의 나가기 상태와 타임스탬프 저장
+        val exitData = mapOf(
+            "exited" to true,
+            "timestamp" to System.currentTimeMillis()
+        )
+        chatReference.child("exitedUsers").child(currentUserId).setValue(exitData)
+            .addOnSuccessListener {
+                Toast.makeText(this, "채팅방을 나갔습니다.", Toast.LENGTH_SHORT).show()
+                // ChatFragment로 돌아가기
+                finish() // 현재 Activity 종료
+            }
+            .addOnFailureListener {
+                Log.e("ChatActivity", "Failed to leave chat room: ${it.message}")
+                Toast.makeText(this, "채팅방 나가기 실패", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        messagesListener?.let {
+        // 메시지 리스너 제거
+        if (::messagesListener.isInitialized) {
             database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-                .removeEventListener(it)
+                .removeEventListener(messagesListener)
         }
     }
 
-    // 여기에 onResume() 메서드 추가
     override fun onResume() {
         super.onResume()
         updateMessagesAsRead()
@@ -141,7 +199,9 @@ class ChatActivity : AppCompatActivity() {
         isActivityVisible = false  // 액티비티가 가시적이지 않음
     }
 
-    // updateMessagesAsRead() 함수 추가
+    /**
+     * 메시지를 읽음으로 업데이트하는 메서드
+     */
     private fun updateMessagesAsRead() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
@@ -363,7 +423,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun sendMessage(bidderUid: String, message: String, imageUrls: List<String> = emptyList()) {
-        val messageId = database.child("chats").child(chatRoomId).push().key ?: return
+        val messageId = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).push().key ?: return
         val senderUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val timestamp = System.currentTimeMillis()
 
@@ -385,6 +445,16 @@ class ChatActivity : AppCompatActivity() {
                     Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
                 } else {
                     Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
+
+                    // **메시지를 전송했으므로 exitedUsers에서 현재 사용자 제거**
+                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+                        .child("exitedUsers").child(senderUid).removeValue()
+                        .addOnSuccessListener {
+                            Log.d("ChatActivity", "Exited status removed for user: $senderUid")
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("ChatActivity", "Failed to remove exited status: ${error.message}")
+                        }
                 }
             }
     }
@@ -434,7 +504,6 @@ class ChatActivity : AppCompatActivity() {
         database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
             .addValueEventListener(messagesListener)
     }
-
 
     private fun updateChatUI(chatList: List<ChatItem>) {
         val layoutManager = LinearLayoutManager(this)

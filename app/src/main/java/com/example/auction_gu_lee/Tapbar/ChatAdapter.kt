@@ -174,27 +174,4 @@ class ChatAdapter(
         }
     }
 
-    private fun updateMessageAsRead(chatRoomId: String) {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val chatReference = database.child("auctions").child("chats").child(chatRoomId)
-
-        chatReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (messageSnapshot in snapshot.children) {
-                    val messageSenderUid = messageSnapshot.child("senderUid").getValue(String::class.java) ?: continue
-                    val isRead = messageSnapshot.child("isRead").getValue(Boolean::class.java) ?: false
-
-                    if (!isRead && messageSenderUid != currentUserId) {
-                        // 메시지 읽음 상태를 true로 업데이트
-                        messageSnapshot.ref.child("isRead").setValue(true)
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("ChatFragment", "Failed to update message as read: ${error.message}")
-            }
-        })
-    }
-
 }
