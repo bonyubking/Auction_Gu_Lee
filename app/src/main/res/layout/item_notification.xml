@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="알림 내용 ex) 최고가 갱신! '사과' '15000원' 만약에 엄청나게 내용이 길어진다고 해도 이 텍스트 뷰는 어쩌고 저쩌고"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginVertical="8dp"
+        android:layout_marginHorizontal="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1955년 10월 23일"
+        android:layout_gravity="end"
+        android:textSize="12sp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="8dp"
+        android:background="@android:color/darker_gray"/>
+
+
+
+
+
+
+</LinearLayout>
