@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import com.example.auction_gu_lee.Lobby.LobbyActivity
 import com.example.auction_gu_lee.Profile.MyAuction.BiddingHistoryActivity
+import com.example.auction_gu_lee.Profile.MyAuction.PurchaseWishlistActivity
 import com.example.auction_gu_lee.Profile.MyAuction.RecentlyViewedActivity
 import com.example.auction_gu_lee.Profile.MyAuction.SalesHistoryActivity
 import com.example.auction_gu_lee.Profile.MyAuction.WishlistActivity
@@ -109,6 +110,14 @@ class ProfileFragment : Fragment() {
             val intent = Intent(requireContext(), BiddingHistoryActivity::class.java)
             startActivity(intent)
         }
+
+        val purchaseWishlistButton = view.findViewById<TextView>(R.id.btn_purchase_wishlist)
+        purchaseWishlistButton.setOnClickListener {
+            // 구매 희망 내역 화면으로 이동하는 로직을 추가
+            val intent = Intent(requireContext(), PurchaseWishlistActivity::class.java)
+            startActivity(intent)
+        }
+
 
         // 내 비지니스 광고하기 버튼 클릭 리스너 설정
         val businessAdButton = view.findViewById<TextView>(R.id.btn_business_ad)

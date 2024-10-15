@@ -16,8 +16,7 @@
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
-        android:gravity="center"
-        />
+        android:gravity="center"/>
 
     <ScrollView
         android:layout_width="0dp"
@@ -93,11 +92,22 @@
                 android:textSize="16sp"
                 android:paddingVertical="10dp"/>
 
+            <TextView
+                android:id="@+id/btn_purchase_wishlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="  구매 희망 내역"
+                android:textSize="16sp"
+                android:paddingVertical="10dp"/>
+
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider"
                 android:backgroundTint="#000000" />
+
+
 
             <TextView
                 android:layout_width="wrap_content"

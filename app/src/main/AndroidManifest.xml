@@ -75,6 +75,8 @@
 
         <activity android:name=".Profile.MyAuction.RecentlyViewedActivity" />
 
+        <activity android:name=".Profile.MyAuction.PurchaseWishlistActivity" />
+
         <activity android:name=".Profile.Settings.NotificationSettingActivity"/>
 
         <activity android:name=".Profile.Settings.UserSettingActivity"/>

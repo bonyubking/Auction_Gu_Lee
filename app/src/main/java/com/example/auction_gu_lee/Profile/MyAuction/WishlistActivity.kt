@@ -29,6 +29,7 @@ class WishlistActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         originalAuctionList = mutableListOf()
+
         // AuctionAdapter에서 Auction 객체 전체를 전달받음
         adapter = AuctionAdapter(auctionList) { auction ->
             // auction 객체에서 auctionId를 추출
@@ -45,6 +46,7 @@ class WishlistActivity : AppCompatActivity() {
         binding.wishlistRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.wishlistRecyclerView.adapter = adapter
 
+        // 관심 목록 로드
         loadWishlist()
 
         // 검색 버튼 클릭 리스너 설정
@@ -52,32 +54,31 @@ class WishlistActivity : AppCompatActivity() {
             showSearchLayout()
         }
 
-        // 검색창의 닫기 버튼 클릭 리스너 설정
+        // 검색창 닫기 버튼 클릭 리스너 설정
         binding.btnCloseSearch.setOnClickListener {
             hideSearchLayout()
         }
 
+        // 검색 입력창에 입력 변화 감지
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // 필요 없음
-            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString()
-                filterWishlist(query)
+                filterWishlist(query)  // 실시간으로 검색어에 따라 필터링
             }
 
-            override fun afterTextChanged(s: Editable?) {
-                // 필요 없음
-            }
+            override fun afterTextChanged(s: Editable?) {}
         })
     }
 
+    // 검색창을 보여주는 함수
     private fun showSearchLayout() {
         binding.headerLayout.visibility = View.GONE  // 관심 목록 제목 숨김
         binding.searchLayout.visibility = View.VISIBLE  // 검색창 표시
     }
 
+    // 검색창을 숨기고 원본 리스트로 복원
     private fun hideSearchLayout() {
         binding.headerLayout.visibility = View.VISIBLE  // 관심 목록 제목 표시
         binding.searchLayout.visibility = View.GONE  // 검색창 숨김
@@ -88,6 +89,7 @@ class WishlistActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
+    // Firebase에서 관심 목록 불러오기
     private fun loadWishlist() {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val userId = currentUser.uid
@@ -111,6 +113,7 @@ class WishlistActivity : AppCompatActivity() {
         })
     }
 
+    // 관심 목록에 있는 경매 ID들로부터 경매 데이터를 로드
     private fun loadAuctions(auctionIds: List<String>) {
         auctionList.clear()
         originalAuctionList.clear()
@@ -123,6 +126,7 @@ class WishlistActivity : AppCompatActivity() {
                             it.id = auctionId
                             auctionList.add(it)
                             originalAuctionList.add(it)  // 원본 리스트에도 추가
+                            // 최신순으로 정렬
                             auctionList.sortByDescending { it.timestamp }
                             adapter.notifyDataSetChanged()
                         }
@@ -135,6 +139,7 @@ class WishlistActivity : AppCompatActivity() {
         }
     }
 
+    // 검색어에 따라 관심 목록 필터링
     private fun filterWishlist(query: String) {
         if (query.isBlank()) {
             // 검색어가 없을 경우 전체 리스트를 표시
@@ -145,6 +150,7 @@ class WishlistActivity : AppCompatActivity() {
             return
         }
 
+        // 검색어가 포함된 항목 필터링
         val filteredList = originalAuctionList.filter {
             it.item?.contains(query, ignoreCase = true) ?: false
         }
@@ -153,7 +159,7 @@ class WishlistActivity : AppCompatActivity() {
         auctionList.addAll(filteredList)
         adapter.notifyDataSetChanged()
 
-        // 필요에 따라 검색 결과가 없을 때 메시지를 표시할 수 있습니다.
+        // 검색 결과가 없을 때 메시지 표시
         if (filteredList.isEmpty()) {
             binding.noResultsText.visibility = View.VISIBLE
         } else {
