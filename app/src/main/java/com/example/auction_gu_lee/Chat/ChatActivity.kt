@@ -80,7 +80,6 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
-        // 1:1 채팅방 고유 ID 생성
         val uidList = listOf(sellerUid, bidderUid).sorted()
         chatRoomId = "${auctionId}|${uidList.joinToString("|")}"
 
@@ -437,8 +436,7 @@ class ChatActivity : AppCompatActivity() {
 
         Log.d("ChatActivity", "Sending message with image URLs: $messageData")
 
-        database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child(messageId)
-            .setValue(messageData)
+        database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child(messageId).setValue(messageData)
             .addOnCompleteListener { task ->
                 if (!task.isSuccessful) {
                     Log.e("ChatActivity", "Message send failed: ${task.exception?.message}")
@@ -469,19 +467,30 @@ class ChatActivity : AppCompatActivity() {
                 val updates = mutableMapOf<String, Any>()  // 업데이트할 데이터 저장용
 
                 for (messageSnapshot in snapshot.children) {
-                    val chatItem = messageSnapshot.getValue(ChatItem::class.java) ?: continue  // null 체크 후 continue
-                    chatList.add(chatItem)
-                    Log.d("ChatActivity", "Loaded chat item: $chatItem")
+                    try {
+                        // 메시지 데이터가 ChatItem 객체인지 확인
+                        val chatItem = messageSnapshot.getValue(ChatItem::class.java)
+                        if (chatItem != null) {
+                            chatList.add(chatItem)
+                            Log.d("ChatActivity", "Loaded chat item: $chatItem")
 
-                    val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
+                            val messageKey = messageSnapshot.key ?: continue  // 메시지 키 null 체크 후 continue
 
-                    // 액티비티가 가시적인 경우에만 읽음 처리
-                    if (isActivityVisible) {
-                        // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
-                        if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
-                            // isRead 값을 true로 설정
-                            updates["$messageKey/isRead"] = true
+                            // 액티비티가 가시적인 경우에만 읽음 처리
+                            if (isActivityVisible) {
+                                // 만약 메시지가 읽지 않은 상태이고, 상대방이 보낸 메시지라면
+                                if (!chatItem.isRead && chatItem.senderUid != currentUserId) {
+                                    // isRead 값을 true로 설정
+                                    updates["$messageKey/isRead"] = true
+                                }
+                            }
+                        } else {
+                            // 메시지 데이터가 ChatItem 객체가 아닌 경우 로그 출력
+                            val rawValue = messageSnapshot.getValue(String::class.java)
+                            Log.w("ChatActivity", "Invalid message format for messageId: ${messageSnapshot.key}, value: $rawValue")
                         }
+                    } catch (e: Exception) {
+                        Log.e("ChatActivity", "Error parsing messageId: ${messageSnapshot.key}, error: ${e.message}")
                     }
                 }
 
@@ -504,6 +513,7 @@ class ChatActivity : AppCompatActivity() {
         database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
             .addValueEventListener(messagesListener)
     }
+
 
     private fun updateChatUI(chatList: List<ChatItem>) {
         val layoutManager = LinearLayoutManager(this)

@@ -135,6 +135,8 @@ class ChatAdapter(
 
             val intent = Intent(context, ChatActivity::class.java)
             intent.putExtra("auction_id", chatItem.auctionId)
+            intent.putExtra("bidder_uid", chatItem.bidderUid)  // 일관된 bidderUid 전달
+            intent.putExtra("seller_uid", chatItem.creatorUid)  // 항상 sellerUid 전달
 
             if (currentUserId == chatItem.creatorUid) {
                 intent.putExtra("seller_uid", chatItem.creatorUid)
