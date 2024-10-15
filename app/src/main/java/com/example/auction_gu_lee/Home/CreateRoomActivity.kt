@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.widget.addTextChangedListener
 import com.example.auction_gu_lee.Main.MainActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.Tapbar.HomeFragment
@@ -76,7 +77,23 @@ class CreateRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_auction)
 
+        // 버튼과 이미지뷰 초기화
+        // FirebaseDatabase 인스턴스 초기화
+        EA = findViewById(R.id.EA)
+        kg = findViewById(R.id.kg)
+        box = findViewById(R.id.box)
+        editTextItem = findViewById(R.id.editText_item)
+        editTextQuantity = findViewById(R.id.editText_quantity)
+        editTextDetail = findViewById(R.id.editText_detail)
+        editTextStartingPrice = findViewById(R.id.editText_startingprice)
+        imageViewPreview = findViewById(R.id.imageView_preview)
+        buttonAttachPhoto = findViewById(R.id.button_attach_photo)
+        buttonComplete = findViewById(R.id.button_complete)
         storage = FirebaseStorage.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+        dateTimeButton = findViewById(R.id.dateTimeButton)
+        resultTextView = findViewById(R.id.resultTextView)
+
         database = FirebaseDatabase.getInstance().getReference("auctions")
         val auth = FirebaseAuth.getInstance()
 
@@ -110,18 +127,14 @@ class CreateRoomActivity : AppCompatActivity() {
             Toast.makeText(this, "사용자 인증 정보가 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
-        // FirebaseDatabase 인스턴스 초기화
 
-        EA = findViewById(R.id.EA)
-        kg = findViewById(R.id.kg)
-        box = findViewById(R.id.box)
-
-        // CheckBox 선택 시 다른 체크박스 해제
+        // CheckBox 선택 시 다른 체크박스 해제 및 버튼 활성화 여부 확인
         EA.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 kg.isChecked = false
                 box.isChecked = false
             }
+            checkCompleteButtonState() // 완료 버튼 상태 확인
         }
 
         kg.setOnCheckedChangeListener { _, isChecked ->
@@ -129,6 +142,7 @@ class CreateRoomActivity : AppCompatActivity() {
                 EA.isChecked = false
                 box.isChecked = false
             }
+            checkCompleteButtonState() // 완료 버튼 상태 확인
         }
 
         box.setOnCheckedChangeListener { _, isChecked ->
@@ -136,26 +150,24 @@ class CreateRoomActivity : AppCompatActivity() {
                 EA.isChecked = false
                 kg.isChecked = false
             }
+            checkCompleteButtonState() // 완료 버튼 상태 확인
         }
 
-        // 버튼과 이미지뷰 초기화
-
-        editTextItem = findViewById(R.id.editText_item)
-        editTextQuantity = findViewById(R.id.editText_quantity)
-        editTextDetail = findViewById(R.id.editText_detail)
-        editTextStartingPrice = findViewById(R.id.editText_startingprice)
-        imageViewPreview = findViewById(R.id.imageView_preview)
-        buttonAttachPhoto = findViewById(R.id.button_attach_photo)
-        buttonComplete = findViewById(R.id.button_complete)
-        storage = FirebaseStorage.getInstance()
-        firestore = FirebaseFirestore.getInstance()
-        dateTimeButton = findViewById(R.id.dateTimeButton)
-        resultTextView = findViewById(R.id.resultTextView)
+        // 입력 필드 변경 시 완료 버튼 활성화 여부 확인
+        editTextItem.addTextChangedListener { checkCompleteButtonState() }
+        editTextQuantity.addTextChangedListener { checkCompleteButtonState() }
+        editTextDetail.addTextChangedListener { checkCompleteButtonState() }
+        editTextStartingPrice.addTextChangedListener { checkCompleteButtonState() }
 
         // 사진 첨부 버튼 클릭 리스너
         buttonAttachPhoto.setOnClickListener {
             showImageOptions()
+            checkCompleteButtonState()
+
         }
+
+        // 버튼 초기 상태를 비활성화
+        buttonComplete.isEnabled = false
 
         // 완료 버튼 클릭 리스너 (서버에 데이터 저장)
         buttonComplete.setOnClickListener {
@@ -183,6 +195,7 @@ class CreateRoomActivity : AppCompatActivity() {
         dateTimeButton.setOnClickListener {
             hideKeyboard()
             showDateTimePicker()
+            checkCompleteButtonState()
         }
 
         editTextStartingPrice.addTextChangedListener(object : TextWatcher {
@@ -212,6 +225,22 @@ class CreateRoomActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    // 입력 값, 체크박스, 날짜 및 사진 상태를 확인하고 버튼 활성화/비활성화 처리
+    private fun checkCompleteButtonState() {
+        val isItemFilled = editTextItem.text.isNotEmpty()
+        val isQuantityFilled = editTextQuantity.text.isNotEmpty()
+        val isDetailFilled = editTextDetail.text.isNotEmpty()
+        val isStartingPriceFilled = editTextStartingPrice.text.isNotEmpty()
+        val isCheckboxChecked = EA.isChecked || kg.isChecked || box.isChecked
+        val isDateTimeSelected = selectedDateTime.timeInMillis > Calendar.getInstance().timeInMillis
+        val isPhotoAttached = ::photoUri.isInitialized && photoUri != null
+
+        // 모든 필드가 채워졌는지 확인하여 완료 버튼 활성화 여부 결정
+        buttonComplete.isEnabled = isItemFilled && isQuantityFilled && isDetailFilled &&
+                isStartingPriceFilled && isCheckboxChecked &&
+                isDateTimeSelected && isPhotoAttached
     }
 
     // 사진 선택 또는 촬영 옵션 제공

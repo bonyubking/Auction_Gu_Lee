@@ -79,11 +79,11 @@ class AuctionRoomActivity : AppCompatActivity() {
                             binding.itemName.text = itemName
                             binding.itemQuantity.text = "$quantity" // 갯수 표시
                             binding.itemDetail.text = itemDetail
-                            binding.startingPrice.text = "시작 가격: $startingPrice ₩"
-                            binding.highestPrice.text = "최고 가격: $highestPrice ₩"
+                            binding.startingPrice.text = "시작가 $startingPrice ₩"
+                            binding.highestPrice.text = "최고가 $highestPrice ₩"
                             binding.favoritesCount.text = "찜 $favoritesCount"
-                            binding.participantsCount.text = "참가자 수: $biddersCount 명"
-                            binding.bidUnit.text = "입찰 단위: $bidUnit" // 새로운 TextView 설정
+                            binding.participantsCount.text = "참가자 $biddersCount 명"
+                            binding.bidUnit.text = "입찰 단위 $bidUnit" // 새로운 TextView 설정
                             updateHighestPriceColor()
 
                             // Load auction item photo using Glide

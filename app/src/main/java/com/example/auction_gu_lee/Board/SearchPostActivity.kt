@@ -48,6 +48,15 @@ class SearchPostActivity : AppCompatActivity() {
         // 초기 전체 목록 불러오기
         loadAllPosts()
 
+        // 힌트를 포커스 여부에 따라 표시하거나 숨기기
+        searchEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                searchEditText.hint = ""  // 포커스가 있을 때 힌트를 지움
+            } else {
+                searchEditText.hint = "검색어를 입력하세요"  // 포커스가 없을 때 다시 힌트를 설정
+            }
+        }
+
         searchButton.setOnClickListener {
             val query = searchEditText.text.toString().trim()
             if (query.isNotEmpty()) {

@@ -70,91 +70,113 @@
                         <ImageView
                             android:id="@+id/item_photo"
                             android:layout_width="match_parent"
-                            android:layout_height="200dp"
+                            android:layout_height="240dp"
                             app:layout_constraintTop_toBottomOf="@id/btn_add_to_wishlist"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             android:scaleType="centerInside"/>
 
-                        <!-- Item Name -->
-                        <TextView
-                            android:id="@+id/item_name"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/item_photo"
-                            android:layout_marginTop="20dp"
-                            android:layout_marginStart="30dp"
-                            android:text="Item"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="#000000"/>
-
-                        <!-- 품목 갯수 TextView 추가 -->
-                        <TextView
-                            android:id="@+id/itemQuantity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="개수"
-                            android:textSize="14sp"
-                            android:textColor="#808080"
-                            app:layout_constraintStart_toStartOf="@id/item_name"
-                            app:layout_constraintTop_toBottomOf="@id/item_name"
-                            android:layout_marginTop="4dp"/>
-
                         <LinearLayout
-                            android:id="@+id/price_layout"
+                            android:id="@+id/item"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            app:layout_constraintTop_toBottomOf="@id/item_photo"
                             android:orientation="vertical"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/item_name"
-                            android:layout_marginTop="20dp"
-                            android:gravity="center">
+                            android:paddingHorizontal="32dp">
 
-
+                                <!-- Item Name -->
                                 <TextView
-                                    android:id="@+id/starting_price"
+                                    android:id="@+id/item_name"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Starting Price"
-                                    android:textColor="#000000"
-                                    android:textSize="16sp"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toBottomOf="@id/item_photo"
+                                    android:layout_marginTop="20dp"
+                                    android:text="Item"
+                                    android:textSize="24sp"
                                     android:textStyle="bold"
-                                    android:layout_marginBottom="16dp"/>
+                                    android:textColor="#000000"/>
 
-                                <!-- Highest Price -->
+                                <!-- 품목 갯수 TextView 추가 -->
                                 <TextView
-                                    android:id="@+id/highest_price"
+                                    android:id="@+id/itemQuantity"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Highest Price"
-                                    android:textColor="#000000"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:layout_marginBottom="16dp"/>
+                                    android:text="개수"
+                                    android:textSize="14sp"
+                                    android:textColor="#808080"
+                                    app:layout_constraintStart_toStartOf="@id/item"
+                                    app:layout_constraintTop_toBottomOf="@id/item_name"
+                                    android:layout_marginTop="8dp"
+                                    android:layout_marginBottom="20dp"/>
+                        </LinearLayout>
 
-                                <!-- Bid Unit -->
+
+
+                                <LinearLayout
+                                    android:id="@+id/price_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:weightSum="10"
+                                    android:layout_marginHorizontal="16dp"
+                                    android:paddingVertical="8dp"
+                                    app:layout_constraintTop_toBottomOf="@id/item">
+
+                                        <TextView
+                                            android:id="@+id/starting_price"
+                                            android:layout_width="0dp"
+                                            android:layout_weight="5"
+                                            android:layout_height="wrap_content"
+                                            android:text="Starting Price"
+                                            android:textColor="#000000"
+                                            android:textSize="16sp"
+                                            android:textStyle="bold"
+                                            android:gravity="center"/>
+
+                                        <!-- Highest Price -->
+                                        <TextView
+                                            android:id="@+id/highest_price"
+                                            android:layout_width="0dp"
+                                            android:layout_weight="5"                                            android:layout_height="wrap_content"
+                                            android:text="Highest Price"
+                                            android:textColor="#000000"
+                                            android:textSize="16sp"
+                                            android:textStyle="bold"
+                                            android:gravity="center"/>
+                                </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/placebid"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:weightSum="10"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="8dp"
+                            app:layout_constraintTop_toBottomOf="@id/price_layout"                            >
+
                                 <TextView
                                     android:id="@+id/bidUnit"
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="5"
                                     android:layout_height="wrap_content"
-                                    android:text="단위: placebid"
+                                    android:text="단위 : placebid"
                                     android:textColor="#000000"
                                     android:textSize="16sp"
                                     android:textStyle="italic"
-                                    android:layout_marginBottom="16dp"/>
+                                    android:gravity="center"/>
+
+                                <TextView
+                                    android:id="@+id/participantsCount"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="5"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="Participants : 0"
+                                    android:textSize="16sp"
+                                    app:layout_constraintTop_toBottomOf="@id/price_layout"
+                                    app:layout_constraintStart_toStartOf="@id/price_layout"/>
                         </LinearLayout>
-                        <TextView
-                            android:id="@+id/participantsCount"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="Participants : 0"
-                            android:textSize="16sp"
-                            app:layout_constraintTop_toBottomOf="@id/price_layout"
-                            android:layout_marginTop="10dp"
-                            app:layout_constraintStart_toStartOf="@id/price_layout"/>
+
 
                         <TextView
                             android:id="@+id/item_detail"
@@ -162,11 +184,112 @@
                             android:layout_height="wrap_content"
                             android:text="Item Detail, Item Detail, Item Detail, Item Detail, ..."
                             android:textSize="14sp"
-                            app:layout_constraintTop_toBottomOf="@id/participantsCount"
+                            app:layout_constraintTop_toBottomOf="@id/placebid"
                             app:layout_constraintStart_toStartOf="parent"
                             android:paddingHorizontal="20dp"
                             android:paddingVertical="20dp"/>
 
+                        <ImageButton
+                            android:id="@+id/btn_message1"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/baseline_message_24"
+                            app:layout_constraintTop_toBottomOf="@id/item_detail"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="16dp"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_message2"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/baseline_message_24"
+                            app:layout_constraintTop_toBottomOf="@id/btn_message1"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="16dp"/>
+
+                        <ImageButton
+                            android:id="@+id/btn_message3"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/baseline_message_24"
+                            app:layout_constraintTop_toBottomOf="@id/btn_message2"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginStart="16dp"/>
+
+                        <TextView
+                            android:id="@+id/highest_bidder1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="입찰자 1순위"
+                            android:gravity="center"
+                            app:layout_constraintTop_toBottomOf="@id/item_detail"
+                            app:layout_constraintStart_toEndOf="@id/btn_message1"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <TextView
+                            android:id="@+id/highest_bidder2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="입찰자 2순위"
+                            android:gravity="center"
+                            app:layout_constraintTop_toBottomOf="@id/highest_bidder1"
+                            app:layout_constraintStart_toEndOf="@id/btn_message2"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <TextView
+                            android:id="@+id/highest_bidder3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="입찰자 2순위"
+                            android:gravity="center"
+                            app:layout_constraintTop_toBottomOf="@id/highest_bidder2"
+                            app:layout_constraintStart_toEndOf="@id/btn_message3"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <TextView
+                            android:id="@+id/price_bidder1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="1순위 가격"
+                            app:layout_constraintTop_toBottomOf="@id/item_detail"
+                            app:layout_constraintStart_toEndOf="@id/highest_bidder1"
+                            android:gravity="center"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <TextView
+                            android:id="@+id/price_bidder2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="1순위 가격"
+                            app:layout_constraintTop_toBottomOf="@id/price_bidder1"
+                            app:layout_constraintStart_toEndOf="@id/highest_bidder2"
+                            android:gravity="center"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <TextView
+                            android:id="@+id/price_bidder3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:text="1순위 가격"
+                            app:layout_constraintTop_toBottomOf="@id/price_bidder2"
+                            app:layout_constraintStart_toEndOf="@id/highest_bidder3"
+                            android:gravity="center"
+                            android:layout_marginStart="16dp"
+                            android:paddingHorizontal="16dp"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="50dp"
+                            app:layout_constraintTop_toBottomOf="@id/btn_message3"
+                            app:layout_constraintStart_toStartOf="parent"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
 
@@ -192,5 +315,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:backgroundTint="#4da98d"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
