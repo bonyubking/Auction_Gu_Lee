@@ -7,50 +7,48 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <View
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#86e16d"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <ImageView
-        android:id="@+id/sortIcon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="center"
-        app:srcCompat="@drawable/baseline_format_list_bulleted_add_24"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:gravity="center"
-        android:text="지난 경매"
-        android:textColor="@android:color/black"
-        android:textSize="24sp"
-        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"/>
+        android:background="#86e16d">
 
-    <ImageView
-        android:id="@+id/magnifier"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="centerInside"
-        app:srcCompat="@drawable/baseline_search_24"
-        android:contentDescription="검색 아이콘"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <ImageView
+            android:id="@+id/sortIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="center"
+            app:srcCompat="@drawable/baseline_format_list_bulleted_add_24"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:text="지난 경매"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ImageView
+            android:id="@+id/magnifier"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/baseline_search_24"
+            android:contentDescription="검색 아이콘"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </LinearLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -67,9 +65,5 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:listitem="@layout/item_auction"/>
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <!-- Floating Action Button -->
-
 </androidx.constraintlayout.widget.ConstraintLayout>

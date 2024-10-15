@@ -21,10 +21,9 @@
             android:layout_marginHorizontal="16dp"
             android:hint="검색어를 입력하세요"
             android:imeOptions="actionNone"
-            android:gravity="center"
-            android:inputType="text" />
+            android:gravity="start"
+            android:inputType="text"/>
 
-        <!-- 검색 버튼 -->
         <Button
             android:id="@+id/searchButton"
             android:layout_width="wrap_content"
