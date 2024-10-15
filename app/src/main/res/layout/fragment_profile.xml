@@ -94,7 +94,7 @@
 
             <TextView
                 android:id="@+id/btn_purchase_wishlist"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="  구매 희망 내역"
                 android:textSize="16sp"
@@ -119,7 +119,7 @@
 
             <TextView
                 android:id="@+id/btn_business_ad"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="  내 비지니스 광고하기"
                 android:textSize="16sp"
@@ -172,7 +172,7 @@
                 android:backgroundTint="#000000" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="  기타"
                 android:textSize="16sp"
