@@ -301,15 +301,17 @@ class ChatActivity : AppCompatActivity() {
                     Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
                     // metadata/exitedUsers에서 현재 사용자 제거
                     chatReference.child("metadata").child("exitedUsers").child(senderUid).removeValue()
-                        .addOnSuccessListener {
-                            Log.d("ChatActivity", "Exited status removed for user: $senderUid")
-                        }
-                        .addOnFailureListener { error ->
-                            Log.e("ChatActivity", "Failed to remove exited status: ${error.message}")
+                        .addOnCompleteListener { removeTask ->
+                            if (removeTask.isSuccessful) {
+                                Log.d("ChatActivity", "Exited status removed for user: $senderUid")
+                            } else {
+                                Log.e("ChatActivity", "Failed to remove exited status: ${removeTask.exception?.message}")
+                            }
                         }
                 }
             }
     }
+
 
 
 
