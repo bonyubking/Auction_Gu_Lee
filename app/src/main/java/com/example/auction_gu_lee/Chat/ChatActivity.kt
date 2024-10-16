@@ -277,7 +277,7 @@ class ChatActivity : AppCompatActivity() {
         val messageData = mutableMapOf<String, Any>(
             "senderUid" to senderUid,
             "message" to message,
-            "timestamp" to timestamp,
+            "timestamp" to ServerValue.TIMESTAMP,
             "imageUrls" to imageUrls,
             "isRead" to false
         )
@@ -380,7 +380,7 @@ class ChatActivity : AppCompatActivity() {
         // Firebase에 현재 사용자의 나가기 상태와 타임스탬프 저장 (isRead 필드 제외)
         val exitData = mapOf(
             "exited" to true,
-            "timestamp" to System.currentTimeMillis()
+            "timestamp" to ServerValue.TIMESTAMP
         )
         chatReference.child("metadata").child("exitedUsers").child(currentUserId).setValue(exitData)
             .addOnSuccessListener {

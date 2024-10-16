@@ -107,6 +107,7 @@ class ChatFragment : Fragment() {
                         }
 
                         // 사용자가 이 채팅방을 나갔는지 확인
+                        // 사용자가 이 채팅방을 나갔는지 확인
                         val exitedUserSnapshot = chatRoomSnapshot.child("metadata").child("exitedUsers").child(currentUserId)
                         if (exitedUserSnapshot.exists()) {
                             Log.d("ChatFragment", "User has exited chatRoomId: $chatRoomId. Checking for new messages.")
@@ -117,7 +118,15 @@ class ChatFragment : Fragment() {
 
                             val lastMessageTimestamp = lastMessageSnapshot?.child("timestamp")?.getValue(Long::class.java) ?: 0L
 
-                            if (lastMessageTimestamp > exitedAt) {
+                            // 여기에서 로그를 추가합니다
+                            Log.d("ChatFragment", "exitedAt: $exitedAt, lastMessageTimestamp: $lastMessageTimestamp")
+
+                            // 타임스탬프 비교 로직 수정 시작
+                            val timeDifference = lastMessageTimestamp - exitedAt
+                            Log.d("ChatFragment", "Time difference between last message and exit time: $timeDifference ms")
+
+                            // 시간 차이가 5초(5000ms) 이상인 경우에만 처리
+                            if (timeDifference > 5000) {
                                 exitedUserSnapshot.ref.removeValue()
                                     .addOnSuccessListener {
                                         Log.d("ChatFragment", "New message detected. Exited status removed for chatRoomId: $chatRoomId")
@@ -126,9 +135,10 @@ class ChatFragment : Fragment() {
                                         Log.e("ChatFragment", "Failed to remove exited status: ${error.message}")
                                     }
                             } else {
-                                Log.d("ChatFragment", "No new messages in chatRoomId: $chatRoomId. Skipping.")
+                                Log.d("ChatFragment", "No new messages or time difference too small in chatRoomId: $chatRoomId. Skipping.")
                                 continue
                             }
+                            // 타임스탬프 비교 로직 수정 끝
                         }
 
                         val lastMessageSnapshotFiltered = chatRoomSnapshot.child("messages").children.maxByOrNull { it.child("timestamp").getValue(Long::class.java) ?: 0L }
