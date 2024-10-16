@@ -82,50 +82,42 @@ class ChatFragment : Fragment() {
 
                 for (auctionSnapshot in snapshot.children) {
                     val auctionId = auctionSnapshot.key ?: continue
-                    Log.d("ChatFragment", "Auction ID: $auctionId")
-
-                    val auctionCreatorUid =
-                        auctionSnapshot.child("creatorUid").getValue(String::class.java) ?: ""
-                    val photoUrl =
-                        auctionSnapshot.child("photoUrl").getValue(String::class.java) ?: ""
-
+                    val sellerUid = auctionSnapshot.child("creatorUid").getValue(String::class.java) ?: ""
                     val chatsSnapshot = auctionSnapshot.child("chats")
+
                     for (chatRoomSnapshot in chatsSnapshot.children) {
                         val chatRoomId = chatRoomSnapshot.key ?: continue
-                        Log.d("ChatFragment", "Processing chatRoomId: $chatRoomId")
+                        val bidderUid = chatRoomSnapshot.child("bidderUid").getValue(String::class.java) ?: ""
 
-                        // chatRoomId에 currentUserId가 포함되어 있는지 확인
-                        val parts = chatRoomId.split("|")
-                        if (parts.size < 3) {
-                            Log.d("ChatFragment", "Invalid chatRoomId format: $chatRoomId. Skipping.")
+                        // 현재 사용자가 판매자인지 구매자인지 확인
+                        val isSeller = currentUserId == sellerUid
+                        val isBidder = currentUserId == bidderUid
+
+                        // 현재 사용자가 판매자도 구매자도 아니라면 이 채팅방을 무시
+                        if (!isSeller && !isBidder) {
+                            Log.d("ChatFragment", "User is neither seller nor bidder in chatRoomId: $chatRoomId. Skipping.")
                             continue
                         }
 
-                        // chatRoomId의 두 번째와 세 번째 부분이 사용자 UIDs라고 가정
-                        val user1Uid = parts[1]
-                        val user2Uid = parts[2]
-
-                        if (user1Uid != currentUserId && user2Uid != currentUserId) {
-                            Log.d("ChatFragment", "User is not a participant in chatRoomId: $chatRoomId. Skipping.")
+                        // chatRoomId가 올바른 형식인지 확인 (auctionId|bidderUid|sellerUid)
+                        val expectedChatRoomId = "$auctionId|$bidderUid|$sellerUid"
+                        if (chatRoomId != expectedChatRoomId) {
+                            Log.d("ChatFragment", "잘못된 chatRoomId 형식입니다. chatRoomId: $chatRoomId, expected: $expectedChatRoomId")
                             continue
                         }
 
-                        // **사용자가 이 채팅방을 나갔는지 확인**
+                        // 사용자가 이 채팅방을 나갔는지 확인
                         val exitedUserSnapshot = chatRoomSnapshot.child("metadata").child("exitedUsers").child(currentUserId)
                         if (exitedUserSnapshot.exists()) {
                             Log.d("ChatFragment", "User has exited chatRoomId: $chatRoomId. Checking for new messages.")
 
-                            // **나간 시점의 타임스탬프 가져오기**
                             val exitedAt = exitedUserSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L
-
-                            // **채팅방의 메시지 노드만 필터링하여 마지막 메시지 가져오기**
                             val messageSnapshots = chatRoomSnapshot.child("messages").children
                             val lastMessageSnapshot = messageSnapshots.maxByOrNull { it.child("timestamp").getValue(Long::class.java) ?: 0L }
 
                             val lastMessageTimestamp = lastMessageSnapshot?.child("timestamp")?.getValue(Long::class.java) ?: 0L
 
                             if (lastMessageTimestamp > exitedAt) {
-                                // **새로운 메시지가 도착했으므로 metadata -> exitedUsers에서 제거**
                                 exitedUserSnapshot.ref.removeValue()
                                     .addOnSuccessListener {
                                         Log.d("ChatFragment", "New message detected. Exited status removed for chatRoomId: $chatRoomId")
@@ -134,13 +126,11 @@ class ChatFragment : Fragment() {
                                         Log.e("ChatFragment", "Failed to remove exited status: ${error.message}")
                                     }
                             } else {
-                                // **새로운 메시지가 없으므로 이 채팅방을 목록에서 제외**
                                 Log.d("ChatFragment", "No new messages in chatRoomId: $chatRoomId. Skipping.")
                                 continue
                             }
                         }
 
-                        // **채팅방의 메시지 노드만 필터링하여 마지막 메시지 가져오기**
                         val lastMessageSnapshotFiltered = chatRoomSnapshot.child("messages").children.maxByOrNull { it.child("timestamp").getValue(Long::class.java) ?: 0L }
 
                         if (lastMessageSnapshotFiltered == null) {
@@ -153,11 +143,11 @@ class ChatFragment : Fragment() {
 
                         messageData.messageId = lastMessageSnapshotFiltered.key ?: ""  // 메시지 ID 설정
                         messageData.auctionId = auctionId
-                        messageData.creatorUid = auctionCreatorUid
-                        messageData.photoUrl = photoUrl
+                        messageData.creatorUid = sellerUid
+                        messageData.photoUrl = auctionSnapshot.child("photoUrl").getValue(String::class.java) ?: ""
                         messageData.chatRoomId = chatRoomId
+                        messageData.bidderUid = bidderUid
 
-                        // 채팅방에 읽지 않은 메시지가 있는지 확인
                         var hasUnreadMessages = false
                         for (msgSnapshot in chatRoomSnapshot.child("messages").children) {
                             val isRead = msgSnapshot.child("isRead").getValue(Boolean::class.java) ?: true
@@ -168,18 +158,11 @@ class ChatFragment : Fragment() {
                             }
                         }
 
-                        // 채팅방에 읽지 않은 메시지가 있으면 isRead를 false로 설정
                         messageData.isRead = !hasUnreadMessages
-
-                        // 채팅방 ID를 키로 하여 중복 추가 방지
                         chatMap[chatRoomId] = messageData
-                        Log.d(
-                            "ChatFragment",
-                            "Added chatItem for chatRoomId $chatRoomId: $messageData"
-                        )
+                        Log.d("ChatFragment", "Added chatItem for chatRoomId $chatRoomId: $messageData")
                     }
                 }
-                // Map의 값들을 리스트로 변환하여 정렬 후 UI 업데이트
                 chatList.clear()
                 chatList.addAll(chatMap.values)
                 Log.d("ChatFragment", "채팅 리스트 정렬 및 어댑터 업데이트")
@@ -188,11 +171,12 @@ class ChatFragment : Fragment() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // 에러 처리
                 Log.e("ChatFragment", "Database error: ${error.message}")
             }
         })
     }
+
+
 
     private fun updateMessageAsRead(auctionId: String, chatRoomId: String) {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return

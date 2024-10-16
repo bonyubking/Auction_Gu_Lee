@@ -119,36 +119,34 @@ class ChatAdapter(
 
         // 항목 클릭 리스너 추가 - 채팅 액티비티로 이동
         holder.itemView.setOnClickListener {
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-            if (currentUserId == null) {
-                Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
+
+            // 현재 사용자가 판매자인지 구매자인지 확인
+            val bidderUid = if (currentUserId == chatItem.creatorUid) {
+                chatItem.bidderUid  // 현재 사용자가 판매자라면 구매자 UID를 사용
+            } else {
+                currentUserId  // 현재 사용자가 구매자라면 본인의 UID를 사용
             }
 
-            // 메시지 읽음 처리 콜백 호출
-            onMessageRead(chatItem.auctionId, chatItem.chatRoomId)
+            val sellerUid = if (currentUserId == chatItem.creatorUid) {
+                currentUserId  // 현재 사용자가 판매자라면 본인의 UID를 사용
+            } else {
+                chatItem.creatorUid  // 현재 사용자가 구매자라면 판매자 UID를 사용
+            }
 
-
-            // Intent에 auction_id와 bidder_uid를 전달
+            // Intent에 auction_id와 UID들 전달
             val intent = Intent(context, ChatActivity::class.java).apply {
                 putExtra("auction_id", chatItem.auctionId)
-                putExtra("bidder_uid", chatItem.bidderUid)
-                // chat_room_id는 ChatActivity에서 생성하므로 전달하지 않음
-            }
-
-            if (currentUserId == chatItem.creatorUid) {
-                intent.putExtra("seller_uid", currentUserId)
-                intent.putExtra("bidder_uid", chatItem.bidderUid)
-            } else {
-                intent.putExtra("seller_uid", chatItem.creatorUid)
-                intent.putExtra("bidder_uid", currentUserId)
+                putExtra("seller_uid", sellerUid)
+                putExtra("bidder_uid", bidderUid)
             }
 
             context.startActivity(intent)
         }
     }
 
-    override fun getItemCount(): Int = chatItems.size
+
+        override fun getItemCount(): Int = chatItems.size
 
     private fun formatTimestamp(timestamp: Long): String {
         val now = System.currentTimeMillis()

@@ -72,6 +72,7 @@ class ChatActivity : AppCompatActivity() {
             finish()
             return
         }
+        Log.d("ChatActivity", "Successfully fetched bidderUid: $bidderUid")
 
         // 상단에 경매의 사진 및 정보를 표시
         loadAuctionDetails()
@@ -277,15 +278,18 @@ class ChatActivity : AppCompatActivity() {
             "senderUid" to senderUid,
             "message" to message,
             "timestamp" to timestamp,
-            "imageUrls" to imageUrls,  // 이미지 URL 리스트 추가 (빈 리스트라도 포함)
-            "isRead" to false  // 기본적으로 읽지 않은 상태로 설정
+            "imageUrls" to imageUrls,
+            "isRead" to false
         )
 
-        Log.d("ChatActivity", "Sending message with image URLs: $messageData")
-
-        // 메시지 참조를 먼저 생성하여 메시지 ID를 가져옵니다.
-        val messageRef = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages").push()
+        // 메시지 참조를 생성하여 메시지 ID를 가져옵니다.
+        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
+        val messageRef = chatReference.child("messages").push()
         val messageId = messageRef.key ?: "unknown"
+
+        // 채팅방에 bidderUid와 sellerUid를 저장합니다.
+        chatReference.child("bidderUid").setValue(bidderUid)
+        chatReference.child("sellerUid").setValue(sellerUid)
 
         // 메시지를 전송합니다.
         messageRef.setValue(messageData)
@@ -295,10 +299,8 @@ class ChatActivity : AppCompatActivity() {
                     Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
                 } else {
                     Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
-
-                    // **메시지를 전송했으므로 metadata/exitedUsers에서 현재 사용자 제거**
-                    database.child("auctions").child(auctionId).child("chats").child(chatRoomId)
-                        .child("metadata").child("exitedUsers").child(senderUid).removeValue()
+                    // metadata/exitedUsers에서 현재 사용자 제거
+                    chatReference.child("metadata").child("exitedUsers").child(senderUid).removeValue()
                         .addOnSuccessListener {
                             Log.d("ChatActivity", "Exited status removed for user: $senderUid")
                         }
@@ -308,6 +310,7 @@ class ChatActivity : AppCompatActivity() {
                 }
             }
     }
+
 
 
     /**
