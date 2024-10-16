@@ -237,6 +237,14 @@ class CreateRoomActivity : AppCompatActivity() {
         val isDateTimeSelected = selectedDateTime.timeInMillis > Calendar.getInstance().timeInMillis
         val isPhotoAttached = ::photoUri.isInitialized && photoUri != null
 
+        Log.d("CreateRoomActivity", "isItemFilled: $isItemFilled")
+        Log.d("CreateRoomActivity", "isQuantityFilled: $isQuantityFilled")
+        Log.d("CreateRoomActivity", "isDetailFilled: $isDetailFilled")
+        Log.d("CreateRoomActivity", "isStartingPriceFilled: $isStartingPriceFilled")
+        Log.d("CreateRoomActivity", "isCheckboxChecked: $isCheckboxChecked")
+        Log.d("CreateRoomActivity", "isDateTimeSelected: $isDateTimeSelected")
+        Log.d("CreateRoomActivity", "isPhotoAttached: $isPhotoAttached")
+
         // 모든 필드가 채워졌는지 확인하여 완료 버튼 활성화 여부 결정
         buttonComplete.isEnabled = isItemFilled && isQuantityFilled && isDetailFilled &&
                 isStartingPriceFilled && isCheckboxChecked &&
@@ -284,8 +292,12 @@ class CreateRoomActivity : AppCompatActivity() {
                     { _, hourOfDay, minute ->
                         selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
                         selectedDateTime.set(Calendar.MINUTE, minute)
-                        startCountDown() // 남은 시간 계산 및 표시
 
+                        // 선택된 시간 로그 찍기
+                        Log.d("CreateRoomActivity", "선택한 시간: ${selectedDateTime.timeInMillis}")
+
+                        // 남은 시간 계산 및 표시
+                        startCountDown()
                     },
                     currentDate.get(Calendar.HOUR_OF_DAY),
                     currentDate.get(Calendar.MINUTE),
@@ -313,6 +325,10 @@ class CreateRoomActivity : AppCompatActivity() {
         val targetTime = selectedDateTime.timeInMillis
         val remainingTime = targetTime - currentTime
 
+        // 현재 시간과 선택한 시간 출력 로그 추가
+        Log.d("CreateRoomActivity", "현재 시간 (currentTime): $currentTime, 선택한 시간 (targetTime): $targetTime")
+        Log.d("CreateRoomActivity", "현재 시간: ${Date(currentTime)}, 선택한 시간: ${Date(targetTime)}")
+
         if (remainingTime > 0) {
             countDownTimer?.cancel()
             countDownTimer = object : CountDownTimer(remainingTime, 1000) {
@@ -337,6 +353,7 @@ class CreateRoomActivity : AppCompatActivity() {
             }.start()
         } else {
             resultTextView.text = "목표 시간은 현재 시간보다 이후여야 합니다."
+            Log.d("CreateRoomActivity", "남은 시간: $remainingTime (목표 시간은 현재보다 이후여야 함)")
         }
     }
 
@@ -436,11 +453,10 @@ class CreateRoomActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val selectedImageUri: Uri? = result.data?.data
                 selectedImageUri?.let {
-
                     photoUri = it
-
                     imageViewPreview.setImageURI(it)
                     imageViewPreview.visibility = ImageView.VISIBLE
+                    checkCompleteButtonState()  // 사진 선택 후 버튼 상태 확인
                 }
             }
         }
@@ -477,6 +493,7 @@ class CreateRoomActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 imageViewPreview.setImageURI(photoUri)
                 imageViewPreview.visibility = ImageView.VISIBLE
+                checkCompleteButtonState()  // 사진 선택 후 버튼 상태 확인
             }
         }
 
