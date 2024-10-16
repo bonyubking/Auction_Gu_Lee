@@ -71,7 +71,7 @@ class ChatAdapter(
                     "입찰 없음"
                 }
 
-                // 판매자 UID를 통해 사용자 이름 조회
+                // 판매자 UID를 통해 사용
                 val creatorUid = snapshot.child("creatorUid").getValue(String::class.java)
                 if (creatorUid != null) {
                     val userReference = FirebaseDatabase.getInstance().getReference("users").child(creatorUid)

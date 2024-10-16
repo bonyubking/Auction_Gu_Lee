@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         // 앱이 백그라운드로 이동할 때도 loggedin 상태를 false로 설정
-        setUserOnlineStatus(false)
+
     }
 
     override fun onResume() {
