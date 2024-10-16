@@ -40,6 +40,8 @@ class AuctionRoomActivity : AppCompatActivity() {
         binding = ActivityAuctionRoomBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupInitialVisibility()
+
         // Initialize data from Intent
         auctionId = intent.getStringExtra("auction_id") ?: ""
         uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -243,6 +245,22 @@ class AuctionRoomActivity : AppCompatActivity() {
             binding.highestPrice.setTextColor(Color.RED)
         } else {
             binding.highestPrice.setTextColor(Color.BLACK)
+        }
+    }
+
+
+    private fun setupInitialVisibility() {
+        // 메시지 버튼과 입찰자 텍스트 뷰를 GONE으로 설정
+        val messageButtons = listOf(binding.btnMessage1, binding.btnMessage2, binding.btnMessage3)
+        val bidderTexts = listOf(binding.highestBidder1, binding.highestBidder2, binding.highestBidder3)
+        val priceTexts = listOf(binding.priceBidder1, binding.priceBidder2, binding.priceBidder3)
+
+        for (button in messageButtons) {
+            button.visibility = View.GONE
+        }
+
+        for (textView in bidderTexts + priceTexts) {
+            textView.visibility = View.GONE
         }
     }
 
@@ -522,9 +540,9 @@ class AuctionRoomActivity : AppCompatActivity() {
                     })
             } else {
                 // 입찰자가 3명보다 적거나 판매자가 아닌 경우 버튼을 숨깁니다
-                messageButtons[i].visibility = View.INVISIBLE
-                bidderTexts[i].visibility = View.INVISIBLE
-                priceTexts[i].visibility = View.INVISIBLE
+                messageButtons[i].visibility = View.GONE
+                bidderTexts[i].visibility = View.GONE
+                priceTexts[i].visibility = View.GONE
             }
         }
     }
