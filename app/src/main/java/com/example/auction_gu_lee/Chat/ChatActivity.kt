@@ -299,19 +299,9 @@ class ChatActivity : AppCompatActivity() {
                     Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
                 } else {
                     Log.d("ChatActivity", "Message sent successfully with ID: $messageId and Data: $messageData")
-                    // metadata/exitedUsers에서 현재 사용자 제거
-                    chatReference.child("metadata").child("exitedUsers").child(senderUid).removeValue()
-                        .addOnCompleteListener { removeTask ->
-                            if (removeTask.isSuccessful) {
-                                Log.d("ChatActivity", "Exited status removed for user: $senderUid")
-                            } else {
-                                Log.e("ChatActivity", "Failed to remove exited status: ${removeTask.exception?.message}")
-                            }
-                        }
                 }
             }
     }
-
 
 
 
