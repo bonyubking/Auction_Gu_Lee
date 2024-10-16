@@ -14,6 +14,7 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
 
 class AddPostActivity : AppCompatActivity() {
 
@@ -107,17 +108,29 @@ class AddPostActivity : AppCompatActivity() {
             desiredPrice = desiredPrice,
             quantity = quantity,
             detail = detail,
-            timestamp = System.currentTimeMillis()
+            timestamp = 0L
         )
+
+
 
         database.child(postId).setValue(post)
             .addOnSuccessListener {
-                Toast.makeText(this, "구매 요청 글이 등록되었습니다.", Toast.LENGTH_SHORT).show()
-                // 메인 화면으로 이동
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("fragment", "post")
-                startActivity(intent)
-                finish()
+                // 게시물 저장 성공 후, timestamp를 서버 시간으로 업데이트
+                val timestampUpdates = mapOf<String, Any>(
+                    "timestamp" to ServerValue.TIMESTAMP
+                )
+                database.child(postId).updateChildren(timestampUpdates)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "구매 요청 글이 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                        // 메인 화면으로 이동
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.putExtra("fragment", "post")
+                        startActivity(intent)
+                        finish()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "타임스탬프 업데이트 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "등록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
