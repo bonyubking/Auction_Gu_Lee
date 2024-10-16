@@ -44,6 +44,7 @@ import com.example.auction_gu_lee.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ValueEventListener
 
 class CreateRoomActivity : AppCompatActivity() {
@@ -528,7 +529,7 @@ class CreateRoomActivity : AppCompatActivity() {
                     "detail" to editTextDetail.text.toString(),
                     "startingPrice" to startingPrice,
                     "photoUrl" to uri.toString(),
-                    "timestamp" to System.currentTimeMillis(),
+                    "timestamp" to ServerValue.TIMESTAMP,
                     "endTime" to selectedDateTime.timeInMillis,
                     "remainingTime" to resultTextView.text.toString(),
                     "creatorUid" to Uid,

@@ -272,7 +272,6 @@ class ChatActivity : AppCompatActivity() {
         }
 
         val senderUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val timestamp = System.currentTimeMillis()
 
         val messageData = mutableMapOf<String, Any>(
             "senderUid" to senderUid,

@@ -13,6 +13,7 @@ import com.example.auction_gu_lee.Chat.ChatActivity
 import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.databinding.ActivityAuctionRoomBinding
 import com.example.auction_gu_lee.models.Auction
+import com.example.auction_gu_lee.models.ChatItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
@@ -215,6 +216,11 @@ class AuctionRoomActivity : AppCompatActivity() {
 
                     // 경매 종료 시 모든 버튼 비활성화
                     disableButtons()
+
+                    // 판매자일 경우에만 상위 입찰자와의 채팅 버튼 활성화
+                    if (creatorUid == uid) {
+                        fetchTopBidders()
+                    }
                 }
             }.start()
         } else {
@@ -223,8 +229,14 @@ class AuctionRoomActivity : AppCompatActivity() {
 
             // 경매 종료 시 모든 버튼 비활성화
             disableButtons()
+
+            // 판매자일 경우에만 상위 입찰자와의 채팅 버튼 활성화
+            if (creatorUid == uid) {
+                fetchTopBidders()
+            }
         }
     }
+
 
     private fun updateHighestPriceColor() {
         if (highestPrice > startingPrice) {
@@ -440,8 +452,105 @@ class AuctionRoomActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+
+    private fun fetchTopBidders() {
+        val auctionRef = databaseReference.child("auctions").child(auctionId).child("participants")
+        auctionRef.orderByValue().limitToLast(3)  // 상위 3명의 입찰자를 가져옵니다
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // 상위 3명의 입찰자를 가져와서 정렬하고 리스트 생성
+                    val topBidders = snapshot.children.mapNotNull {
+                        val bidderUid = it.key
+                        val price = it.getValue(Long::class.java)
+                        if (bidderUid != null && price != null) {
+                            Log.d("AuctionRoomActivity", "Bidder UID: $bidderUid, Price: $price")
+                            bidderUid to price
+                        } else {
+                            null
+                        }
+                    }.sortedByDescending { it.second } // 입찰가를 기준으로 내림차순 정렬
+
+                    // 정렬된 입찰자 정보로 UI 업데이트
+                    setupChatButtons(topBidders)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "상위 입찰자 가져오기 실패: ${error.message}")
+                }
+            })
+    }
+
+
+
+
+
+
+    private fun setupChatButtons(topBidders: List<Pair<String, Long>>) {
+        val messageButtons = listOf(binding.btnMessage1, binding.btnMessage2, binding.btnMessage3)
+        val bidderTexts = listOf(binding.highestBidder1, binding.highestBidder2, binding.highestBidder3)
+        val priceTexts = listOf(binding.priceBidder1, binding.priceBidder2, binding.priceBidder3)
+
+        // 현재 사용자가 판매자인지 확인
+        val isSeller = uid == creatorUid
+
+        for (i in messageButtons.indices) {
+            if (i < topBidders.size && isSeller) {
+                val (bidderUid, price) = topBidders[i]
+                // 각 입찰자의 사용자 이름을 가져옵니다
+                databaseReference.child("users").child(bidderUid).child("username")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(userSnapshot: DataSnapshot) {
+                            val username = userSnapshot.getValue(String::class.java) ?: "사용자 없음"
+                            bidderTexts[i].text = "$username (순위 ${i + 1})"
+                            bidderTexts[i].visibility = View.VISIBLE
+                            messageButtons[i].visibility = View.VISIBLE
+
+                            // 입찰 금액 표시
+                            priceTexts[i].text = "$price ₩"
+                            priceTexts[i].visibility = View.VISIBLE
+
+                            // 버튼 클릭 리스너 설정
+                            messageButtons[i].setOnClickListener {
+                                Log.d("AuctionRoomActivity", "Message button clicked for bidder: $bidderUid")
+                                openChatWithBidder(bidderUid)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e("FirebaseError", "사용자 이름 가져오기 실패: ${error.message}")
+                        }
+                    })
+            } else {
+                // 입찰자가 3명보다 적거나 판매자가 아닌 경우 버튼을 숨깁니다
+                messageButtons[i].visibility = View.INVISIBLE
+                bidderTexts[i].visibility = View.INVISIBLE
+                priceTexts[i].visibility = View.INVISIBLE
+            }
+        }
+    }
+
+
+
+
+
+
+
+    private fun openChatWithBidder(bidderUid: String) {
+
+        val intent = Intent(this, ChatActivity::class.java).apply {
+            putExtra("auction_id", auctionId)
+            putExtra("seller_uid", creatorUid)
+            putExtra("bidder_uid", bidderUid)
+        }
+        startActivity(intent)
+    }
+
+
+
+
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel() // 타이머가 계속 실행되지 않도록 해제
     }
 }
+
