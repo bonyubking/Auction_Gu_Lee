@@ -241,10 +241,12 @@ class AuctionRoomActivity : AppCompatActivity() {
 
 
     private fun updateHighestPriceColor() {
-        if (highestPrice > startingPrice) {
-            binding.highestPrice.setTextColor(Color.RED)
-        } else {
+        if (highestPrice == startingPrice) {
+            binding.highestPrice.text = "입찰 없음"
             binding.highestPrice.setTextColor(Color.BLACK)
+        } else {
+            binding.highestPrice.text = "최고가 $highestPrice ₩"
+            binding.highestPrice.setTextColor(Color.RED)
         }
     }
 
@@ -295,7 +297,7 @@ class AuctionRoomActivity : AppCompatActivity() {
 
         val newBid = highestPrice + increment  // 입찰가를 증가폭만큼 증가
         highestPrice = newBid
-        binding.highestPrice.text = "최고 가격: $highestPrice ₩"
+        binding.highestPrice.text = "최고가 $highestPrice ₩"
         updateHighestPriceColor()
 
         // Firebase에 최고 가격 및 입찰자 정보 업데이트
@@ -332,12 +334,12 @@ class AuctionRoomActivity : AppCompatActivity() {
                     val auction = currentData?.getValue(Auction::class.java)
                     if (auction != null) {
                         highestPrice = auction.highestPrice ?: 0L
-                        binding.highestPrice.text = "최고 가격: $highestPrice ₩"
+                        binding.highestPrice.text = "최고가 $highestPrice ₩"
                         updateHighestPriceColor()
 
                         // participantsCount와 biddersCount를 UI에 업데이트
                         biddersCount = auction.biddersCount ?: 0
-                        binding.participantsCount.text = "참가자 수: $biddersCount 명"
+                        binding.participantsCount.text = "참가자 $biddersCount 명"
 
                         Toast.makeText(this@AuctionRoomActivity, "입찰 성공!", Toast.LENGTH_SHORT).show()
                     }
