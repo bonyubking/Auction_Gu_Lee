@@ -14,8 +14,10 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.databinding.ActivityAuctionRoomBinding
 import com.example.auction_gu_lee.models.Auction
 import com.example.auction_gu_lee.models.ChatItem
+import com.example.auction_gu_lee.models.Notification
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.UUID
 
 import java.util.concurrent.TimeUnit
 
@@ -329,17 +331,15 @@ class AuctionRoomActivity : AppCompatActivity() {
 
             override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
                 if (error == null && committed) {
-                    val auction = currentData?.getValue(Auction::class.java)
-                    if (auction != null) {
-                        highestPrice = auction.highestPrice ?: 0L
+                    val updatedAuction = currentData?.getValue(Auction::class.java)
+                    if (updatedAuction != null) {
+                        highestPrice = updatedAuction.highestPrice ?: 0L
                         binding.highestPrice.text = "최고 가격: $highestPrice ₩"
                         updateHighestPriceColor()
-
-                        // participantsCount와 biddersCount를 UI에 업데이트
-                        biddersCount = auction.biddersCount ?: 0
+                        biddersCount = updatedAuction.biddersCount ?: 0
                         binding.participantsCount.text = "참가자 수: $biddersCount 명"
-
                         Toast.makeText(this@AuctionRoomActivity, "입찰 성공!", Toast.LENGTH_SHORT).show()
+                        createBidNotification(newBid)
                     }
                 } else {
                     Toast.makeText(this@AuctionRoomActivity, "입찰 실패: ${error?.message}", Toast.LENGTH_SHORT).show()
@@ -347,6 +347,30 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun createBidNotification(newBidAmount: Long) {
+        val notification = Notification(
+            id = UUID.randomUUID().toString(),
+            userId = creatorUid,
+            message = "${binding.itemName.text}에 새로운 입찰가 ${newBidAmount}원이 등록되었습니다.",
+            timestamp = System.currentTimeMillis(),
+            type = "bid",
+            relatedAuctionId = auctionId,
+            read = false
+
+        )
+
+        databaseReference.child("users").child(creatorUid).child("notifications")
+            .child(notification.id)
+            .setValue(notification)
+            .addOnSuccessListener {
+                Log.d("AuctionRoomActivity", "Notification created successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuctionRoomActivity", "Failed to create notification: ${e.message}")
+            }
+    }
+
 
     private fun calculateBidIncrement(startingPrice: Long): Long {
         return when (startingPrice) {
@@ -546,11 +570,6 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
-
-
 
 
     private fun openChatWithBidder(bidderUid: String) {

@@ -29,6 +29,7 @@
             android:layout_height="50dp"/>
 
         <ImageButton
+            android:id="@+id/notification_activity"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@null"

@@ -24,6 +24,7 @@ import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.auction_gu_lee.Notification.NotificationActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class HomeFragment : Fragment() {
@@ -79,6 +80,12 @@ class HomeFragment : Fragment() {
         magnifierImageView.setOnClickListener {
             val intent = Intent(requireContext(), SearchRoomActivity::class.java)
             intent.putExtra("auction_category", "home")  // 경매 종료되지 않은 경매 목록
+            startActivity(intent)
+        }
+
+        val notificationImageView = view.findViewById<ImageView>(R.id.notification_activity)
+        notificationImageView .setOnClickListener {
+            val intent = Intent(requireContext(), NotificationActivity::class.java)
             startActivity(intent)
         }
 
