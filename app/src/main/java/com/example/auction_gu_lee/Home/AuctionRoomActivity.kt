@@ -334,7 +334,7 @@ class AuctionRoomActivity : AppCompatActivity() {
                     val updatedAuction = currentData?.getValue(Auction::class.java)
                     if (updatedAuction != null) {
                         highestPrice = updatedAuction.highestPrice ?: 0L
-                        binding.highestPrice.text = "최고가: $highestPrice ₩"
+                        binding.highestPrice.text = "최고가 $highestPrice ₩"
                         updateHighestPriceColor()
                         biddersCount = updatedAuction.biddersCount ?: 0
                         binding.participantsCount.text = "참가자 수: $biddersCount 명"
