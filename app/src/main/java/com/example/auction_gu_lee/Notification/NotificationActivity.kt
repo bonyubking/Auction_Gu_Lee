@@ -2,11 +2,13 @@ package com.example.auction_gu_lee.Notification
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -59,37 +61,69 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun loadNotifications(userId: String) {
         val notificationsRef = database.child("users").child(userId).child("notifications")
-        notificationsRef.addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val notification = snapshot.getValue(Notification::class.java)
-                notification?.let {
-                    notificationAdapter.addNotification(it)
+        // 초기 알림 로드
+        notificationsRef.orderByChild("timestamp")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notifications = mutableListOf<Notification>()
+                    for (notificationSnapshot in snapshot.children) {
+                        val notification = notificationSnapshot.getValue(Notification::class.java)
+                        if (notification != null) {
+                            notifications.add(notification)
+                        }
+                    }
+                    // 최신순으로 정렬 (timestamp 내림차순)
+                    notifications.sortByDescending { it.timestamp }
+                    // RecyclerView에 알림을 표시
+                    notificationAdapter.setNotifications(notifications)
+
+                    addRealTimeListener(notificationsRef)
                 }
-            }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val updatedNotification = snapshot.getValue(Notification::class.java)
-                updatedNotification?.let {
-                    notificationAdapter.updateNotification(it)
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("NotificationActivity", "알림 가져오기 실패: ${error.message}")
+                    Toast.makeText(this@NotificationActivity, "알림을 가져오는 데 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
-            }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {
-                val removedNotification = snapshot.getValue(Notification::class.java)
-                removedNotification?.let {
-                    notificationAdapter.removeNotification(it)
-                }
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                // 필요한 경우 구현
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // 에러 처리
-            }
-        })
+            })
     }
+
+        // 실시간으로 새로운 알림 추가 처리
+        private fun addRealTimeListener(notificationsRef: DatabaseReference) {
+            notificationsRef.orderByChild("timestamp")
+                .addChildEventListener(object : ChildEventListener {
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                        val notification = snapshot.getValue(Notification::class.java)
+                        notification?.let {
+                            // 이미 초기 로드에서 추가된 알림인지 확인
+                            if (!notificationAdapter.contains(it)) {
+                                notificationAdapter.addNotification(it)
+                            }
+                        }
+                    }
+
+                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                        val updatedNotification = snapshot.getValue(Notification::class.java)
+                        updatedNotification?.let {
+                            notificationAdapter.updateNotification(it)
+                        }
+                    }
+
+                    override fun onChildRemoved(snapshot: DataSnapshot) {
+                        val removedNotification = snapshot.getValue(Notification::class.java)
+                        removedNotification?.let {
+                            notificationAdapter.removeNotification(it)
+                        }
+                    }
+
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                        // 필요한 경우 구현
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("NotificationActivity", "실시간 알림 가져오기 실패: ${error.message}")
+                    }
+                })
+        }
 
     private fun handleNotificationClick(notification: Notification) {
         when (notification.type) {
@@ -137,6 +171,11 @@ class NotificationAdapter(
         val dateText: TextView = view.findViewById(R.id.date_text)
     }
 
+    fun contains(notification: Notification): Boolean {
+        return notifications.any { it.id == notification.id }
+    }
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_notification, parent, false)
@@ -148,10 +187,23 @@ class NotificationAdapter(
         holder.messageText.text = notification.message
         holder.dateText.text = formatDate(notification.timestamp)
 
+        if (!notification.read) {
+            holder.messageText.setTypeface(null, android.graphics.Typeface.BOLD)
+        } else {
+            holder.messageText.setTypeface(null, android.graphics.Typeface.NORMAL)
+        }
+
         holder.itemView.setOnClickListener { onItemClick(notification) }
     }
 
     override fun getItemCount() = notifications.size
+
+    fun setNotifications(newNotifications: List<Notification>) {
+        notifications.clear()
+        notifications.addAll(newNotifications)
+        notifyDataSetChanged()
+    }
+
 
     fun addNotification(notification: Notification) {
         notifications.add(0, notification) // 최신 알림을 리스트 맨 앞에 추가
