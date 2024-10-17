@@ -187,6 +187,14 @@
                 android:paddingVertical="10dp"/>
 
             <TextView
+                android:id="@+id/btn_other_device_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="  다른 기기 로그아웃"
+                android:textSize="16sp"
+                android:paddingVertical="10dp"/>
+
+            <TextView
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

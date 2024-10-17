@@ -51,7 +51,7 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="경매"
+        android:text=""
         android:textColor="@android:color/black"
         android:gravity="center"
         android:textSize="24sp"
