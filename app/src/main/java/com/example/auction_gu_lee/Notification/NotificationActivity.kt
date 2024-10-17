@@ -144,6 +144,7 @@ class NotificationActivity : AppCompatActivity() {
         markNotificationAsRead(notification)
     }
 
+
     private fun markNotificationAsRead(notification: Notification) {
         currentUserId?.let { userId ->
             val notificationRef = database.child("users").child(userId)
@@ -186,7 +187,14 @@ class NotificationAdapter(
         val notification = notifications[position]
         holder.messageText.text = notification.message ?: "No message"
 
-        holder.dateText.text = notification.timestamp?.let { formatDate(it) } ?: "Unknown Date"
+        // Nullable timestamp 처리 및 로그 출력
+        if (notification.timestamp is Long) {
+            holder.dateText.text = formatDate(notification.timestamp as Long)
+            Log.d("NotificationAdapter", "Notification ID: ${notification.id}, Timestamp: ${notification.timestamp}")
+        } else {
+            holder.dateText.text = "Unknown Date"
+            Log.d("NotificationAdapter", "Notification ID: ${notification.id}, Timestamp is null or not a Long")
+        }
 
         if (!notification.read) {
             holder.messageText.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -196,6 +204,7 @@ class NotificationAdapter(
 
         holder.itemView.setOnClickListener { onItemClick(notification) }
     }
+
 
     override fun getItemCount() = notifications.size
 

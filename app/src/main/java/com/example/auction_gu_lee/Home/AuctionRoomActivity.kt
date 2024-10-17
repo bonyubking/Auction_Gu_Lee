@@ -361,21 +361,18 @@ class AuctionRoomActivity : AppCompatActivity() {
 
     private fun sendOutbidNotification(previousBidderUid: String, auction: Auction) {
         val notificationId = UUID.randomUUID().toString()
-        val notification = Notification(
-            id = notificationId,
-            message = "경매 '${auction.item}'의 최고 입찰가가 갱신되었습니다.",
-            timestamp = null,
-            type = "bid",
-            relatedAuctionId = auction.id,
-            read = false
+        val notificationMap = mapOf(
+            "id" to notificationId,
+            "message" to "경매 '${auction.item}'의 최고 입찰가가 갱신되었습니다.",
+            "timestamp" to ServerValue.TIMESTAMP,
+            "type" to "bid",
+            "relatedAuctionId" to auctionId, // 올바르게 설정
+            "read" to false
         )
-
-        val notificationMap = notification.toMap().toMutableMap()
-        notificationMap["timestamp"] = ServerValue.TIMESTAMP
 
         databaseReference.child("users").child(previousBidderUid).child("notifications")
             .child(notificationId)
-            .setValue(notification)
+            .setValue(notificationMap)
             .addOnSuccessListener {
                 Log.d("AuctionRoomActivity", "Outbid notification sent to previous bidder successfully")
             }
@@ -386,23 +383,19 @@ class AuctionRoomActivity : AppCompatActivity() {
 
     private fun createBidNotification(newBidAmount: Long) {
         val notificationId = UUID.randomUUID().toString()
-        val notification = Notification(
-            id = notificationId,
-            message = "${binding.itemName.text}에 새로운 입찰가 ${newBidAmount}원이 등록되었습니다.",
-            timestamp = null,
-            type = "bid",
-            relatedAuctionId = auctionId,
-            read = false
+
+        val notificationMap = mapOf(
+            "id" to notificationId,
+            "message" to "${binding.itemName.text}에 새로운 입찰가 ${newBidAmount}원이 등록되었습니다.",
+            "timestamp" to ServerValue.TIMESTAMP,
+            "type" to "bid",
+            "relatedAuctionId" to auctionId, // 올바르게 설정
+            "read" to false
         )
-
-        val notificationMap = notification.toMap().toMutableMap()
-        notificationMap["timestamp"] = ServerValue.TIMESTAMP
-
-
 
         databaseReference.child("users").child(creatorUid).child("notifications")
             .child(notificationId)
-            .setValue(notification)
+            .setValue(notificationMap) // 수정된 부분: notificationMap을 저장
             .addOnSuccessListener {
                 Log.d("AuctionRoomActivity", "Notification created successfully")
             }
@@ -410,7 +403,6 @@ class AuctionRoomActivity : AppCompatActivity() {
                 Log.e("AuctionRoomActivity", "Failed to create notification: ${e.message}")
             }
     }
-
 
     private fun calculateBidIncrement(startingPrice: Long): Long {
         return when (startingPrice) {
