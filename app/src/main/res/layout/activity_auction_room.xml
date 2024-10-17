@@ -148,7 +148,7 @@
                             android:layout_height="wrap_content"
                             app:layout_constraintTop_toBottomOf="@id/description"
                             android:orientation="vertical"
-                            android:paddingHorizontal="32dp">
+                            android:paddingHorizontal="30dp">
 
                                 <!-- Item Name -->
                                 <TextView
@@ -157,7 +157,7 @@
                                     android:layout_height="wrap_content"
                                     app:layout_constraintStart_toStartOf="parent"
                                     app:layout_constraintTop_toBottomOf="@id/item_photo"
-                                    android:layout_marginTop="20dp"
+                                    android:layout_marginTop="10dp"
                                     android:text="Item"
                                     android:textSize="24sp"
                                     android:textStyle="bold"
@@ -174,7 +174,7 @@
                                     app:layout_constraintStart_toStartOf="@id/item"
                                     app:layout_constraintTop_toBottomOf="@id/item_name"
                                     android:layout_marginTop="8dp"
-                                    android:layout_marginBottom="20dp"/>
+                                    android:layout_marginBottom="10dp"/>
                         </LinearLayout>
 
 
@@ -182,11 +182,12 @@
                             android:id="@+id/item_detail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Item Detail, Item Detail, Item Detail, Item Detail, ..."
+                            android:text="Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, Item Detail, "
                             android:textSize="14sp"
                             app:layout_constraintTop_toBottomOf="@id/item"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:paddingHorizontal="20dp"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="80dp"
                             android:paddingVertical="20dp"/>
 
                         <ImageButton
@@ -307,7 +308,7 @@
             app:srcCompat="@drawable/icon_bid"
             app:layout_constraintBottom_toTopOf="@id/fab_chat"
             app:layout_constraintEnd_toEndOf="parent"
-            android:backgroundTint="#4da98d"/>
+            android:backgroundTint="#86e16d"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_chat"
@@ -318,7 +319,7 @@
             app:srcCompat="@drawable/icon_chat"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:backgroundTint="#4da98d"/>
+            android:backgroundTint="#86e16d"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
