@@ -12,7 +12,7 @@
         android:layout_height="50dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="#86e16d">
+        android:background="#ffffff">
 
         <ImageView
             android:id="@+id/sortIcon"
@@ -87,7 +87,7 @@
         android:layout_marginBottom="16dp"
         app:srcCompat="@drawable/baseline_add_box_24"
         android:scaleType="center"
-        android:backgroundTint="#4da98d"
+        android:backgroundTint="#86e16d"
         android:contentDescription="경매 생성 아이콘" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

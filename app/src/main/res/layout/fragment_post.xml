@@ -9,7 +9,7 @@
     <!-- 구매 희망 제목 -->
     <TextView
         android:id="@+id/textView_title"
-        android:background="#86e16d"
+        android:background="#ffffff"
         android:text="구매 희망"
         android:textSize="24sp"
         android:textColor="@android:color/black"
@@ -39,7 +39,7 @@
         android:contentDescription="글쓰기"
         app:srcCompat="@drawable/baseline_add_box_24"
         android:scaleType="center"
-        android:backgroundTint="#4da98d"
+        android:backgroundTint="#86e16d"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="16dp"
