@@ -1,11 +1,21 @@
 package com.example.auction_gu_lee.models
 
 data class Notification(
-    val id: String = "",
-    val userId: String = "",
-    val message: String = "",
-    val timestamp: Long = 0,
-    var read: Boolean = false,
-    val type: String = "",  // 예: "bid", "auction_end" 등
-    val relatedAuctionId: String = ""
-)
+    var id: String = "",
+    val message: String? = null,
+    val timestamp: Long? = null,
+    val type: String? = null, // 예: "bid", "auction_end"
+    val relatedAuctionId: String? = null,
+    var read: Boolean = false
+) {
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "message" to message,
+            "timestamp" to timestamp,
+            "type" to type,
+            "relatedAuctionId" to relatedAuctionId,
+            "read" to read
+        )
+    }
+}

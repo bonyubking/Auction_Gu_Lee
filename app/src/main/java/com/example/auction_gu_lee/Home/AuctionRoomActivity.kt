@@ -296,6 +296,8 @@ class AuctionRoomActivity : AppCompatActivity() {
         }
 
         val newBid = highestPrice + increment  // 입찰가를 증가폭만큼 증가
+
+
         highestPrice = newBid
         binding.highestPrice.text = "최고 가격: $highestPrice ₩"
         updateHighestPriceColor()
@@ -303,10 +305,14 @@ class AuctionRoomActivity : AppCompatActivity() {
         // Firebase에 최고 가격 및 입찰자 정보 업데이트
         val auctionRef = databaseReference.child("auctions").child(auctionId)
 
+        val previousBidderUidHolder = arrayOf<String?>(null)
+
         auctionRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val auction = currentData.getValue(Auction::class.java)
                     ?: return Transaction.success(currentData)
+
+                previousBidderUidHolder[0] = auction.highestBidderUid
 
                 // 최고 가격 및 입찰자 UID 업데이트
                 auction.highestPrice = highestPrice
@@ -340,6 +346,11 @@ class AuctionRoomActivity : AppCompatActivity() {
                         binding.participantsCount.text = "참가자 수: $biddersCount 명"
                         Toast.makeText(this@AuctionRoomActivity, "입찰 성공!", Toast.LENGTH_SHORT).show()
                         createBidNotification(newBid)
+
+                        val previousBidderUid = previousBidderUidHolder[0]
+                        if (previousBidderUid != null && previousBidderUid != uid) {
+                            sendOutbidNotification(previousBidderUid, updatedAuction)
+                        }
                     }
                 } else {
                     Toast.makeText(this@AuctionRoomActivity, "입찰 실패: ${error?.message}", Toast.LENGTH_SHORT).show()
@@ -348,20 +359,49 @@ class AuctionRoomActivity : AppCompatActivity() {
         })
     }
 
-    private fun createBidNotification(newBidAmount: Long) {
+    private fun sendOutbidNotification(previousBidderUid: String, auction: Auction) {
+        val notificationId = UUID.randomUUID().toString()
         val notification = Notification(
-            id = UUID.randomUUID().toString(),
-            userId = creatorUid,
+            id = notificationId,
+            message = "경매 '${auction.item}'의 최고 입찰가가 갱신되었습니다.",
+            timestamp = null,
+            type = "bid",
+            relatedAuctionId = auction.id,
+            read = false
+        )
+
+        val notificationMap = notification.toMap().toMutableMap()
+        notificationMap["timestamp"] = ServerValue.TIMESTAMP
+
+        databaseReference.child("users").child(previousBidderUid).child("notifications")
+            .child(notificationId)
+            .setValue(notification)
+            .addOnSuccessListener {
+                Log.d("AuctionRoomActivity", "Outbid notification sent to previous bidder successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuctionRoomActivity", "Failed to send outbid notification to previous bidder: ${e.message}")
+            }
+    }
+
+    private fun createBidNotification(newBidAmount: Long) {
+        val notificationId = UUID.randomUUID().toString()
+        val notification = Notification(
+            id = notificationId,
             message = "${binding.itemName.text}에 새로운 입찰가 ${newBidAmount}원이 등록되었습니다.",
-            timestamp = System.currentTimeMillis(),
+            timestamp = null,
             type = "bid",
             relatedAuctionId = auctionId,
             read = false
-
         )
 
+        val notificationMap = notification.toMap().toMutableMap()
+        notificationMap["timestamp"] = ServerValue.TIMESTAMP
+
+
+
         databaseReference.child("users").child(creatorUid).child("notifications")
-            .child(notification.id)
+            .child(notificationId)
             .setValue(notification)
             .addOnSuccessListener {
                 Log.d("AuctionRoomActivity", "Notification created successfully")

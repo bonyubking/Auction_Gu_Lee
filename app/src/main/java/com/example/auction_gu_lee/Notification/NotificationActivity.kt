@@ -184,8 +184,9 @@ class NotificationAdapter(
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         val notification = notifications[position]
-        holder.messageText.text = notification.message
-        holder.dateText.text = formatDate(notification.timestamp)
+        holder.messageText.text = notification.message ?: "No message"
+
+        holder.dateText.text = notification.timestamp?.let { formatDate(it) } ?: "Unknown Date"
 
         if (!notification.read) {
             holder.messageText.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -226,8 +227,12 @@ class NotificationAdapter(
         }
     }
 
-    private fun formatDate(timestamp: Long): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-        return sdf.format(Date(timestamp))
+    private fun formatDate(timestamp: Long?): String {
+        return if (timestamp != null) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+            sdf.format(Date(timestamp))
+        } else {
+            "Unknown Date"
+        }
     }
 }
