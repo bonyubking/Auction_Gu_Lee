@@ -10,7 +10,7 @@
         android:layout_height="50dp"
         android:text="채팅"
         android:textColor="@android:color/black"
-        android:background="#86e16d"
+        android:background="#ffffff"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
