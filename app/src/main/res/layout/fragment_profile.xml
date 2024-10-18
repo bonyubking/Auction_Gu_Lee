@@ -16,7 +16,9 @@
         android:textSize="21sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
-        android:gravity="center"/>
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <ScrollView
         android:layout_width="0dp"

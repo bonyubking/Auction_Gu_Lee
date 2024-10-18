@@ -26,27 +26,21 @@ class SearchRoomActivity : AppCompatActivity() {
     private lateinit var auctionIdList: MutableList<String>
     private lateinit var sortIcon: ImageView
     private var currentSortType: String = "remainingTime"
-    private var auctionCategory: String = "home"  // 기본 카테고리 설정
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_room)
 
-        auctionCategory = intent.getStringExtra("auction_category") ?: "home"
-
         searchEditText = findViewById(R.id.searchEditText)
         searchButton = findViewById(R.id.searchButton)
         recyclerView = findViewById(R.id.recyclerView)
         sortIcon = findViewById(R.id.sortIcon)
-
         recyclerView.visibility = View.GONE
-
         auctionList = mutableListOf()
         auctionIdList = mutableListOf()
         auctionAdapter = AuctionAdapter(auctionList) { auction ->
             val position = auctionList.indexOf(auction)
             val auctionId = auctionIdList[position]
-
             val intent = Intent(this, AuctionRoomActivity::class.java).apply {
                 putExtra("auction_id", auctionId)
                 putExtra("username", auction.username)
@@ -192,27 +186,43 @@ class SearchRoomActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
 
-        auctionRef.orderByChild("timestamp").addValueEventListener(object : ValueEventListener {
+        auctionRef.orderByChild("timestamp").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
                 auctionIdList.clear()
+
+                val currentTime = System.currentTimeMillis()  // 현재 시간
+
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        if (it.category == auctionCategory) {
-                            it.biddersCount = it.biddersCount ?: 0
-                            it.favoritesCount = it.favoritesCount ?: 0
-                            it.startingPrice = it.startingPrice ?: 0L
-                            it.highestPrice = it.highestPrice ?: 0L
+                        // 경매 종료 시간을 기준으로 필터링
+                        if (auction.endTime != null) {
+                            val isAuctionOngoing = auction.endTime!! > currentTime
 
-                            auctionList.add(it)
-                            auctionIdList.add(auctionSnapshot.key ?: "")
+                            // 진행 중인 경매 가져오기
+                            if (isAuctionOngoing && intent.getBooleanExtra("isSearchingOngoingAuctions", true)) {
+                                auctionList.add(it)
+                                auctionIdList.add(auctionSnapshot.key ?: "")
+                            }
+                            // 종료된 경매 가져오기
+                            else if (!isAuctionOngoing && !intent.getBooleanExtra("isSearchingOngoingAuctions", true)) {
+                                auctionList.add(it)
+                                auctionIdList.add(auctionSnapshot.key ?: "")
+                            }
                         }
                     }
                 }
 
                 sortAuctionListBy(currentSortType)
                 auctionAdapter.notifyDataSetChanged()
+
+                if (auctionList.isNotEmpty()) {
+                    recyclerView.visibility = View.VISIBLE
+                } else {
+                    recyclerView.visibility = View.GONE
+                    Toast.makeText(this@SearchRoomActivity, "검색된 경매 목록이 없습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {

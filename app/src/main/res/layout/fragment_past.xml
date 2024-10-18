@@ -38,7 +38,7 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
         <ImageView
-            android:id="@+id/magnifier"
+            android:id="@+id/pastMagnifier"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:clickable="true"

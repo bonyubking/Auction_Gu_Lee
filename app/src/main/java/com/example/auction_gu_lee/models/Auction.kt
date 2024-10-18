@@ -19,6 +19,5 @@ data class Auction(
     var favoritesCount: Int? = 0,    // 기본값 0으로 설정
     var biddersCount: Int? = 0,      // 기본값 0으로 설정
     var participants: MutableMap<String, Long> = mutableMapOf(),
-    var category: String? = null,  // 카테고리 필드 추가
     val status: String = ""
 )

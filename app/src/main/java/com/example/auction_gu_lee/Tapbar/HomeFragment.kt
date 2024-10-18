@@ -6,8 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import android.content.Intent
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,9 +22,10 @@ import com.example.auction_gu_lee.models.Auction
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.auction_gu_lee.Notification.NotificationActivity
 import com.google.firebase.auth.FirebaseAuth
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class HomeFragment : Fragment() {
 
@@ -81,11 +85,10 @@ class HomeFragment : Fragment() {
         setupSortIcon(view)
 
         // 검색 아이콘 클릭 이벤트 추가
-        val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
+        val magnifierImageView = view.findViewById<ImageView>(R.id.homeMagnifier)
         magnifierImageView.setOnClickListener {
-            val intent = Intent(requireContext(), SearchRoomActivity::class.java).apply {
-                putExtra("auction_category", "home") // 진행 중인 경매 목록
-            }
+            val intent = Intent(requireContext(), SearchRoomActivity::class.java)
+            intent.putExtra("isSearchingOngoingAuctions", true)
             startActivity(intent)
         }
 

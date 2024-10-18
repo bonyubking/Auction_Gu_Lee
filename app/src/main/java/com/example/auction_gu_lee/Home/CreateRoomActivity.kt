@@ -349,28 +349,11 @@ class CreateRoomActivity : AppCompatActivity() {
                 override fun onFinish() {
                     resultTextView.text = "시간이 종료되었습니다!"
                     Log.d("CreateRoomActivity", "경매 종료됨 - 카테고리 업데이트 시도")
-                    updateAuctionCategoryToPast()  // 카테고리 업데이트 호출
                 }
             }.start()
         } else {
             resultTextView.text = "목표 시간은 현재 시간보다 이후여야 합니다."
             Log.d("CreateRoomActivity", "남은 시간: $remainingTime (목표 시간은 현재보다 이후여야 함)")
-        }
-    }
-
-    private fun updateAuctionCategoryToPast() {
-        if (auctionId.isNotEmpty()) {  // auctionId가 비어있지 않은지 확인
-            val auctionRef =
-                FirebaseDatabase.getInstance().getReference("auctions").child(auctionId)
-            auctionRef.child("category").setValue("past").addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("CreateRoomActivity", "경매 카테고리가 past로 업데이트되었습니다.")
-                } else {
-                    Log.e("CreateRoomActivity", "경매 카테고리 업데이트 실패: ${task.exception?.message}")
-                }
-            }
-        } else {
-            Log.e("CreateRoomActivity", "경매 ID가 비어있습니다. 업데이트할 수 없습니다.")
         }
     }
 
@@ -535,7 +518,6 @@ class CreateRoomActivity : AppCompatActivity() {
                     "creatorUid" to Uid,
                     "biddersCount" to 0,
                     "favoritesCount" to 0,
-                    "category" to "home"  // 최초에 home으로 설정
                 )
 
                 // 새로운 경매 생성 및 경매 ID 저장

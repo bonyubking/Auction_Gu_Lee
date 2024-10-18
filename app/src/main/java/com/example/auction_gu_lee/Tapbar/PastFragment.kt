@@ -57,11 +57,10 @@ class PastFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView_auctions)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // ImageView 클릭 이벤트 설정
-        val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
+        val magnifierImageView = view.findViewById<ImageView>(R.id.pastMagnifier)
         magnifierImageView.setOnClickListener {
             val intent = Intent(requireContext(), SearchRoomActivity::class.java)
-            intent.putExtra("auction_category", "past")  // 경매 종료되지 않은 경매 목록
+            intent.putExtra("isSearchingOngoingAuctions", false)
             startActivity(intent)
         }
 
@@ -181,18 +180,21 @@ class PastFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 auctionList.clear()
                 auctionIdList.clear()
+
+                val currentTime = System.currentTimeMillis()
+
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        val currentTime = System.currentTimeMillis()
-                        // category가 "past"인 경우만 필터링
-                        if (auction.endTime is Long && auction.endTime <= currentTime && auction.category == "past") {
+                        if (auction.endTime is Long && auction.endTime <= currentTime) {
                             auctionList.add(it)
                             auctionIdList.add(auctionSnapshot.key ?: "")
                         }
                     }
                 }
+
                 sortAuctionListBy(currentSortType)
+                auctionAdapter.notifyDataSetChanged()
                 swipeRefreshLayout.isRefreshing = false
             }
 
