@@ -91,11 +91,9 @@ class BiddingHistoryAdapter(
                 button.getHitRect(rect)
 
                 // 터치 영역 확장
-                val additionalPadding = 15
+                val additionalPadding = 30
                 rect.top -= additionalPadding
-                rect.bottom += additionalPadding
-                rect.left -= additionalPadding
-                rect.right += additionalPadding
+                rect.bottom -= additionalPadding
 
                 parent.touchDelegate = TouchDelegate(rect, button)
             }

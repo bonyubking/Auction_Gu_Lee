@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingVertical="5dp"
-    android:paddingHorizontal="10dp">
+    android:paddingVertical="7dp"
+    android:paddingHorizontal="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:layout_marginStart="20dp"
-            android:layout_marginVertical="5dp"
+            android:layout_marginVertical="15dp"
             android:orientation="vertical">
 
             <TextView
@@ -77,7 +77,8 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:layout_marginVertical="5dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="3dp"
             android:layout_marginEnd="20dp"
             android:orientation="vertical">
 
@@ -112,7 +113,7 @@
                 android:id="@+id/btnRebid"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:layout_gravity="center"
                 android:backgroundTint="#df6b2b"
                 android:text="재입찰"
