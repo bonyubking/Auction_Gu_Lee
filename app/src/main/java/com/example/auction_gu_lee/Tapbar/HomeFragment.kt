@@ -6,11 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Spinner
 import android.widget.Toast
 import android.content.Intent
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,10 +19,9 @@ import com.example.auction_gu_lee.models.Auction
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.*
 import androidx.activity.OnBackPressedCallback
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.auction_gu_lee.Notification.NotificationActivity
 import com.google.firebase.auth.FirebaseAuth
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class HomeFragment : Fragment() {
 
@@ -37,6 +33,12 @@ class HomeFragment : Fragment() {
     private var auctionId: String? = null
 
     private var currentSortType: String = "remainingTime"
+
+    // 알림 점을 참조하는 속성
+    private lateinit var notificationDot: View
+
+    // 실시간 리스너 참조 (선택 사항)
+    private var notificationsListener: ValueEventListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +64,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // notificationDot 초기화
+        notificationDot = view.findViewById(R.id.notification_dot)
+
         // SwipeRefreshLayout 설정
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
         swipeRefreshLayout.setOnRefreshListener {
@@ -78,13 +83,15 @@ class HomeFragment : Fragment() {
         // 검색 아이콘 클릭 이벤트 추가
         val magnifierImageView = view.findViewById<ImageView>(R.id.magnifier)
         magnifierImageView.setOnClickListener {
-            val intent = Intent(requireContext(), SearchRoomActivity::class.java)
-            intent.putExtra("auction_category", "home")  // 경매 종료되지 않은 경매 목록
+            val intent = Intent(requireContext(), SearchRoomActivity::class.java).apply {
+                putExtra("auction_category", "home") // 진행 중인 경매 목록
+            }
             startActivity(intent)
         }
 
+        // 알림 아이콘 클릭 이벤트
         val notificationImageView = view.findViewById<ImageView>(R.id.notification_activity)
-        notificationImageView .setOnClickListener {
+        notificationImageView.setOnClickListener {
             val intent = Intent(requireContext(), NotificationActivity::class.java)
             startActivity(intent)
         }
@@ -99,7 +106,7 @@ class HomeFragment : Fragment() {
         // 경매 목록 및 어댑터 설정
         auctionList = mutableListOf()
         auctionIdList = mutableListOf()
-        auctionAdapter = AuctionAdapter(auctionList, { auction ->
+        auctionAdapter = AuctionAdapter(auctionList) { auction ->
             val position = auctionList.indexOf(auction)
             val auctionId = auctionIdList[position]
 
@@ -116,17 +123,31 @@ class HomeFragment : Fragment() {
                 putExtra("remaining_time", remainingTime)
             }
             startActivity(intent)
-        })
+        }
         recyclerView.adapter = auctionAdapter
 
-        // 최신 데이터를 자동으로 로드하지 않음
-        // 사용자가 다른 화면에서 돌아오거나, 수동으로 새로고침을 할 때만 데이터 로드
+        // 읽지 않은 알림 확인
+        checkUnreadNotifications()
     }
 
     override fun onResume() {
         super.onResume()
-        // 화면이 다시 보일 때 최신 데이터를 가져옴
+        // 프래그먼트가 다시 보일 때 최신 데이터를 가져옴
         fetchLatestAuctions()
+        // 읽지 않은 알림 다시 확인
+        checkUnreadNotifications()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // 실시간 리스너 제거 (선택 사항)
+        notificationsListener?.let {
+            val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+            val userId = currentUser.uid
+            val notificationsRef = FirebaseDatabase.getInstance().reference
+                .child("users").child(userId).child("notifications")
+            notificationsRef.removeEventListener(it)
+        }
     }
 
     // 정렬 아이콘 설정 함수
@@ -139,10 +160,20 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // 정렬 옵션 다이얼로그 표시 함수
     private fun showSortDialog() {
-        val sortOptions = arrayOf("남은 시간 순", "입찰자 수 순", "관심 높은 순", "입찰가 높은 순", "입찰가 낮은 순", "시작가 높은 순", "시작가 낮은 순", "등록 시간 순")
+        val sortOptions = arrayOf(
+            "남은 시간 순",
+            "입찰자 수 순",
+            "관심 높은 순",
+            "입찰가 높은 순",
+            "입찰가 낮은 순",
+            "시작가 높은 순",
+            "시작가 낮은 순",
+            "등록 시간 순"
+        )
 
-        // 현재 선택된 정렬 타입에 해당하는 인덱스를 찾음
+        // 현재 선택된 정렬 타입에 해당하는 인덱스 찾기
         val selectedIndex = when (currentSortType) {
             "remainingTime" -> 0
             "participants" -> 1
@@ -169,7 +200,7 @@ class HomeFragment : Fragment() {
                 7 -> "time"
                 else -> "remainingTime"
             }
-            // 항목을 선택하면 즉시 정렬을 적용하고 다이얼로그 닫음
+            // 선택 시 즉시 정렬 적용 및 다이얼로그 닫기
             sortAuctionListBy(currentSortType)
             dialog.dismiss()
         }
@@ -177,12 +208,12 @@ class HomeFragment : Fragment() {
         builder.show()
     }
 
-
+    // 선택된 정렬 기준에 따라 경매 목록 정렬 함수
     private fun sortAuctionListBy(sortType: String) {
-        // auctionList와 auctionIdList를 Pair로 묶음
+        // auctionList와 auctionIdList를 Pair로 묶기
         val auctionPairs = auctionList.zip(auctionIdList).toMutableList()
 
-        // 정렬 기준에 따라 auctionPairs를 정렬
+        // 정렬 기준에 따라 auctionPairs 정렬
         when (sortType) {
             "time" -> auctionPairs.sortByDescending { it.first.timestamp ?: 0L }
             "participants" -> auctionPairs.sortWith(
@@ -213,7 +244,7 @@ class HomeFragment : Fragment() {
         auctionAdapter.notifyDataSetChanged()
     }
 
-
+    // 최신 경매 목록을 Firebase에서 가져오는 함수
     private fun fetchLatestAuctions() {
         val database = FirebaseDatabase.getInstance().reference
         val auctionRef = database.child("auctions")
@@ -223,12 +254,12 @@ class HomeFragment : Fragment() {
                 auctionList.clear()
                 auctionIdList.clear()
 
-                val currentTime = System.currentTimeMillis()  // 현재 시간
+                val currentTime = System.currentTimeMillis() // 현재 시간
 
                 for (auctionSnapshot in snapshot.children) {
                     val auction = auctionSnapshot.getValue(Auction::class.java)
                     auction?.let {
-                        // 경매가 종료되지 않은 항목만 리스트에 추가
+                        // 종료되지 않은 경매만 추가
                         if (auction.endTime != null && auction.endTime!! > currentTime) {
                             auctionList.add(auction)
                             auctionIdList.add(auctionSnapshot.key ?: "")
@@ -248,16 +279,45 @@ class HomeFragment : Fragment() {
         })
     }
 
+    // 최근 본 경매 목록에 추가하는 함수
     private fun addToRecentlyViewed(auctionId: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val userId = currentUser.uid
-        val currentTime = ServerValue.TIMESTAMP  // 현재 시각의 타임스탬프
+        val currentTime = ServerValue.TIMESTAMP // 현재 타임스탬프
 
         val databaseReference = FirebaseDatabase.getInstance().reference
         val recentlyViewedRef = databaseReference.child("users").child(userId).child("recentlyviewed").child(auctionId)
 
-        // auctionId와 함께 현재 타임스탬프를 저장
+        // 현재 타임스탬프와 함께 auctionId 저장
         val data = mapOf("timestamp" to currentTime)
-        recentlyViewedRef.setValue(data)  // 중복 클릭 시 타임스탬프 업데이트
+        recentlyViewedRef.setValue(data) // 중복 클릭 시 타임스탬프 업데이트
+    }
+
+    // 읽지 않은 알림을 확인하는 함수
+    private fun checkUnreadNotifications() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
+        val userId = currentUser.uid
+        val database = FirebaseDatabase.getInstance().reference
+        val notificationsRef = database.child("users").child(userId).child("notifications")
+
+        // 'read'가 false인 알림을 쿼리
+        notificationsRef.orderByChild("read").equalTo(false)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        // 읽지 않은 알림이 있으면 점 표시
+                        notificationDot.visibility = View.VISIBLE
+                    } else {
+                        // 없으면 점 숨김
+                        notificationDot.visibility = View.GONE
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // 에러 처리
+                    Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+                    notificationDot.visibility = View.GONE
+                }
+            })
     }
 }
