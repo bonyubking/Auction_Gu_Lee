@@ -341,17 +341,23 @@ class NotificationActivity : AppCompatActivity() {
                 query.addChildEventListener(object : ChildEventListener {
                     override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                         val comment = snapshot.getValue(Comment::class.java)
-                        if (comment != null && comment.userId != ownerId) {
+
+                        // comment.userId가 null이거나 비어 있으면 알림을 생성하지 않음
+                        if (comment != null && !comment.userId.isNullOrEmpty() && comment.userId != ownerId) {
                             // 댓글 작성자와 게시물 작성자가 다른 경우에만 알림 생성
                             val notificationMessage = "구매 요청 게시글에 새로운 댓글이 달렸습니다."
-                            addNotificationToFirebase(ownerId, postId, notificationMessage)
+                            addNotificationToFirebase(ownerId, postId, comment.userId, notificationMessage)
+                        } else {
+                            Log.e("NotificationActivity", "comment.userId가 null이거나 비어있습니다. 알림을 생성하지 않음.")
                         }
                     }
 
                     override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
                     override fun onChildRemoved(snapshot: DataSnapshot) {}
                     override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-                    override fun onCancelled(error: DatabaseError) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("NotificationActivity", "댓글 리스닝 중 오류 발생: ${error.message}")
+                    }
                 })
             }
 
@@ -362,30 +368,64 @@ class NotificationActivity : AppCompatActivity() {
     }
 
 
-    private fun addNotificationToFirebase(recipientUserId: String, postId: String, message: String) {
-        Log.d("NotificationActivity", "Firebase에 알림 추가 중: $message to user: $recipientUserId")
-        val notificationRef = database.child("users").child(recipientUserId).child("notifications").push()
-        val notificationId = notificationRef.key ?: run {
-            Log.e("NotificationActivity", "알림 ID 생성 실패")
+
+    private fun addNotificationToFirebase(recipientUserId: String, postId: String, commentAuctionId: String?, message: String) {
+        // commenterId가 null이거나 비어 있는 경우 알림을 생성하지 않음
+        if (commentAuctionId.isNullOrEmpty()) {
+            Log.e("NotificationActivity", "ccommentAuctionId가 null 또는 비어 있습니다.")
             return
         }
-        val notificationData = mapOf(
-            "id" to notificationId,
-            "message" to message,
-            "relatedPostId" to postId, // relatedPostId로 수정
-            "timestamp" to ServerValue.TIMESTAMP,
-            "type" to "comment",
-            "read" to false
-        )
 
-        notificationRef.setValue(notificationData)
-            .addOnSuccessListener {
-                Log.d("NotificationActivity", "알림이 성공적으로 추가되었습니다: $notificationId")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("NotificationActivity", "알림 추가 실패: ${exception.message}")
-            }
+        Log.d("NotificationActivity", "Firebase에 알림 추가 중: $message to user: $recipientUserId")
+        val notificationRef = database.child("users").child(recipientUserId).child("notifications")
+
+        // 중복된 알림이 있는지 확인
+        notificationRef.orderByChild("relatedPostId").equalTo(postId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    var notificationExists = false
+
+                    // 이미 같은 commenterId로 등록된 알림이 있는지 확인
+                    for (child in snapshot.children) {
+                        val notification = child.getValue(Notification::class.java)
+                        if (notification?.relatedPostId == postId && notification.commentAuctionId == commentAuctionId) {
+                            notificationExists = true
+                            break
+                        }
+                    }
+
+                    // 중복되지 않은 경우에만 알림을 추가
+                    if (!notificationExists) {
+                        val newNotificationRef = notificationRef.push()
+                        val notificationId = newNotificationRef.key ?: return
+                        val notificationData = mapOf(
+                            "id" to notificationId,
+                            "message" to message,
+                            "relatedPostId" to postId,
+                            "commentAuctionId" to commentAuctionId,  // commenterId가 이제 반드시 포함됨
+                            "timestamp" to ServerValue.TIMESTAMP,
+                            "type" to "comment",
+                            "read" to false
+                        )
+
+                        newNotificationRef.setValue(notificationData)
+                            .addOnSuccessListener {
+                                Log.d("NotificationActivity", "알림이 성공적으로 추가되었습니다: $notificationId")
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("NotificationActivity", "알림 추가 실패: ${exception.message}")
+                            }
+                    } else {
+                        Log.d("NotificationActivity", "중복된 알림이 존재합니다.")
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("NotificationActivity", "알림 중복 확인 실패: ${error.message}")
+                }
+            })
     }
+
 
 
 }

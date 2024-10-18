@@ -76,7 +76,8 @@ class PostDetailActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     post = snapshot.getValue(Post::class.java) ?: return
                     textViewItem.text = post.item
-                    textViewDesiredPrice.text = "구매 희망 가격: ${String.format("%,d원", post.desiredPrice)}"
+                    textViewDesiredPrice.text =
+                        "구매 희망 가격: ${String.format("%,d원", post.desiredPrice)}"
                     textViewQuantity.text = "수량: ${post.quantity}"
                     textViewDetail.text = post.detail
 
@@ -92,7 +93,8 @@ class PostDetailActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@PostDetailActivity, "데이터를 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PostDetailActivity, "데이터를 불러올 수 없습니다.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
     }
@@ -153,7 +155,11 @@ class PostDetailActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@PostDetailActivity, "댓글을 불러오는 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@PostDetailActivity,
+                    "댓글을 불러오는 중 오류가 발생했습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
@@ -182,12 +188,17 @@ class PostDetailActivity : AppCompatActivity() {
                     if (userAuctions.isNotEmpty()) {
                         showAuctionSelectionDialog(userAuctions) // 판매 내역이 있을 때 다이얼로그 호출
                     } else {
-                        Toast.makeText(this@PostDetailActivity, "판매 내역이 없습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PostDetailActivity, "판매 내역이 없습니다.", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@PostDetailActivity, "판매 내역을 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@PostDetailActivity,
+                        "판매 내역을 불러올 수 없습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }
@@ -224,32 +235,64 @@ class PostDetailActivity : AppCompatActivity() {
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    Toast.makeText(this@PostDetailActivity, "이미 이 판매 내역을 등록하셨습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@PostDetailActivity,
+                        "이미 이 판매 내역을 등록하셨습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
+                    val currentUser = FirebaseAuth.getInstance().currentUser
+                    if (currentUser == null) {
+                        // 사용자가 로그인되지 않은 경우 처리 (에러 메시지 표시 등)
+                        Toast.makeText(this@PostDetailActivity, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                        return // 여기서 함수를 종료하여 더 이상 진행하지 않음
+                    }
+
                     val commentId = commentsRef.push().key ?: UUID.randomUUID().toString()
-                    val comment = Comment(
-                        commentId = commentId,
-                        postId = postId,
-                        userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous",
-                        auctionId = auctionId,
-                        timestamp = System.currentTimeMillis()
+                    val commentData = mapOf(
+                        "commentId" to commentId,
+                        "postId" to postId,
+                        "userId" to currentUser.uid,
+                        "auctionId" to auctionId,
+                        "timestamp" to ServerValue.TIMESTAMP // 서버 타임스탬프 사용
                     )
 
-                    commentsRef.child(commentId).setValue(comment)
-                        .addOnSuccessListener {
-                            Toast.makeText(this@PostDetailActivity, "판매 내역이 댓글로 등록되었습니다.", Toast.LENGTH_SHORT).show()
 
-                            // 알림 추가
-                            addCommentNotification(post.userId, postId, "구매 요청 게시글에 새로운 댓글이 달렸습니다.")
+                    commentsRef.child(commentId).setValue(commentData)
+                        .addOnSuccessListener {
+                            Toast.makeText(
+                                this@PostDetailActivity,
+                                "판매 내역이 댓글로 등록되었습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            // 게시글 작성자와 현재 사용자가 다른 경우에만 알림 추가
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                            if (post.userId != currentUserId && currentUserId != null) {
+                                addCommentNotification(
+                                    post.userId,
+                                    postId,
+                                    auctionId,
+                                    "${post.item} 구매 요청글에 새로운 댓글이 추가되었습니다."
+                                )
+                            }
                         }
                         .addOnFailureListener { e ->
-                            Toast.makeText(this@PostDetailActivity, "댓글 등록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@PostDetailActivity,
+                                "댓글 등록 실패: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@PostDetailActivity, "댓글 등록 중 오류가 발생했습니다: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@PostDetailActivity,
+                    "댓글 등록 중 오류가 발생했습니다: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
@@ -283,7 +326,8 @@ class PostDetailActivity : AppCompatActivity() {
 
     // 댓글 삭제 함수
     private fun deleteComment(comment: Comment) {
-        val commentRef = database.child("purchase_posts").child(postId).child("comments").child(comment.commentId)
+        val commentRef = database.child("purchase_posts").child(postId).child("comments")
+            .child(comment.commentId)
         commentRef.removeValue()
             .addOnSuccessListener {
                 Toast.makeText(this, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
@@ -293,27 +337,73 @@ class PostDetailActivity : AppCompatActivity() {
             }
     }
 
-    private fun addCommentNotification(postAuthorId: String, postId: String, message: String) {
-        val notificationRef = database.child("users").child(postAuthorId).child("notifications").push()
-        val notificationId = notificationRef.key ?: run {
-            Log.e("PostDetailActivity", "알림 ID 생성 실패")
-            return
-        }
-        val notification = Notification(
-            id = notificationId,
-            message = message,
-            relatedPostId = postId, // 관련 게시글 ID 설정
-            timestamp = System.currentTimeMillis(),
-            type = "comment",
-            read = false
+    private fun addCommentNotification(
+        postAuthorId: String,
+        postId: String,
+        commentAuctionId: String,
+        message: String
+    ) {
+        val userNotificationsRef =
+            database.child("users").child(postAuthorId).child("notifications")
+
+
+        userNotificationsRef.orderByChild("relatedPostId").equalTo(postId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    var notificationExists = false
+
+                    // Snapshot 안에 있는 데이터를 순회하면서 중복 여부 확인
+                    for (child in snapshot.children) {
+                        val notification = child.getValue(Notification::class.java)
+                        // 같은 postId와 commenterId로 알림이 존재하는지 확인
+                        if (notification?.relatedPostId == postId && notification.commentAuctionId == commentAuctionId) {
+                            notificationExists = true
+                            break
+                        }
+                    }
+
+                    // 중복 알림이 없는 경우에만 새 알림 추가
+                    if (!notificationExists) {
+                        createNotification(userNotificationsRef, postId, commentAuctionId, message)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("PostDetailActivity", "알림 확인 중 오류 발생: ${error.message}")
+                }
+            })
+    }
+
+    // 중복 알림이 없을 때 실제로 알림을 생성하는 함수
+// 중복 알림이 없을 때 실제로 알림을 생성하는 함수
+    private fun createNotification(
+        userNotificationsRef: DatabaseReference,
+        postId: String,
+        commentAuctionId: String, // commenterId는 필수 매개변수로 받음
+        message: String
+    ) {
+        val notificationRef = userNotificationsRef.push()
+        val notificationId = notificationRef.key ?: return
+
+        // 알림 객체 생성 시 commenterId를 반드시 포함
+        val notificationData = mapOf(
+            "id" to notificationId,
+            "message" to message,
+            "relatedPostId" to postId,
+            "commentAuctionId" to commentAuctionId,
+            "timestamp" to ServerValue.TIMESTAMP,  // 서버 타임스탬프 사용
+            "type" to "comment",
+            "read" to false
         )
 
-        notificationRef.setValue(notification)
+        notificationRef.setValue(notificationData)
             .addOnSuccessListener {
-                Log.d("PostDetailActivity", "댓글 알림이 성공적으로 추가되었습니다: $notificationId")
+                Log.d("PostDetailActivity", "새 알림이 성공적으로 추가되었습니다: $notificationId")
             }
-            .addOnFailureListener { exception ->
-                Log.e("PostDetailActivity", "댓글 알림 추가 실패: ${exception.message}")
+            .addOnFailureListener { e ->
+                Log.e("PostDetailActivity", "알림 추가 실패: ${e.message}")
             }
     }
+
+
 }

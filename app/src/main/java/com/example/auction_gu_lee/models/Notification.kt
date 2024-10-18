@@ -4,7 +4,8 @@ data class Notification(
     val id: String? = null,
     val message: String? = null,
     val relatedAuctionId: String? = null,
-    val relatedPostId: String? = null, // 새로 추가된 필드
+    val relatedPostId: String? = null,
+    val commentAuctionId: String? = null,
     val timestamp: Long? = null,
     val type: String? = null,
     val read: Boolean = false
@@ -16,6 +17,8 @@ data class Notification(
             "timestamp" to timestamp,
             "type" to type,
             "relatedAuctionId" to relatedAuctionId,
+            "relatedPostId" to relatedPostId,
+            "commentAuctionId" to commentAuctionId,
             "read" to read
         )
     }

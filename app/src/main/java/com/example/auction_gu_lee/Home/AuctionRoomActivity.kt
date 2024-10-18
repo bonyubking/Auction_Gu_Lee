@@ -7,6 +7,7 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.auction_gu_lee.Chat.ChatActivity
@@ -66,6 +67,14 @@ class AuctionRoomActivity : AppCompatActivity() {
                             val itemDetail = snapshot.child("detail").getValue(String::class.java) ?: "세부사항 없음"
                             startingPrice = snapshot.child("startingPrice").getValue(Long::class.java) ?: 0L
                             highestPrice = snapshot.child("highestPrice").getValue(Long::class.java) ?: startingPrice
+
+                            if (highestPrice == startingPrice) {
+                                binding.highestPrice.text = "입찰 없음"
+                            } else {
+                                binding.highestPrice.text = "$highestPrice ₩"
+                            }
+
+
                             remainingTimeMillis = snapshot.child("endTime").getValue(Long::class.java)?.minus(System.currentTimeMillis()) ?: 0
                             creatorUid = snapshot.child("creatorUid").getValue(String::class.java) ?: ""
 
@@ -84,10 +93,8 @@ class AuctionRoomActivity : AppCompatActivity() {
                             binding.itemName.text = itemName
                             binding.itemQuantity.text = "$quantity" // 갯수 표시
                             binding.itemDetail.text = itemDetail
-                            binding.startingPrice.text = "시작가 $startingPrice ₩"
-                            binding.highestPrice.text = "최고가 $highestPrice ₩"
+                            binding.startingPrice.text = "$startingPrice ₩"
                             binding.favoritesCount.text = "찜 $favoritesCount"
-                            binding.participantsCount.text = "참가자 $biddersCount 명"
                             binding.bidUnit.text = "입찰 단위 $bidUnit" // 새로운 TextView 설정
                             updateHighestPriceColor()
 
@@ -103,25 +110,33 @@ class AuctionRoomActivity : AppCompatActivity() {
                                 binding.itemPhoto.setImageResource(R.drawable.error_image)
                             }
 
-                            // 참가자 수 초기화
-                            if (snapshot.hasChild("participants")) {
-                                participantUids = snapshot.child("participants").children.mapNotNull { it.key }.toMutableSet()
-                            }
-                            binding.participantsCount.text = "참가자 수: $biddersCount 명"
 
                             // Update UI for Bid and Chat Button visibility
                             binding.fabBid.visibility = View.VISIBLE
                             binding.fabChat.visibility = View.VISIBLE
 
                             if (creatorUid == uid) {
-                                // 판매자일 경우 입찰과 채팅 불가
-                                disableButtons()
+                                // 판매자일 경우
+                                binding.fabBid.visibility = View.INVISIBLE
+                                binding.fabChat.visibility = View.INVISIBLE
+
+                                if (biddersCount == 0) {
+                                    binding.fabDelete.visibility = View.VISIBLE
+                                    binding.fabDelete.setOnClickListener {
+                                        showDeleteConfirmationDialog()
+                                    }
+                                } else {
+                                    binding.fabDelete.visibility = View.GONE
+                                }
                             } else if (remainingTimeMillis <= 0) {
                                 // 경매 종료 시 모든 버튼 비활성화
-                                disableButtons()
+                                binding.fabBid.visibility = View.INVISIBLE
+                                binding.fabChat.visibility = View.INVISIBLE
+                                binding.fabDelete.visibility = View.GONE
                             } else {
-                                binding.fabBid.isEnabled = true
-                                binding.fabChat.isEnabled = true
+                                binding.fabBid.visibility = View.VISIBLE
+                                binding.fabChat.visibility = View.VISIBLE
+                                binding.fabDelete.visibility = View.GONE
                                 binding.fabBid.setOnClickListener {
                                     placeBid()
                                 }
@@ -181,6 +196,29 @@ class AuctionRoomActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("경매 삭제")
+            .setMessage("정말로 이 경매를 삭제하시겠습니까?")
+            .setPositiveButton("삭제") { _, _ ->
+                deleteAuction()
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun deleteAuction() {
+        databaseReference.child("auctions").child(auctionId).removeValue()
+            .addOnSuccessListener {
+                Toast.makeText(this, "경매가 성공적으로 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "경매 삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     // 버튼 비활성화 메서드 추가
     private fun disableButtons() {
@@ -299,7 +337,7 @@ class AuctionRoomActivity : AppCompatActivity() {
 
 
         highestPrice = newBid
-        binding.highestPrice.text = "최고 가격: $highestPrice ₩"
+        binding.highestPrice.text = "$highestPrice ₩"
         updateHighestPriceColor()
 
         // Firebase에 최고 가격 및 입찰자 정보 업데이트
@@ -340,10 +378,9 @@ class AuctionRoomActivity : AppCompatActivity() {
                     val updatedAuction = currentData?.getValue(Auction::class.java)
                     if (updatedAuction != null) {
                         highestPrice = updatedAuction.highestPrice ?: 0L
-                        binding.highestPrice.text = "최고가 $highestPrice ₩"
+                        binding.highestPrice.text = "$highestPrice ₩"
                         updateHighestPriceColor()
                         biddersCount = updatedAuction.biddersCount ?: 0
-                        binding.participantsCount.text = "참가자 수: $biddersCount 명"
                         Toast.makeText(this@AuctionRoomActivity, "입찰 성공!", Toast.LENGTH_SHORT).show()
                         createBidNotification(newBid)
 

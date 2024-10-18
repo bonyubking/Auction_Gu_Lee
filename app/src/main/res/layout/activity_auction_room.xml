@@ -126,16 +126,6 @@
                                             android:textStyle="italic"
                                             android:gravity="center"/>
 
-                                        <TextView
-                                            android:id="@+id/participantsCount"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="0dp"
-                                            android:layout_weight="1"
-                                            android:gravity="center"
-                                            android:text="Participants : 0"
-                                            android:textSize="16sp"
-                                            app:layout_constraintTop_toBottomOf="@id/price_layout"
-                                            app:layout_constraintStart_toStartOf="@id/price_layout"/>
                                 </LinearLayout>
                         </LinearLayout>
 
@@ -320,6 +310,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:backgroundTint="#86e16d"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:contentDescription="Delete Button"
+            app:srcCompat="@drawable/baseline_delete_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:backgroundTint="#FF0000"
+            android:visibility="gone"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
