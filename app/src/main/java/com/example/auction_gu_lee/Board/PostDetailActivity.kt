@@ -18,6 +18,7 @@ import com.example.auction_gu_lee.R
 import com.example.auction_gu_lee.models.Auction
 import com.example.auction_gu_lee.models.Post
 import com.example.auction_gu_lee.models.Comment
+import com.example.auction_gu_lee.models.Notification
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.UUID
@@ -237,6 +238,9 @@ class PostDetailActivity : AppCompatActivity() {
                     commentsRef.child(commentId).setValue(comment)
                         .addOnSuccessListener {
                             Toast.makeText(this@PostDetailActivity, "판매 내역이 댓글로 등록되었습니다.", Toast.LENGTH_SHORT).show()
+
+                            // 알림 추가
+                            addCommentNotification(post.userId, postId, "구매 요청 게시글에 새로운 댓글이 달렸습니다.")
                         }
                         .addOnFailureListener { e ->
                             Toast.makeText(this@PostDetailActivity, "댓글 등록 실패: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -249,6 +253,7 @@ class PostDetailActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun openAuctionDetail(auction: Auction) {
         val auctionId = auction.id
@@ -285,6 +290,30 @@ class PostDetailActivity : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "댓글 삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun addCommentNotification(postAuthorId: String, postId: String, message: String) {
+        val notificationRef = database.child("users").child(postAuthorId).child("notifications").push()
+        val notificationId = notificationRef.key ?: run {
+            Log.e("PostDetailActivity", "알림 ID 생성 실패")
+            return
+        }
+        val notification = Notification(
+            id = notificationId,
+            message = message,
+            relatedPostId = postId, // 관련 게시글 ID 설정
+            timestamp = System.currentTimeMillis(),
+            type = "comment",
+            read = false
+        )
+
+        notificationRef.setValue(notification)
+            .addOnSuccessListener {
+                Log.d("PostDetailActivity", "댓글 알림이 성공적으로 추가되었습니다: $notificationId")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("PostDetailActivity", "댓글 알림 추가 실패: ${exception.message}")
             }
     }
 }

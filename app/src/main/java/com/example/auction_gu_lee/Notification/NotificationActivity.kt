@@ -1,11 +1,6 @@
 package com.example.auction_gu_lee.Notification
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,11 +10,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.auction_gu_lee.Board.PostDetailActivity
 import com.example.auction_gu_lee.Home.AuctionRoomActivity
 import com.example.auction_gu_lee.R
+import com.example.auction_gu_lee.models.Comment
 import com.example.auction_gu_lee.models.Notification
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -39,7 +35,6 @@ class NotificationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notification)
 
-
         notificationContainer = findViewById(R.id.notification_container)
         recyclerView = findViewById(R.id.recyclerView_notifications)
         database = FirebaseDatabase.getInstance().reference
@@ -53,7 +48,10 @@ class NotificationActivity : AppCompatActivity() {
             loadNotifications(it)
 
             // 찜 목록 알림 설정 추가
-            setupWishlistNotification(it)  // <-- 찜 목록 알림 설정을 호출하는 부분 추가
+            setupWishlistNotification(it)
+
+            // 댓글 알림 설정 추가
+            setupCommentNotification(it)
         } ?: run {
             showLoginRequiredMessage()
         }
@@ -153,14 +151,25 @@ class NotificationActivity : AppCompatActivity() {
     private fun handleNotificationClick(notification: Notification) {
         when (notification.type) {
             "bid", "auction_end" -> {
-                // 입찰 알림이나 경매 종료 알림 클릭 시 해당 경매 상세 페이지로 이동
+                // 입찰 알림, 경매 종료 알림 클릭 시 AuctionRoomActivity로 이동
                 val intent = Intent(this, AuctionRoomActivity::class.java).apply {
                     putExtra("auction_id", notification.relatedAuctionId)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
                 startActivity(intent)
             }
+            "comment" -> {
+                // 댓글 알림 클릭 시 PostDetailActivity로 이동
+                val intent = Intent(this, PostDetailActivity::class.java).apply {
+                    putExtra("postId", notification.relatedPostId)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                startActivity(intent)
+            }
             // 기타 알림 유형에 대한 처리
+            else -> {
+                Toast.makeText(this, "알 수 없는 알림 유형입니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // 알림을 읽음 상태로 변경
@@ -171,10 +180,19 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun markNotificationAsRead(notification: Notification) {
         currentUserId?.let { userId ->
-            val notificationId = notification.id ?: return  // notification의 id가 null이면 함수 종료
+            val notificationId = notification.id ?: run {
+                Log.e("NotificationActivity", "notification.id가 null입니다.")
+                return
+            }
             val notificationRef = database.child("users").child(userId)
                 .child("notifications").child(notificationId)
             notificationRef.child("read").setValue(true)
+                .addOnSuccessListener {
+                    Log.d("NotificationActivity", "알림 읽음 상태로 변경됨: $notificationId")
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("NotificationActivity", "알림 읽음 상태 변경 실패: ${exception.message}")
+                }
         }
     }
 
@@ -209,7 +227,10 @@ class NotificationActivity : AppCompatActivity() {
 
         auctionRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val endTime = snapshot.child("endTime").getValue(Long::class.java) ?: return
+                val endTime = snapshot.child("endTime").getValue(Long::class.java) ?: run {
+                    Log.e("NotificationActivity", "endTime을 가져오지 못했습니다: $auctionId")
+                    return
+                }
                 val item = snapshot.child("item").getValue(String::class.java) ?: "상품"
                 val currentTime = System.currentTimeMillis()
                 val timeLeft = endTime - currentTime
@@ -230,21 +251,36 @@ class NotificationActivity : AppCompatActivity() {
                             // Firebase에 고유한 알림 ID 생성
                             val notificationRef = database.child("users").child(currentUserId!!)
                                 .child("notifications").push()
-                            val notificationId = notificationRef.key ?: throw IllegalStateException("Failed to generate notification ID")
-                            // 고유한 ID
+                            val notificationId = notificationRef.key ?: run {
+                                Log.e("NotificationActivity", "알림 ID 생성 실패")
+                                return
+                            }
 
                             // 알림을 Firebase에 추가
                             val notification = Notification(
-                                id = notificationId, // 고유한 ID를 저장
+                                id = notificationId,
                                 message = "찜 하신 $item, 1시간 남았습니다.",
                                 relatedAuctionId = auctionId,
                                 timestamp = System.currentTimeMillis(),
-                                type = "auction_end"
+                                type = "auction_end",
+                                read = false
                             )
                             notificationRef.setValue(notification)
+                                .addOnSuccessListener {
+                                    Log.d("NotificationActivity", "auction_end 알림 추가 성공: $notificationId")
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("NotificationActivity", "auction_end 알림 추가 실패: ${exception.message}")
+                                }
 
                             // 'auction_end' 알림 전송 기록
                             notificationSentRef.setValue(true)
+                                .addOnSuccessListener {
+                                    Log.d("NotificationActivity", "'auction_end' 알림 전송 기록 완료: $auctionId")
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("NotificationActivity", "'auction_end' 알림 전송 기록 실패: ${exception.message}")
+                                }
                         }
                     }
 
@@ -260,18 +296,99 @@ class NotificationActivity : AppCompatActivity() {
         })
     }
 
+    private fun setupCommentNotification(userId: String) {
+        val purchasePostsRef = database.child("purchase_posts")
+
+        purchasePostsRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val postId = snapshot.key ?: return
+                val ownerId = snapshot.child("userId").getValue(String::class.java)
+                if (ownerId != null) {
+                    listenForNewComments(postId, ownerId)
+                } else {
+                    Log.e("NotificationActivity", "ownerId를 가져오지 못했습니다: $postId")
+                }
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("NotificationActivity", "댓글 알림 설정 실패: ${error.message}")
+            }
+        })
+    }
 
 
+    private fun listenForNewComments(postId: String, ownerId: String?) {
+        if (ownerId == null) {
+            Log.e("NotificationActivity", "ownerId가 null입니다: $postId")
+            return
+        }
+
+        val commentsRef = database.child("purchase_posts").child(postId).child("comments")
+
+        // 서버 시간 가져오기
+        val serverTimeOffsetRef = database.child(".info/serverTimeOffset")
+        serverTimeOffsetRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val offset = snapshot.getValue(Double::class.java) ?: 0.0
+                val serverTime = System.currentTimeMillis() + offset.toLong()
+
+                // 현재 서버 시간 이후의 댓글만 리스닝
+                val query = commentsRef.orderByChild("timestamp").startAt(serverTime.toDouble())
+
+                query.addChildEventListener(object : ChildEventListener {
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                        val comment = snapshot.getValue(Comment::class.java)
+                        if (comment != null && comment.userId != ownerId) {
+                            // 댓글 작성자와 게시물 작성자가 다른 경우에만 알림 생성
+                            val notificationMessage = "구매 요청 게시글에 새로운 댓글이 달렸습니다."
+                            addNotificationToFirebase(ownerId, postId, notificationMessage)
+                        }
+                    }
+
+                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildRemoved(snapshot: DataSnapshot) {}
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onCancelled(error: DatabaseError) {}
+                })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("NotificationActivity", "서버 시간 가져오기 실패: ${error.message}")
+            }
+        })
+    }
 
 
+    private fun addNotificationToFirebase(recipientUserId: String, postId: String, message: String) {
+        Log.d("NotificationActivity", "Firebase에 알림 추가 중: $message to user: $recipientUserId")
+        val notificationRef = database.child("users").child(recipientUserId).child("notifications").push()
+        val notificationId = notificationRef.key ?: run {
+            Log.e("NotificationActivity", "알림 ID 생성 실패")
+            return
+        }
+        val notificationData = mapOf(
+            "id" to notificationId,
+            "message" to message,
+            "relatedPostId" to postId, // relatedPostId로 수정
+            "timestamp" to ServerValue.TIMESTAMP,
+            "type" to "comment",
+            "read" to false
+        )
+
+        notificationRef.setValue(notificationData)
+            .addOnSuccessListener {
+                Log.d("NotificationActivity", "알림이 성공적으로 추가되었습니다: $notificationId")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("NotificationActivity", "알림 추가 실패: ${exception.message}")
+            }
+    }
 
 
 }
-
-
-
-
-
 
 class NotificationAdapter(
     private val notifications: MutableList<Notification>,
@@ -286,7 +403,6 @@ class NotificationAdapter(
     fun contains(notification: Notification): Boolean {
         return notifications.any { it.id == notification.id }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         val view = LayoutInflater.from(parent.context)
