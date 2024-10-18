@@ -21,7 +21,7 @@
             android:clickable="true"
             android:focusable="true"
             android:scaleType="center"
-            app:srcCompat="@drawable/baseline_format_list_bulleted_add_24" />
+            app:srcCompat="@drawable/baseline_swap_vert_24" />
 
         <View
             android:layout_width="0dp"
@@ -51,10 +51,10 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text=""
+        android:text="경매"
         android:textColor="@android:color/black"
         android:gravity="center"
-        android:textSize="24sp"
+        android:textSize="21sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
