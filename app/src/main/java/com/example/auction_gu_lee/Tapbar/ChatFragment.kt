@@ -5,6 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -52,6 +54,11 @@ class ChatFragment : Fragment() {
 
         chatRecyclerView.adapter = adapter
 
+        val btnMarkAllRead: Button = view.findViewById(R.id.btn_mark_all_read)
+        btnMarkAllRead.setOnClickListener {
+            markAllChatsAsRead()
+        }
+
         // Firebase 데이터 로드
         loadDataFromFirebase()
 
@@ -63,6 +70,55 @@ class ChatFragment : Fragment() {
         // 채팅 목록 UI 갱신을 위해 데이터를 다시 로드
         loadDataFromFirebase()
     }
+
+// ChatFragment.kt
+
+    private fun markAllChatsAsRead() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        database.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val updates = mutableMapOf<String, Any>()
+
+                for (auctionSnapshot in snapshot.children) {
+                    val auctionId = auctionSnapshot.key ?: continue
+                    val chatsSnapshot = auctionSnapshot.child("chats")
+
+                    for (chatRoomSnapshot in chatsSnapshot.children) {
+                        val chatRoomId = chatRoomSnapshot.key ?: continue
+                        val bidderUid = chatRoomSnapshot.child("bidderUid").getValue(String::class.java) ?: ""
+                        val sellerUid = auctionSnapshot.child("creatorUid").getValue(String::class.java) ?: ""
+
+                        if (currentUserId == bidderUid || currentUserId == sellerUid) {
+                            chatRoomSnapshot.child("messages").children.forEach { messageSnapshot ->
+                                val messageSenderUid = messageSnapshot.child("senderUid").getValue(String::class.java) ?: return@forEach
+                                if (messageSenderUid != currentUserId) {
+                                    updates["$auctionId/chats/$chatRoomId/messages/${messageSnapshot.key}/isRead"] = true
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (updates.isNotEmpty()) {
+                    database.updateChildren(updates)
+                        .addOnSuccessListener {
+                            Log.d("ChatFragment", "All messages marked as read successfully.")
+                            adapter.markAllChatsAsRead()
+                            Toast.makeText(context, "모든 채팅을 읽음 처리했습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e("ChatFragment", "Failed to mark all messages as read: ${error.message}")
+                        }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatFragment", "Failed to update read status: ${error.message}")
+            }
+        })
+    }
+
 
     private fun loadDataFromFirebase() {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -178,6 +234,7 @@ class ChatFragment : Fragment() {
                 Log.d("ChatFragment", "채팅 리스트 정렬 및 어댑터 업데이트")
                 chatList.sortByDescending { it.timestamp }
                 adapter.notifyDataSetChanged()
+
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -190,7 +247,7 @@ class ChatFragment : Fragment() {
 
     private fun updateMessageAsRead(auctionId: String, chatRoomId: String) {
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val chatReference = database.child("auctions").child(auctionId).child("chats").child(chatRoomId).child("messages")
+        val chatReference = database.child(auctionId).child("chats").child(chatRoomId).child("messages")
 
         Log.d("ChatFragment", "Updating messages in chatRoomId: $chatRoomId for auctionId: $auctionId")
 

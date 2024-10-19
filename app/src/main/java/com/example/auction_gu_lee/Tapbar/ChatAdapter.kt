@@ -45,6 +45,16 @@ class ChatAdapter(
         return ChatViewHolder(view)
     }
 
+    fun markAllChatsAsRead() {
+        chatItems.forEach { chatItem ->
+            if (!chatItem.isRead) {
+                chatItem.isRead = true
+                onMessageRead(chatItem.auctionId, chatItem.chatRoomId)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val chatItem = chatItems[position]
 
