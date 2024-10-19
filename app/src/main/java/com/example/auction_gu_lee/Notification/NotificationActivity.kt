@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -44,6 +45,11 @@ class NotificationActivity : AppCompatActivity() {
 
         setupRecyclerView()
 
+        val btnMarkAllRead: Button = findViewById(R.id.btn_mark_all_read)
+        btnMarkAllRead.setOnClickListener {
+            markAllNotificationsAsRead()
+        }
+
         currentUserId?.let {
             loadNotifications(it)
 
@@ -54,6 +60,32 @@ class NotificationActivity : AppCompatActivity() {
             setupCommentNotification(it)
         } ?: run {
             showLoginRequiredMessage()
+        }
+    }
+
+    private fun markAllNotificationsAsRead() {
+        currentUserId?.let { userId ->
+            val notificationsRef = database.child("users").child(userId).child("notifications")
+
+            notificationsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (notificationSnapshot in snapshot.children) {
+                        val notification = notificationSnapshot.getValue(Notification::class.java)
+                        if (notification != null && !notification.read) {
+                            notificationSnapshot.ref.child("read").setValue(true)
+                        }
+                    }
+
+                    // UI 업데이트
+                    notificationAdapter.markAllAsRead()
+                    Toast.makeText(this@NotificationActivity, "모든 알림을 읽음 처리했습니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("NotificationActivity", "알림 읽음 처리 실패: ${error.message}")
+                    Toast.makeText(this@NotificationActivity, "알림 읽음 처리에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 
@@ -474,6 +506,11 @@ class NotificationAdapter(
 
 
     override fun getItemCount() = notifications.size
+
+    fun markAllAsRead() {
+        notifications.forEach { it.read = true }
+        notifyDataSetChanged()
+    }
 
     fun setNotifications(newNotifications: List<Notification>) {
         notifications.clear()

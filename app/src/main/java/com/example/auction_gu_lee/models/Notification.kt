@@ -8,7 +8,7 @@ data class Notification(
     val commentAuctionId: String? = null,
     val timestamp: Long? = null,
     val type: String? = null,
-    val read: Boolean = false
+    var read: Boolean = false
 ) {
     fun toMap(): Map<String, Any?> {
         return mapOf(

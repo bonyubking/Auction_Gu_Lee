@@ -9,6 +9,7 @@
 
     <!-- 알림 제목 -->
     <TextView
+        android:id="@+id/notification_title"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:text="알림"
@@ -19,22 +20,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- 모두 읽음 버튼 -->
+    <Button
+        android:id="@+id/btn_mark_all_read"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="모두 읽음"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/notification_title"/>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@android:color/darker_gray"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@id/notification_title"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- RecyclerView로 알림 내용을 표시 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_notifications"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:padding="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@id/notification_title"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- 기존 LinearLayout은 유지 (필요한 경우를 위해) -->
@@ -43,7 +54,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/notification_title"
         app:layout_constraintStart_toStartOf="parent">
     </LinearLayout>
 
