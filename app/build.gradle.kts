@@ -53,6 +53,8 @@ android {
 
 dependencies {
 
+    implementation("com.google.android.material:material:1.9.0")
+
     implementation("com.google.firebase:firebase-messaging:23.1.2") // 최신 버전 확인 후 적용
 
     implementation("com.github.bumptech.glide:glide:4.14.2")
