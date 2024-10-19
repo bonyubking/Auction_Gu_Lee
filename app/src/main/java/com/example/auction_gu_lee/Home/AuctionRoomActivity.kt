@@ -306,36 +306,27 @@ class AuctionRoomActivity : AppCompatActivity() {
 
     private fun placeBid() {
         // 입찰 증가폭 결정 로직
-        val increment = when (startingPrice) {
-            in 100..499 -> 1
-            in 500..999 -> 5
-            in 1000..4999 -> 10
-            in 5000..9999 -> 50
-            in 10000..49999 -> 100
-            in 50000..99999 -> 500
-            in 100000..499999 -> 1000
-            in 500000..999999 -> 5000
-            in 1000000..4999999 -> 10000
-            in 5000000..9999999 -> 50000
-            in 10000000..49999999 -> 100000
-            in 50000000..99999999 -> 500000
-            in 100000000..499999999 -> 1000000
-            in 500000000..999999999 -> 5000000
-            in 1000000000..4999999999 -> 10000000
-            in 5000000000..9999999999 -> 50000000
-            in 10000000000..49999999999 -> 100000000
-            in 50000000000..99999999999 -> 500000000
-            in 100000000000..499999999999 -> 1000000000
-            in 500000000000..999999999999 -> 5000000000
-            in 1000000000000..4999999999999 -> 10000000000
-            in 5000000000000..9999999999999 -> 50000000000
-            in 10000000000000..100000000000000 -> 100000000000
-            else -> startingPrice / 100  // 100억 초과 시 시작 가격의 1%로 증가
-        }
-
+        val increment = calculateBidIncrement(startingPrice)
         val newBid = highestPrice + increment  // 입찰가를 증가폭만큼 증가
 
+        // 확인 다이얼로그 생성
+        AlertDialog.Builder(this)
+            .setTitle("입찰 확인")
+            .setMessage("정말로 $newBid ₩ 으로 입찰하시겠습니까?")
+            .setPositiveButton("예") { dialog, which ->
+                // "예" 버튼 클릭 시 실제 입찰 로직 실행
+                executeBid(newBid)
+            }
+            .setNegativeButton("아니오") { dialog, which ->
+                // "아니오" 버튼 클릭 시 다이얼로그 닫기
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
 
+    // 실제 입찰 로직을 수행하는 메서드로 분리
+    private fun executeBid(newBid: Long) {
         highestPrice = newBid
         binding.highestPrice.text = "$highestPrice ₩"
         updateHighestPriceColor()
@@ -593,9 +584,6 @@ class AuctionRoomActivity : AppCompatActivity() {
 
 
 
-
-
-
     private fun setupChatButtons(topBidders: List<Pair<String, Long>>) {
         val messageButtons = listOf(binding.btnMessage1, binding.btnMessage2, binding.btnMessage3)
         val bidderTexts = listOf(binding.highestBidder1, binding.highestBidder2, binding.highestBidder3)
@@ -653,10 +641,8 @@ class AuctionRoomActivity : AppCompatActivity() {
 
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel() // 타이머가 계속 실행되지 않도록 해제
     }
 }
-
