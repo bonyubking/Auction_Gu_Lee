@@ -86,10 +86,12 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(HomeFragment())
                 }
             }
+
             "post" -> {
                 // PostFragment로 이동
                 replaceFragment(PostFragment())
             }
+
             else -> {
                 // 기본적으로 HomeFragment를 표시
                 replaceFragment(HomeFragment())
@@ -104,22 +106,27 @@ class MainActivity : AppCompatActivity() {
                     replaceFragment(HomeFragment())
                     true
                 }
+
                 R.id.nav_auction -> {
                     replaceFragment(PastFragment())
                     true
                 }
+
                 R.id.nav_board -> {
                     replaceFragment(PostFragment())
                     true
                 }
+
                 R.id.nav_chat -> {
                     replaceFragment(ChatFragment())
                     true
                 }
+
                 R.id.nav_profile -> {
                     replaceFragment(ProfileFragment())
                     true
                 }
+
                 else -> false
             }
         }
@@ -145,14 +152,19 @@ class MainActivity : AppCompatActivity() {
                 for (auctionSnapshot in snapshot.children) {
                     val chatsSnapshot = auctionSnapshot.child("chats")
                     for (chatRoomSnapshot in chatsSnapshot.children) {
-                        val bidderUid = chatRoomSnapshot.child("bidderUid").getValue(String::class.java)
-                        val sellerUid = auctionSnapshot.child("creatorUid").getValue(String::class.java)
+                        val bidderUid =
+                            chatRoomSnapshot.child("bidderUid").getValue(String::class.java)
+                        val sellerUid =
+                            auctionSnapshot.child("creatorUid").getValue(String::class.java)
 
                         if (userUid == bidderUid || userUid == sellerUid) {
                             val messagesSnapshot = chatRoomSnapshot.child("messages")
                             for (messageSnapshot in messagesSnapshot.children) {
-                                val isRead = messageSnapshot.child("isRead").getValue(Boolean::class.java) ?: true
-                                val senderUid = messageSnapshot.child("senderUid").getValue(String::class.java)
+                                val isRead =
+                                    messageSnapshot.child("isRead").getValue(Boolean::class.java)
+                                        ?: true
+                                val senderUid =
+                                    messageSnapshot.child("senderUid").getValue(String::class.java)
                                 if (!isRead && senderUid != userUid) {
                                     unreadCount++
                                 }
@@ -186,35 +198,16 @@ class MainActivity : AppCompatActivity() {
     private fun setUserOnlineStatus(isOnline: Boolean) {
         if (userUid == null) return
 
-        val userStatusRef = database.child(userUid!!).child("loggedin")
-
+        val userStatusRef = database.child("users").child(userUid!!).child("loggedin")
         if (isOnline) {
             // 온라인 상태 설정
             userStatusRef.setValue(true)
 
-            // 연결이 끊어지면 자동으로 loggedin을 false로 설정
-            userStatusRef.onDisconnect().setValue(false)
+            // 연결이 끊어져도 loggedin 상태가 유지되도록 설정
+            userStatusRef.onDisconnect().cancel() // 강제 종료 시 상태 변경 취소
         } else {
-            // 오프라인 상태 설정
+            // 오프라인 상태 설정 (명시적으로 로그아웃할 때만 호출)
             userStatusRef.setValue(false)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // 앱이 정상적으로 종료될 때 loggedin 상태를 false로 설정
-        setUserOnlineStatus(false)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // 앱이 백그라운드로 이동할 때도 loggedin 상태를 false로 설정
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 앱이 포그라운드로 돌아올 때 loggedin 상태를 true로 설정
-        setUserOnlineStatus(true)
     }
 }

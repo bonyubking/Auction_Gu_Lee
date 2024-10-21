@@ -153,13 +153,15 @@ class LobbyActivity : AppCompatActivity() {
         userLoggedInRef.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {
                 val isLoggedIn = currentData.getValue(Boolean::class.java) ?: false
-                if (isLoggedIn) {
-                    // 이미 로그인된 상태이므로 로그인 시도 취소
-                    return Transaction.success(currentData)
+                return if (isLoggedIn) {
+                    // 이미 로그인된 상태이므로 트랜잭션을 실패로 처리
+                    Log.d("LobbyActivity", "User is already logged in. Canceling login.")
+                    Transaction.abort()
                 } else {
                     // 로그인 상태를 true로 설정
+                    Log.d("LobbyActivity", "User is not logged in. Proceeding with login.")
                     currentData.value = true
-                    return Transaction.success(currentData)
+                    Transaction.success(currentData)
                 }
             }
 
@@ -170,21 +172,16 @@ class LobbyActivity : AppCompatActivity() {
             ) {
                 if (error != null) {
                     Log.e("LobbyActivity", "Transaction failed: ${error.message}")
-                    Toast.makeText(
-                        this@LobbyActivity,
-                        "로그인 상태 확인 중 오류가 발생했습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@LobbyActivity, "로그인 상태 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
                     auth.signOut()
                 } else if (!committed) {
-                    // 트랜잭션이 성공적으로 커밋되지 않았으므로 이미 로그인된 상태
+                    // 트랜잭션이 커밋되지 않았으므로 이미 로그인된 상태
                     Log.d("LobbyActivity", "User is already logged in elsewhere.")
                     Toast.makeText(this@LobbyActivity, "이미 접속 중인 ID입니다.", Toast.LENGTH_SHORT).show()
-                    auth.signOut()
+                    auth.signOut()  // 로그아웃 처리
                 } else {
                     // 트랜잭션이 성공적으로 커밋되었으므로 로그인 진행
                     Log.d("LobbyActivity", "'loggedin' set to true successfully via transaction.")
-                    // MainActivity로 이동
                     val intent = Intent(this@LobbyActivity, MainActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -192,6 +189,7 @@ class LobbyActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
